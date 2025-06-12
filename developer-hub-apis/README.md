@@ -1,6 +1,7 @@
 # Precisely API MCP Server
 
-An experimental Model Context Protocol (MCP) server that provides AI-first access to Precisely APIs for location intelligence, address verification, geocoding, demographics, and other location-based services.
+An experimental Model Context Protocol (MCP) server that provides AI-first access to Precisely APIs for location intelligence, address verification, geocoding, demographics, and other location-based services. 
+This is built on top of https://developer.precisely.com/
 
 ## Overview
 
