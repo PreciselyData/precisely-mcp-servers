@@ -1,6 +1,6 @@
 # Precisely Python SDK
 
-This SDK provides Python client wrappers for Precisely APIs, fully production ready.
+This SDK provides Python client wrappers for Precisely APIs, fully production ready. This will work for https://developer.cloud.precisely.com/
 
 ---
 
