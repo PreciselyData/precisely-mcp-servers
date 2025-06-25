@@ -7,7 +7,7 @@ load_dotenv()
 API_KEY = os.getenv('API_KEY')
 API_SECRET = os.getenv('API_SECRET')
 BASE_URL = os.getenv('BASE_URL')
-print(API_KEY, API_SECRET, BASE_URL)
+
 client = ApiClient(
     base_url=BASE_URL,
     api_key=API_KEY,
@@ -61,6 +61,25 @@ from precisely_sdk.timezone_api import (
     timezone_locations
 )
 
+from precisely_sdk.graphql_api import (
+    get_by_id,
+    get_by_address,
+    get_by_text_search,
+    get_parcel_by_owner,
+    get_by_spatial,
+    get_flood_risk,
+    get_wildfire_risk,
+    get_property_attributes,
+    get_crime_index,
+    get_demographics,
+    get_neighborhood_data,
+    get_property_fire_risk
+
+)
+    
+
+
+
 __all__ = [
     "ApiClient",
     "autocomplete",
@@ -95,7 +114,19 @@ __all__ = [
     "validate_phone",
     "validate_batch_phones",
     "timezone_addresses",
-    "timezone_locations"
+    "timezone_locations",
+    "get_by_id",
+    "get_by_address",
+    "get_by_text_search",
+    "get_parcel_by_owner",
+    "get_by_spatial",
+    "get_flood_risk",
+    "get_wildfire_risk",
+    "get_property_attributes",
+    "get_crime_index",
+    "get_demographics",
+    "get_neighborhood_data",
+    "get_property_fire_risk"
 ]
 
 if __name__ == "__main__":
