@@ -942,13 +942,13 @@ def get_coastal_risk(
     x_request_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Get Property Fire Risk Data by Address.
+    Get Coastal Risk Data by Address.
 
     --------
     Required Payload Structure:
     {
         "query": '''
-            query GetByAddress($address: String!, $country: String) {
+            query GetCoastalRisk($address: String!, $country: String) {
               getByAddress(address: $address, country: $country) {
                 addresses(pageNumber: 1, pageSize: 1) {
                   data {
