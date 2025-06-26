@@ -933,3 +933,100 @@ def get_property_fire_risk(
     response = requests.post(url, headers=headers, json=json_data)
     response.raise_for_status()
     return response.json()
+
+
+@mcp.tool()
+def get_coastal_risk(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Property Fire Risk Data by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetByAddress($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    coastalRisk {
+                      data {
+                         preciselyID
+                        waterbodyName
+                        nearestWaterbodyCounty
+                        nearestWaterbodyState
+                        nearestWaterbodyAdjacentName
+                        nearestWaterbodyAdjacentType
+                        distanceToNearestCoastFeet
+                        windpoolDescription
+                        category1MinSpeedMPH
+                        category1MaxSpeedMPH
+                        category1WindDebris
+                        category2MinSpeedMPH
+                        category2MaxSpeedMPH
+                        category2WindDebris
+                        category3MinSpeedMPH
+                        category3MaxSpeedMPH
+                        category3WindDebris
+                        category4MinSpeedMPH
+                        category4MaxSpeedMPH
+                        category4WindDebris
+                        category1MinSpeedMPHRec
+                        category1MaxSpeedMPHRec
+                        category1WindDebrisRec
+                        category2MinSpeedMPHRec
+                        category2MaxSpeedMPHRec
+                        category2WindDebrisRec
+                        category3MinSpeedMPHRec
+                        category3MaxSpeedMPHRec
+                        category3WindDebrisRec
+                        category4MinSpeedMPHRec
+                        category4MaxSpeedMPHRec
+                        category4WindDebrisRec
+                      } 
+                    }
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Property fire risk data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
