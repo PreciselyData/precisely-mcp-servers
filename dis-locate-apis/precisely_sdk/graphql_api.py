@@ -8,98 +8,50 @@ load_dotenv()
 
 from precisely_sdk.server import mcp
 
+
 @mcp.tool()
-def get_by_id(
+def get_addresses_detailed(
     client,
     json_data: Dict[str, Any],
     x_request_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Get Property Risk Data by ID (PreciselyID, ParcelID, BuildingID, PlaceID, or DUNS_ID).
+    Get Detailed Address Information by Address.
 
     --------
     Required Payload Structure:
     {
         "query": '''
-            query GetById($id: String!, $queryType: QueryType!) {
-                getById(id: $id, queryType: $queryType) {
-                    inputID
-                    addresses(pageNumber: 1, pageSize: 10) {
-                        data {
-                            preciselyID
-                            addressNumber
-                            streetName
-                            city
-                            admin1ShortName
-                            postalCode
-                        }
-                    }
+            query GetAddressesDetailed($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 10) {
+                  metadata {
+                    pageNumber
+                    pageCount
+                    totalPages
+                    count
+                    vintage
+                  }
+                  data {
+                    preciselyID
+                    addressNumber
+                    streetName
+                    unitType
+                    unit
+                    city
+                    admin1ShortName
+                    postalCode
+                    postalCodeExtension
+                    locationCode { value description }
+                    geographyID
+                    latitude
+                    longitude
+                    parentPreciselyID
+                    propertyType { value description }
+                    fips
+                  }
                 }
-            }
-        ''',
-        "variables": {
-            "id": "12345",                    # REQUIRED - The ID to search for
-            "queryType": "PRECISELY_ID"      # REQUIRED - One of: PRECISELY_ID, PARCEL_ID, BUILDING_ID, PLACE_ID, DUNS_ID
-        }
-    }
-
-    Parameters:
-        client (ApiClient): Initialized Precisely ApiClient instance.
-        json_data (dict): GraphQL query and variables as shown above.
-        x_request_id (Optional[str]): Optional request ID (max 38 chars).
-
-    Returns:
-        dict: Property risk data for the specified ID
-
-    Raises:
-        requests.HTTPError: For 4xx/5xx responses.
-    """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
-    url = f"{client.base_url}/data-graph/graphql"
-    headers = client.get_headers()
-    headers["Content-Type"] = "application/json"
-    if x_request_id:
-        headers["X-Request-Id"] = x_request_id
-
-    response = requests.post(url, headers=headers, json=json_data)
-    response.raise_for_status()
-    return response.json()
-
-@mcp.tool()
-def get_by_address(
-    client,
-    json_data: Dict[str, Any],
-    x_request_id: Optional[str] = None
-) -> Dict[str, Any]:
-    """
-    Get Property Risk Data by Address.
-
-    --------
-    Required Payload Structure:
-    {
-        "query": '''
-            query GetByAddress($address: String!, $country: String) {
-                getByAddress(address: $address, country: $country) {
-                    inputID
-                    buildings(pageNumber: 1, pageSize: 10) {
-                        data {
-                            buildingID
-                            buildingType { value description }
-                            latitude
-                            longitude
-                            buildingArea
-                        }
-                    }
-                }
+              }
             }
         ''',
         "variables": {
@@ -114,7 +66,7 @@ def get_by_address(
         x_request_id (Optional[str]): Optional request ID (max 38 chars).
 
     Returns:
-        dict: Property risk data for the specified address
+        dict: Detailed address information
 
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
@@ -139,102 +91,16 @@ def get_by_address(
     response.raise_for_status()
     return response.json()
 
+
+
 @mcp.tool()
-def get_by_text_search(
+def get_parcel_by_owner_detailed(
     client,
     json_data: Dict[str, Any],
     x_request_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Search Property Risk Data by Text with Location Context.
-
-    --------
-    Required Payload Structure:
-    {
-        "query": '''
-            query GetByTextSearch(
-                $searchText: String!,
-                $address: String,
-                $postalCode: String,
-                $matchType: MatchType,
-                $distance: Float,
-                $limit: Int,
-                $longitude: Float,
-                $latitude: Float
-            ) {
-                getByTextSearch(
-                    searchText: $searchText,
-                    address: $address,
-                    postalCode: $postalCode,
-                    matchType: $matchType,
-                    distance: $distance,
-                    limit: $limit,
-                    longitude: $longitude,
-                    latitude: $latitude
-                ) {
-                    places {
-                        data {
-                            pointOfInterestID
-                            businessName
-                            city
-                            admin1ShortName
-                            postalCode
-                        }
-                    }
-                }
-            }
-        ''',
-        "variables": {
-            "searchText": "Starbucks",        # REQUIRED - Text to search for
-            "address": "Boston, MA",          # OPTIONAL - Address context
-            "postalCode": "02101",            # OPTIONAL - Postal code
-            "matchType": "EXACT",             # OPTIONAL - EXACT or FUZZY (default: EXACT)
-            "distance": 1000.0,               # OPTIONAL - Search radius in meters (default: 1000.0)
-            "limit": 50,                      # OPTIONAL - Max results (default: 50)
-            "longitude": -71.0589,            # OPTIONAL - Longitude for location context
-            "latitude": 42.3601               # OPTIONAL - Latitude for location context
-        }
-    }
-
-    Parameters:
-        client (ApiClient): Initialized Precisely ApiClient instance.
-        json_data (dict): GraphQL query and variables as shown above.
-        x_request_id (Optional[str]): Optional request ID (max 38 chars).
-
-    Returns:
-        dict: Places matching the text search criteria
-
-    Raises:
-        requests.HTTPError: For 4xx/5xx responses.
-    """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
-    url = f"{client.base_url}/data-graph/graphql"
-    headers = client.get_headers()
-    headers["Content-Type"] = "application/json"
-    if x_request_id:
-        headers["X-Request-Id"] = x_request_id
-
-    response = requests.post(url, headers=headers, json=json_data)
-    response.raise_for_status()
-    return response.json()
-
-@mcp.tool()
-def get_parcel_by_owner(
-    client,
-    json_data: Dict[str, Any],
-    x_request_id: Optional[str] = None
-) -> Dict[str, Any]:
-    """
-    Get Parcels by Owner Information.
+    Get Detailed Parcels by Owner Information.
 
     --------
     Required Payload Structure:
@@ -255,19 +121,29 @@ def get_parcel_by_owner(
                     limit: $limit
                 ) {
                     parcels {
+                        metadata {
+                            pageNumber
+                            pageCount
+                            totalPages
+                            count
+                            vintage
+                        }
                         data {
                             parcelID
+                            fips
+                            geographyID
                             apn
                             parcelArea
-                            latitude
                             longitude
+                            latitude
+                            elevation
                         }
                     }
                 }
             }
         ''',
         "variables": {
-            "id": "12345",                    # OPTIONAL - Owner ID
+            "id": "12345",                    # OPTIONAL - Owner ID or search term
             "queryType": "PRECISELY_ID",      # OPTIONAL - ID type
             "address": "Boston, MA",          # OPTIONAL - Address context
             "distance": 1000.0,               # OPTIONAL - Search radius (default: 1000.0)
@@ -281,7 +157,7 @@ def get_parcel_by_owner(
         x_request_id (Optional[str]): Optional request ID (max 38 chars).
 
     Returns:
-        dict: Parcels owned by the specified owner
+        dict: Detailed parcels owned by the specified owner
 
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
@@ -306,128 +182,54 @@ def get_parcel_by_owner(
     response.raise_for_status()
     return response.json()
 
+# ADDITIONAL FUNCTIONS FOR RELATIONSHIP QUERIES
+
 @mcp.tool()
-def get_by_spatial(
+def get_address_family(
     client,
     json_data: Dict[str, Any],
     x_request_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Get Property Risk Data by Spatial Query (WKT or GeoJSON geometry).
+    Get Address Family (Related Addresses) by PreciselyID.
 
     --------
     Required Payload Structure:
     {
         "query": '''
-            query GetBySpatial(
-                $wkt: String,
-                $geoJson: String,
-                $address: String,
-                $spatialFunction: SpatialFunction!,
-                $inputID: String
-            ) {
-                getBySpatial(
-                    wkt: $wkt,
-                    geoJson: $geoJson,
-                    address: $address,
-                    spatialFunction: $spatialFunction,
-                    inputID: $inputID
-                ) {
-                    inputID
-                    addresses(pageNumber: 1, pageSize: 10) {
-                        data {
-                            preciselyID
-                            addressNumber
-                            streetName
-                            city
-                        }
+            query GetAddressFamily($id: String!, $queryType: QueryType!) {
+              getById(id: $id, queryType: $queryType) {
+                addresses {
+                  data {
+                    preciselyID
+                    addressFamily(pageNumber: 1, pageSize: 20) {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
+                      data {
+                        preciselyID
+                        addressNumber
+                        streetName
+                        unitType
+                        unit
+                        city
+                        admin1ShortName
+                        postalCode
+                        propertyType { value description }
+                        parentPreciselyID
+                      }
                     }
-                    buildings(pageNumber: 1, pageSize: 10) {
-                        data {
-                            buildingID
-                            buildingArea
-                        }
-                    }
+                  }
                 }
+              }
             }
         ''',
         "variables": {
-            "wkt": "POLYGON((-71.1 42.3, -71.0 42.3, -71.0 42.4, -71.1 42.4, -71.1 42.3))",  # OPTIONAL - WKT geometry
-            "geoJson": null,                           # OPTIONAL - GeoJSON geometry (alternative to WKT)
-            "address": "Boston, MA",                   # OPTIONAL - Address context
-            "spatialFunction": "INTERSECTS",           # REQUIRED - One of: INTERSECTS, WITHIN, CONTAINS, TOUCHES, OVERLAPS
-            "inputID": "search-123"                    # OPTIONAL - Custom input ID
-        }
-    }
-
-    Parameters:
-        client (ApiClient): Initialized Precisely ApiClient instance.
-        json_data (dict): GraphQL query and variables as shown above.
-        x_request_id (Optional[str]): Optional request ID (max 38 chars).
-
-    Returns:
-        dict: Property data within the specified geometry
-
-    Raises:
-        requests.HTTPError: For 4xx/5xx responses.
-    """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
-    url = f"{client.base_url}/data-graph/graphql"
-    headers = client.get_headers()
-    headers["Content-Type"] = "application/json"
-    if x_request_id:
-        headers["X-Request-Id"] = x_request_id
-
-    response = requests.post(url, headers=headers, json=json_data)
-    response.raise_for_status()
-    return response.json()
-
-@mcp.tool()
-def get_flood_risk(
-    client,
-    json_data: Dict[str, Any],
-    x_request_id: Optional[str] = None
-) -> Dict[str, Any]:
-    """
-    Get Flood Risk Information for a Property.
-
-    --------
-    Required Payload Structure:
-    {
-        "query": '''
-            query GetFloodRisk($id: String!, $queryType: QueryType!) {
-                getById(id: $id, queryType: $queryType) {
-                    addresses {
-                        data {
-                            preciselyID
-                            floodRisk {
-                                data {
-                                    preciselyID
-                                    floodZone
-                                    baseFloodElevationFeet
-                                    addressLocationElevationFeet
-                                    year100FloodZoneDistanceFeet
-                                    year500FloodZoneDistanceFeet
-                                    nameOfNearestWaterbody
-                                    distanceToNearestWaterbodyFeet
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        ''',
-        "variables": {
-            "id": "12345",                    # REQUIRED - Property ID
+            "id": "12345",                    # REQUIRED - PreciselyID
             "queryType": "PRECISELY_ID"       # REQUIRED - ID type
         }
     }
@@ -438,7 +240,7 @@ def get_flood_risk(
         x_request_id (Optional[str]): Optional request ID (max 38 chars).
 
     Returns:
-        dict: Flood risk data for the property
+        dict: Address family (related addresses) data
 
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
@@ -464,44 +266,67 @@ def get_flood_risk(
     return response.json()
 
 @mcp.tool()
-def get_wildfire_risk(
+def get_coastal_risk(
     client,
     json_data: Dict[str, Any],
     x_request_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Get Wildfire Risk Information for a Property.
+    Get Coastal Risk Data by Address.
 
     --------
     Required Payload Structure:
     {
         "query": '''
-            query GetWildfireRisk($id: String!, $queryType: QueryType!) {
-                getById(id: $id, queryType: $queryType) {
-                    addresses {
-                        data {
-                            preciselyID
-                            wildfireRisk {
-                                data {
-                                    preciselyID
-                                    riskDescription { baseLineModel extremeModel }
-                                    overallRiskRanking { baseLineModel extremeModel }
-                                    severityRating { baseLineModel extremeModel }
-                                    frequencyRating { baseLineModel extremeModel }
-                                    communityRating { baseLineModel extremeModel }
-                                    damageRating { baseLineModel extremeModel }
-                                    mitigationRating { baseLineModel extremeModel }
-                                    distanceToWildlandUrbanInterfaceFeet
-                                }
-                            }
-                        }
+            query GetCoastalRisk($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    coastalRisk {
+                      data {
+                         preciselyID
+                        waterbodyName
+                        nearestWaterbodyCounty
+                        nearestWaterbodyState
+                        nearestWaterbodyAdjacentName
+                        nearestWaterbodyAdjacentType
+                        distanceToNearestCoastFeet
+                        windpoolDescription
+                        category1MinSpeedMPH
+                        category1MaxSpeedMPH
+                        category1WindDebris
+                        category2MinSpeedMPH
+                        category2MaxSpeedMPH
+                        category2WindDebris
+                        category3MinSpeedMPH
+                        category3MaxSpeedMPH
+                        category3WindDebris
+                        category4MinSpeedMPH
+                        category4MaxSpeedMPH
+                        category4WindDebris
+                        category1MinSpeedMPHRec
+                        category1MaxSpeedMPHRec
+                        category1WindDebrisRec
+                        category2MinSpeedMPHRec
+                        category2MaxSpeedMPHRec
+                        category2WindDebrisRec
+                        category3MinSpeedMPHRec
+                        category3MaxSpeedMPHRec
+                        category3WindDebrisRec
+                        category4MinSpeedMPHRec
+                        category4MaxSpeedMPHRec
+                        category4WindDebrisRec
+                      } 
                     }
+                  }
                 }
+              }
             }
         ''',
         "variables": {
-            "id": "12345",                    # REQUIRED - Property ID
-            "queryType": "PRECISELY_ID"       # REQUIRED - ID type
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
         }
     }
 
@@ -511,7 +336,7 @@ def get_wildfire_risk(
         x_request_id (Optional[str]): Optional request ID (max 38 chars).
 
     Returns:
-        dict: Wildfire risk data for the property
+        dict: Coastal risk data for the specified address
 
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
@@ -537,44 +362,76 @@ def get_wildfire_risk(
     return response.json()
 
 @mcp.tool()
-def get_property_attributes(
+def get_crime_index_by_address(
     client,
     json_data: Dict[str, Any],
     x_request_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Get Property Attributes (Tax Assessment Data) for a Property.
+    Get Crime Index Data by Address.
 
     --------
     Required Payload Structure:
     {
         "query": '''
-            query GetPropertyAttributes($id: String!, $queryType: QueryType!) {
-                getById(id: $id, queryType: $queryType) {
-                    propertyAttributes {
-                        data {
-                            propertyAttributeID
-                            preciselyID
-                            owner
-                            owner2
-                            propertyCategory { value description }
-                            standardizedLandUseCode { value description }
-                            yearBuilt
-                            buildingSquareFootage
-                            bedroomCount
-                            bathroomCount { value description }
-                            totalAssessedValue
-                            totalMarketValue
-                            saleAmount
-                            assessmentRecordingDate
-                        }
+            query GetCrimeIndex($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    crimeIndex {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
+                      data {
+                        blockGroupCode
+                        compositeIndexNational
+                        violentCrimeIndexNational
+                        robberyIndexNational
+                        rapeIndexNational
+                        aggravatedAssaultIndexNational
+                        murderIndexNational
+                        propertyCrimeIndexNational
+                        arsonIndexNational
+                        burglaryIndexNational
+                        motorVehicleTheftIndexNational
+                        larcenyTheftIndexNational
+                        compositeCrimeCategory { value description }
+                        violentCrimeCategory { value description }
+                        robberyCategory { value description }
+                        rapeCategory { value description }
+                        aggravatedAssaultCategory { value description }
+                        murderCategory { value description }
+                        propertyCrimeCategory { value description }
+                        arsonCategory { value description }
+                        burglaryCategory { value description }
+                        motorVehicleTheftCategory { value description }
+                        larcenyTheftCategory { value description }
+                        compositeIndexState
+                        violentCrimeIndexState
+                        robberyIndexState
+                        rapeIndexState
+                        aggravatedAssaultIndexState
+                        murderIndexState
+                        propertyCrimeIndexState
+                        arsonIndexState
+                        burglaryIndexState
+                        motorVehicleTheftIndexState
+                        larcenyTheftIndexState
+                      }
                     }
+                  }
                 }
+              }
             }
         ''',
         "variables": {
-            "id": "12345",                    # REQUIRED - Property ID
-            "queryType": "PRECISELY_ID"       # REQUIRED - ID type
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
         }
     }
 
@@ -584,7 +441,7 @@ def get_property_attributes(
         x_request_id (Optional[str]): Optional request ID (max 38 chars).
 
     Returns:
-        dict: Property attributes and tax assessment data
+        dict: Crime index data for the specified address
 
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
@@ -610,45 +467,56 @@ def get_property_attributes(
     return response.json()
 
 @mcp.tool()
-def get_crime_index(
+def get_psyte_geodemographics_by_address(
     client,
     json_data: Dict[str, Any],
     x_request_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Get Crime Index Data for a Property Location.
+    Get PSYTE Geodemographics Data by Address.
 
     --------
     Required Payload Structure:
     {
         "query": '''
-            query GetCrimeIndex($id: String!, $queryType: QueryType!) {
-                getById(id: $id, queryType: $queryType) {
-                    addresses {
-                        data {
-                            preciselyID
-                            crimeIndex {
-                                data {
-                                    blockGroupCode
-                                    compositeIndexNational
-                                    violentCrimeIndexNational
-                                    propertyCrimeIndexNational
-                                    compositeCrimeCategory { value description }
-                                    violentCrimeCategory { value description }
-                                    propertyCrimeCategory { value description }
-                                    robberyIndexNational
-                                    burglaryIndexNational
-                                    motorVehicleTheftIndexNational
-                                }
-                            }
-                        }
+            query GetPsyteGeodemographics($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    psyteGeodemographics {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
+                      data {
+                        censusBlock
+                        censusBlockGroup
+                        censusBlockPopulation
+                        censusBlockHouseholds
+                        PSYTEGroupCode
+                        PSYTECategoryCode
+                        PSYTESegmentCode { value description }
+                        householdIncomeVariable { value description }
+                        propertyValueVariable { value description }
+                        propertyTenureVariable { value description }
+                        propertyTypeVariable { value description }
+                        urbanRuralVariable { value description }
+                        adultAgeVariable { value description }
+                        householdCompositionVariable { value description }
+                      }
                     }
+                  }
                 }
+              }
             }
         ''',
         "variables": {
-            "id": "12345",                    # REQUIRED - Property ID
-            "queryType": "PRECISELY_ID"       # REQUIRED - ID type
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
         }
     }
 
@@ -658,7 +526,7 @@ def get_crime_index(
         x_request_id (Optional[str]): Optional request ID (max 38 chars).
 
     Returns:
-        dict: Crime index data for the property location
+        dict: PSYTE geodemographics data for the specified address
 
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
@@ -684,55 +552,128 @@ def get_crime_index(
     return response.json()
 
 @mcp.tool()
-def get_demographics(
+def get_ground_view_by_address(
     client,
     json_data: Dict[str, Any],
     x_request_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Get Demographics and Lifestyle Data (PSYTE) for a Property Location.
+    Get Ground View Demographics Data by Address.
 
     --------
     Required Payload Structure:
     {
         "query": '''
-            query GetDemographics($id: String!, $queryType: QueryType!) {
-                getById(id: $id, queryType: $queryType) {
-                    addresses {
-                        data {
-                            preciselyID
-                            psyteGeodemographics {
-                                data {
-                                    censusBlock
-                                    censusBlockGroup
-                                    censusBlockPopulation
-                                    censusBlockHouseholds
-                                    PSYTESegmentCode { value description }
-                                    householdIncomeVariable { value description }
-                                    propertyValueVariable { value description }
-                                    urbanRuralVariable { value description }
-                                    adultAgeVariable { value description }
-                                }
-                            }
-                            groundView {
-                                data {
-                                    censusBlockGroup
-                                    censusBlockGroupPopulation
-                                    averageHouseholdIncome
-                                    averageHomeValue
-                                    ownerOccupiedHousingUnitsPercent
-                                    educationBachelorsDegreePercent
-                                    unemployedPercent
-                                }
-                            }
-                        }
+            query GetGroundView($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    groundView {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
+                      data {
+                        censusBlockGroup
+                        censusBlockGroupArea
+                        censusBlockGroupPopulation
+                        censusBlockGroupPopulationForecast5Y
+                        percentPopulationUnder5yearsPercent
+                        percentPopulation5to9yearsPercent
+                        percentPopulation10to14yearsPercent
+                        percentPopulation15to19yearsPercent
+                        percentPopulation20to24yearsPercent
+                        percentPopulation25to29yearsPercent
+                        percentPopulation30to34yearsPercent
+                        percentPopulation35to39yearsPercent
+                        percentPopulation40to44yearsPercent
+                        percentPopulation45to49yearsPercent
+                        percentPopulation50to54yearsPercent
+                        percentPopulation55to59yearsPercent
+                        percentPopulation60to64yearsPercent
+                        percentPopulation65to69yearsPercent
+                        percentPopulation70to74yearsPercent
+                        percentPopulation75to79yearsPercent
+                        percentPopulation80to84yearsPercent
+                        percentPopulation85plusyearsPercent
+                        maritalStatusNeverMarriedPercent
+                        maritalStatusNowMarriedPercent
+                        maritalStatusSeparatedPercent
+                        maritalStatusWidowedPercent
+                        maritalStatusDivorcedPercent
+                        homeWorkers16yearsAndOverPercent
+                        educationHighSchoolGraduatePercent
+                        educationAssociatesDegreePercent
+                        educationBachelorsDegreePercent
+                        educationMastersDegreePercent
+                        educationProfessionalSchoolDegreePercent
+                        educationDoctorateDegreePercent
+                        unemployedPercent
+                        industryAgricultureForestryFishingHuntingMiningPercent
+                        industryConstructionPercent
+                        industryManufacturingPercent
+                        industryWholesaleTradePercent
+                        industryRetailTradePercent
+                        industryTransportationandUtilitiesPercent
+                        industryInformationPercent
+                        industryFinancialActivitiesPercent
+                        industryProfessionalScientificManagementPercent
+                        industryServicePercent
+                        industryLeisureandHospitalityPercent
+                        industryOtherServicesPercent
+                        industryPublicAdministrationPercent
+                        occupationWhiteCollarPercent
+                        occupationBlueCollarPercent
+                        censusBlockGroupHouseholds
+                        censusBlockGroupHouseholdsForecast5Y
+                        households1personPercent
+                        households2personPercent
+                        households3personPercent
+                        households4personPercent
+                        households5personPercent
+                        households6personPercent
+                        households7plusPersonPercent
+                        ownerOccupiedHousingUnitsPercent
+                        renterOccupiedHousingUnitsPercent
+                        households1vehiclePercent
+                        households2vehiclesPercent
+                        households3vehiclesPercent
+                        households4vehiclesPercent
+                        households5plusVehiclesPercent
+                        averageVehiclesPerHousehold
+                        averageRent
+                        averageHomeValue
+                        householdIncomeUnder10kPercent
+                        householdIncome10kto15kPercent
+                        householdIncome15kto20kPercent
+                        householdIncome20kto25kPercent
+                        householdIncome25kto30kPercent
+                        householdIncome30kto35kPercent
+                        householdIncome35kto40kPercent
+                        householdIncome40kto45kPercent
+                        householdIncome45kto50kPercent
+                        householdIncome50kto60kPercent
+                        householdIncome60kto75kPercent
+                        householdIncome75kto100kPercent
+                        householdIncome100kto125kPercent
+                        householdIncome125kto150kPercent
+                        householdIncome150kto200kPercent
+                        householdIncome200kplusPercent
+                        averageHouseholdIncome
+                      }
                     }
+                  }
                 }
+              }
             }
         ''',
         "variables": {
-            "id": "12345",                    # REQUIRED - Property ID
-            "queryType": "PRECISELY_ID"       # REQUIRED - ID type
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
         }
     }
 
@@ -742,7 +683,7 @@ def get_demographics(
         x_request_id (Optional[str]): Optional request ID (max 38 chars).
 
     Returns:
-        dict: Demographics and lifestyle data for the property location
+        dict: Ground View demographics data for the specified address
 
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
@@ -768,46 +709,43 @@ def get_demographics(
     return response.json()
 
 @mcp.tool()
-def get_neighborhood_data(
+def get_replacement_cost_by_address(
     client,
     json_data: Dict[str, Any],
     x_request_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Get Neighborhood Data and Market Trends for a Property.
+    Get Replacement Cost Data by Address.
 
     --------
     Required Payload Structure:
     {
         "query": '''
-            query GetNeighborhoodData($id: String!, $queryType: QueryType!) {
-                getById(id: $id, queryType: $queryType) {
-                    neighborhoods {
-                        neighborhood {
-                            data {
-                                neighborhoodID
-                                neighborhoodName
-                                walkability { value description }
-                                bikeScore
-                                driveScore
-                                publicTransitScore
-                                averageSingleFamilyResidencePriceUSD
-                                residentialSalesTrend { value description }
-                                averageYearBuilt
-                                averageBedrooms
-                                averageBathrooms
-                                averageLivingSpaceSquareFootage
-                                poolPercentage
-                                averageLotSizeAcres
-                            }
-                        }
-                    }
+            query GetReplacementCost($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                replacementCost(pageNumber: 1, pageSize: 10) {
+                  metadata {
+                    pageNumber
+                    pageCount
+                    totalPages
+                    count
+                    vintage
+                  }
+                  data {
+                    propertyAttributeID
+                    preciselyID
+                    parentPreciselyID
+                    plinkID
+                    replacementCostUSD
+                    replacementCostConfidenceCode
+                  }
                 }
+              }
             }
         ''',
         "variables": {
-            "id": "12345",                    # REQUIRED - Property ID
-            "queryType": "PRECISELY_ID"       # REQUIRED - ID type
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
         }
     }
 
@@ -817,7 +755,551 @@ def get_neighborhood_data(
         x_request_id (Optional[str]): Optional request ID (max 38 chars).
 
     Returns:
-        dict: Neighborhood data and market trends
+        dict: Replacement cost data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+@mcp.tool()
+def get_property_attributes_by_address(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Property Attributes Data by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetPropertyAttributes($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                propertyAttributes(pageNumber: 1, pageSize: 10) {
+                  metadata {
+                    pageNumber
+                    pageCount
+                    totalPages
+                    count
+                    vintage
+                  }
+                  data {
+                    propertyAttributeID
+                    preciselyID
+                    parentPreciselyID
+                    plinkID
+                    owner
+                    owner2
+                    ownerType { value description }
+                    propertyCategory { value description }
+                    standardizedLandUseCode { value description }
+                    yearBuilt
+                    effectiveYearBuilt
+                    buildingSquareFootage
+                    livingSquareFootage
+                    bedroomCount
+                    bathroomCount { value description }
+                    roomCount
+                    poolType { value description }
+                    totalAssessedValue
+                    landAssessedValue
+                    improvementAssessedValue
+                    totalMarketValue
+                    landMarketValue
+                    improvementMarketValue
+                    saleAmount
+                    saleCode { value description }
+                    assessmentRecordingDate
+                    priorSaleDate
+                    priorSaleAmount
+                    taxAmount
+                    taxYear
+                    propertyAreaAcres
+                    propertyAreaSquareFootage
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Property attributes data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+@mcp.tool()
+def get_neighborhoods_by_address(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Neighborhood Data by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetNeighborhoods($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                neighborhoods {
+                  neighborhood(pageNumber: 1, pageSize: 5) {
+                    metadata {
+                      pageNumber
+                      pageCount
+                      totalPages
+                      count
+                      vintage
+                    }
+                    data {
+                      neighborhoodID
+                      neighborhoodName
+                      bikeScore
+                      driveScore
+                      publicTransitScore
+                      walkability { value description }
+                      averageSingleFamilyResidencePriceUSD
+                      residentialSalesTrend { value description }
+                      residentialSalesPriceTrend { value description }
+                      averageYearBuilt
+                      averageBedrooms
+                      averageBathrooms
+                      averageLivingSpaceSquareFootage
+                      poolPercentage
+                      averageLotSizeAcres
+                      singleFamilyResidencePercent
+                      commercialProperties
+                      singleFamilyProperties
+                      condominiums
+                      duplex
+                      apartment
+                      lender
+                    }
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Neighborhood data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+@mcp.tool()
+def get_schools_by_address(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Schools Data by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetSchools($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                schools {
+                  college(pageNumber: 1, pageSize: 10) {
+                    metadata {
+                      pageNumber
+                      pageCount
+                      totalPages
+                      count
+                      vintage
+                    }
+                    data {
+                      universityID
+                      universityName
+                      campusName
+                    }
+                  }
+                  schoolDistrict(pageNumber: 1, pageSize: 10) {
+                    metadata {
+                      pageNumber
+                      pageCount
+                      totalPages
+                      count
+                      vintage
+                    }
+                    data {
+                      schoolDistrictID
+                      schoolDistrictName
+                    }
+                  }
+                  schoolAttendanceZone(pageNumber: 1, pageSize: 10) {
+                    metadata {
+                      pageNumber
+                      pageCount
+                      totalPages
+                      count
+                      vintage
+                    }
+                    data {
+                      schoolAttendanceZoneID
+                      schoolAttendanceZoneName
+                    }
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Schools data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+
+@mcp.tool()
+def get_buildings_by_address(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Building Information by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetBuildings($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                buildings(pageNumber: 1, pageSize: 10) {
+                  metadata {
+                    pageNumber
+                    pageCount
+                    totalPages
+                    count
+                    vintage
+                  }
+                  data {
+                    buildingID
+                    buildingType { value description }
+                    ubid
+                    fips
+                    geographyID
+                    longitude
+                    latitude
+                    elevation
+                    maximumElevation
+                    minimumElevation
+                    buildingArea
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Building information for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+@mcp.tool()
+def get_parcels_by_address(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Parcel Information by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetParcels($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                parcels(pageNumber: 1, pageSize: 10) {
+                  metadata {
+                    pageNumber
+                    pageCount
+                    totalPages
+                    count
+                    vintage
+                  }
+                  data {
+                    parcelID
+                    fips
+                    geographyID
+                    apn
+                    parcelArea
+                    longitude
+                    latitude
+                    elevation
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Parcel information for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+@mcp.tool()
+def get_places_nearby(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Places (Points of Interest) Nearby an Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetPlacesNearby($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                places(pageNumber: 1, pageSize: 20) {
+                  metadata {
+                    pageNumber
+                    pageCount
+                    totalPages
+                    count
+                    vintage
+                  }
+                  data {
+                    PBID
+                    pointOfInterestID
+                    preciselyID
+                    parentPreciselyID
+                    businessName
+                    brandName
+                    tradeName
+                    franchiseName
+                    countryIsoAlpha3Code
+                    localityName
+                    city
+                    admin2
+                    admin1
+                    admin1ShortName
+                    addressNumber
+                    streetName
+                    postalCode
+                    formattedAddress
+                    addressLine1
+                    addressLine2
+                    longitude
+                    latitude
+                    georesult { value description }
+                    georesultConfidence { value description }
+                    countryCallingCode
+                    phone
+                    fax
+                    email
+                    web
+                    open24Hours { value description }
+                    lineOfBusiness
+                    sic1
+                    sic2
+                    sic8
+                    sic8Description
+                    altIndustryCode { value description }
+                    miCode
+                    tradeDivision
+                    groupName
+                    mainClass
+                    subClass
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Places (points of interest) near the specified address
 
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
@@ -855,12 +1337,19 @@ def get_property_fire_risk(
     Required Payload Structure:
     {
         "query": '''
-            query GetByAddress($address: String!, $country: String) {
+            query GetPropertyFireRisk($address: String!, $country: String) {
               getByAddress(address: $address, country: $country) {
                 addresses(pageNumber: 1, pageSize: 1) {
                   data {
                     preciselyID
                     propertyFireRisk {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
                       data {
                         preciselyID
                         incorporatedPlaceCode
@@ -933,3 +1422,466 @@ def get_property_fire_risk(
     response = requests.post(url, headers=headers, json=json_data)
     response.raise_for_status()
     return response.json()
+
+@mcp.tool()
+def get_earth_risk(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Earth Risk (Earthquake) Data by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetEarthRisk($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    earthRisk {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
+                      data {
+                        preciselyID
+                        countOfEarthquakeMagnitude0Events
+                        countOfEarthquakeMagnitude1Events
+                        countOfEarthquakeMagnitude2Events
+                        countOfEarthquakeMagnitude3Events
+                        countOfEarthquakeMagnitude4Events
+                        countOfEarthquakeMagnitude5Events
+                        countOfEarthquakeMagnitude6Events
+                        countOfEarthquakeMagnitude7Events
+                        countOfEventsEarthquakeMagnitude0
+                        countOfEventsEarthquakeMagnitude1
+                        countOfEventsEarthquakeMagnitude2
+                        countOfEventsEarthquakeMagnitude3
+                        countOfEventsEarthquakeMagnitude4
+                        countOfEventsEarthquakeMagnitude5
+                        countOfEventsEarthquakeMagnitude6
+                        countOfEventsEarthquakeMagnitude7
+                        nameOfNearestFault
+                        distanceToNearestFaultMiles
+                        offsetFeet
+                        faultType
+                        faultSlipDirectionCode { value description }
+                        faultAge
+                        faultAngle
+                        faultDipDirection
+                        pmlZoneGrade
+                        nehrpClassification { value description }
+                        nehrpCode { value description }
+                        newMadridFaultDistanceMiles
+                      } 
+                    }
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, San Francisco, CA 94102",  # REQUIRED - Address to search for
+            "country": "US"                                     # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Earth risk (earthquake) data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+@mcp.tool()
+def get_wildfire_risk_by_address(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Wildfire Risk Data by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetWildfireRisk($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    wildfireRisk {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
+                      data {
+                        preciselyID
+                        geometryID
+                        stateAbbreviation
+                        blockFIPS
+                        geometryType { value description }
+                        aggregationModel { value description }
+                        riskDescription { baseLineModel extremeModel }
+                        overallRiskRanking { baseLineModel extremeModel }
+                        severityRating { baseLineModel extremeModel }
+                        frequencyRating { baseLineModel extremeModel }
+                        communityRating { baseLineModel extremeModel }
+                        damageRating { baseLineModel extremeModel }
+                        mitigationRating { baseLineModel extremeModel }
+                        urbanConflagrationRating { baseLineModel extremeModel }
+                        intensityRating { baseLineModel extremeModel }
+                        crownFireRating { baseLineModel extremeModel }
+                        windSpeedRating { baseLineModel extremeModel }
+                        emberCastMagnitudeRating { baseLineModel extremeModel }
+                        burnProbabilityRating { baseLineModel extremeModel }
+                        historicFirePerimeterRating { baseLineModel extremeModel }
+                        emberIgniteProbabilityRating { baseLineModel extremeModel }
+                        powerLineDistanceRating { baseLineModel extremeModel }
+                        structureDensityRating { baseLineModel extremeModel }
+                        windAlignedRoadsRating { baseLineModel extremeModel }
+                        addressPointToRoadDistanceRating { baseLineModel extremeModel }
+                        vegetationCoverRating { baseLineModel extremeModel }
+                        historicalLossRating { baseLineModel extremeModel }
+                        insectDiseaseVegetationRating { baseLineModel extremeModel }
+                        nearestFirestationDistanceRating { baseLineModel extremeModel }
+                        nearestWaterbodyDistanceRating { baseLineModel extremeModel }
+                        topographicRating { baseLineModel extremeModel }
+                        burnableLandRating { baseLineModel extremeModel }
+                        structureThreat { baseLineModel extremeModel }
+                        houseToHouseThreat { baseLineModel extremeModel }
+                        uniqueIdentifier
+                        firePerimeterAcres
+                        firePerimeterAgency
+                        firePerimeterYear
+                        firePerimeterName
+                        firePerimeterDate
+                        distanceToWildlandUrbanInterfaceFeet
+                        distanceToExtremeRisk { baseLineModel extremeModel }
+                        distanceToHighRiskFeet { baseLineModel extremeModel }
+                        distanceToVeryHighRiskFeet { baseLineModel extremeModel }
+                      } 
+                    }
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Los Angeles, CA 90210",  # REQUIRED - Address to search for
+            "country": "US"                                   # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Wildfire risk data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+@mcp.tool()
+def get_flood_risk_by_address(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Flood Risk Data by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetFloodRisk($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    floodRisk {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
+                      data {
+                        preciselyID
+                        floodID
+                        femaMapPanelIdentifier
+                        floodZoneMapType
+                        stateFIPS
+                        floodZoneBaseFloodElevationFeet
+                        floodZone
+                        additionalInformation
+                        baseFloodElevationFeet
+                        communityNumber
+                        communityStatus
+                        mapEffectiveDate
+                        letterOfMapRevisionDate
+                        letterOfMapRevisionCaseNumber
+                        floodHazardBoundaryMapInitialDate
+                        floodInsuranceRateMapInitialDate
+                        addressLocationElevationFeet
+                        year100FloodZoneDistanceFeet
+                        year500FloodZoneDistanceFeet
+                        elevationProfileToClosestWaterbodyFeet
+                        distanceToNearestWaterbodyFeet
+                        nameOfNearestWaterbody
+                      } 
+                    }
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, New Orleans, LA 70112",  # REQUIRED - Address to search for
+            "country": "US"                                   # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Flood risk data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+@mcp.tool()
+def get_historical_weather_risk(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Historical Weather Risk Data by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetHistoricalWeatherRisk($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    historicalWeatherRisk {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
+                      data {
+                        preciselyID
+                        countOfHailEventsH5
+                        rangeOfHailEventsH5
+                        hailRiskLevel
+                        countOfTornadoEventsF2
+                        rangeOfTornadoEventsF2
+                        tornadoRiskLevel
+                        countOfHurricaneEvents
+                        rangeOfHurricaneEvents
+                        countOfWindEventsW9
+                        rangeOfWindEventsW9
+                        windRiskLevel
+                      } 
+                    }
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Oklahoma City, OK 73102",  # REQUIRED - Address to search for
+            "country": "US"                                     # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Historical weather risk data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
+    headers["Content-Type"] = "application/json"
+    if x_request_id:
+        headers["X-Request-Id"] = x_request_id
+
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+@mcp.tool()
+def get_serviceability(
+    client,
+    json_data: Dict[str, Any],
+    x_request_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get Serviceability Data by Address.
+
+    --------
+    Required Payload Structure:
+    {
+        "query": '''
+            query GetServiceability($address: String!, $country: String) {
+              getByAddress(address: $address, country: $country) {
+                addresses(pageNumber: 1, pageSize: 1) {
+                  data {
+                    preciselyID
+                    serviceability {
+                      metadata {
+                        pageNumber
+                        pageCount
+                        totalPages
+                        count
+                        vintage
+                      }
+                      data {
+                        serviceabilityID
+                        preciselyID
+                        residentialBusinessIndicator { value description }
+                        serviceableAddress
+                        standardizedLandUseValues { value description }
+                        genealogy { value description }
+                        genealogyCount
+                        buildingDesignation { value description }
+                      } 
+                    }
+                  }
+                }
+              }
+            }
+        ''',
+        "variables": {
+            "address": "123 Main St, Boston, MA 02101",  # REQUIRED - Address to search for
+            "country": "US"                              # OPTIONAL - Country code
+        }
+    }
+
+    Parameters:
+        client (ApiClient): Initialized Precisely ApiClient instance.
+        json_data (dict): GraphQL query and variables as shown above.
+        x_request_id (Optional[str]): Optional request ID (max 38 chars).
+
+    Returns:
+        dict: Serviceability data for the specified address
+
+    Raises:
+        requests.HTTPError: For 4xx/5xx responses.
+    """
+    API_KEY = os.getenv('API_KEY')
+    API_SECRET = os.getenv('API_SECRET')
+    BASE_URL = os.getenv('BASE_URL')
+
+    client = ApiClient(
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        api_secret=API_SECRET
+    )
+
+    url = f"{client.base_url}/data-graph/graphql"
+    headers = client.get_headers()
