@@ -130,36 +130,6 @@ BASE_URL=https://api.cloud.precisely.com
 - "Is this address valid: 456 Oak Ave?"
 - "Standardize this address format"
 
-**`generate_upload_url`** - *Create URL for bulk file uploads*
-- "Generate upload URL for address file"
-- "Create bulk upload endpoint"
-- "Get file upload link"
-
-**`list_uploaded_files`** - *Show uploaded file history*
-- "List my uploaded files"
-- "Show bulk processing history"
-- "What files have I uploaded?"
-
-**`delete_uploaded_file`** - *Remove uploaded files*
-- "Delete file ID: upload123"
-- "Remove my uploaded address file"
-- "Clean up file: batch_addresses.csv"
-
-**`bulk_geocode`** - *Process many addresses at once*
-- "Bulk geocode my address list"
-- "Process 1000 addresses for coordinates"
-- "Batch convert addresses to lat/lon"
-
-**`bulk_verify`** - *Validate multiple addresses together*
-- "Bulk verify my customer addresses"
-- "Validate this address spreadsheet"
-- "Check 500 addresses for accuracy"
-
-**`get_job_status`** - *Check bulk processing progress*
-- "Status of job ID: job123"
-- "Check my bulk geocoding progress"
-- "Is my address verification complete?"
-
 ### Address Parser API
 
 **`parse_address`** - *Break address into components*
