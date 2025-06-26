@@ -105,12 +105,6 @@ __all__ = [
     "lookup",
     "reverse_geocode",
     "verify_address",
-    "generate_upload_url",
-    "list_uploaded_files",
-    "delete_uploaded_file",
-    "bulk_geocode",
-    "bulk_verify",
-    "get_job_status",
     
     # Address Parser API
     "parse_address",
