@@ -62,26 +62,47 @@ from precisely_sdk.timezone_api import (
 )
 
 from precisely_sdk.graphql_api import (
-    get_by_id,
-    get_by_address,
-    get_by_text_search,
-    get_parcel_by_owner,
-    get_by_spatial,
-    get_flood_risk,
-    get_wildfire_risk,
-    get_property_attributes,
-    get_crime_index,
-    get_demographics,
-    get_neighborhood_data,
-    get_property_fire_risk
-
-)
+    # Core Property Data Functions
+    get_addresses_detailed,
+    get_buildings_by_address,
+    get_parcels_by_address,
+    get_places_nearby,
+    get_property_attributes_by_address,
+    get_replacement_cost_by_address,
     
-
+    # Risk Assessment Functions
+    get_coastal_risk,
+    get_property_fire_risk,
+    get_earth_risk,
+    get_wildfire_risk_by_address,
+    get_flood_risk_by_address,
+    get_historical_weather_risk,
+    
+    # Demographics & Lifestyle Functions
+    get_crime_index_by_address,
+    get_psyte_geodemographics_by_address,
+    get_ground_view_by_address,
+    
+    # Neighborhood & Area Functions
+    get_neighborhoods_by_address,
+    get_schools_by_address,
+    get_serviceability,
+    
+    # Spatial Query Functions
+    get_spatial_addresses,
+    get_spatial_buildings,
+    get_spatial_parcels,
+    get_spatial_places,
+    
+    # Additional Relationship Functions
+    get_parcel_by_owner_detailed,
+    get_address_family
+)    
 
 
 __all__ = [
     "ApiClient",
+    # Geo Addressing API
     "autocomplete",
     "autocomplete_postal_city",
     "autocomplete_v2",
@@ -95,39 +116,75 @@ __all__ = [
     "bulk_geocode",
     "bulk_verify",
     "get_job_status",
+    
+    # Address Parser API
     "parse_address",
     "parse_address_batch",
+    
+    # Email Verification API
     "verify_email",
     "verify_batch_emails",
+    
+    # Emergency Info API
     "psap_address",
     "psap_location",
     "psap_ahj_address",
     "psap_ahj_location",
     "psap_ahj_fccid",
+    
+    # Geolocation API
     "geo_locate_ip_address",
     "geo_locate_wifi_access_point",
+    
+    # Geo Tax API
     "lookup_by_address",
     "lookup_by_addresses",
     "lookup_by_location",
     "lookup_by_locations",
+    
+    # Name Parsing API
     "parse_name",
+    
+    # Phone Verification API
     "validate_phone",
     "validate_batch_phones",
+    
+    # Timezone API
     "timezone_addresses",
     "timezone_locations",
-    "get_by_id",
-    "get_by_address",
-    "get_by_text_search",
-    "get_parcel_by_owner",
-    "get_by_spatial",
-    "get_flood_risk",
-    "get_wildfire_risk",
-    "get_property_attributes",
-    "get_crime_index",
-    "get_demographics",
-    "get_neighborhood_data",
-    "get_property_fire_risk"
+    
+    # GraphQL API - Core Property Data Functions
+    "get_addresses_detailed",
+    "get_buildings_by_address",
+    "get_parcels_by_address",
+    "get_places_nearby",
+    "get_property_attributes_by_address",
+    "get_replacement_cost_by_address",
+    
+    # GraphQL API - Risk Assessment Functions
+    "get_coastal_risk",
+    "get_property_fire_risk",
+    "get_earth_risk",
+    "get_wildfire_risk_by_address",
+    "get_flood_risk_by_address",
+    "get_historical_weather_risk",
+    
+    # GraphQL API - Demographics & Lifestyle Functions
+    "get_crime_index_by_address",
+    "get_psyte_geodemographics_by_address",
+    "get_ground_view_by_address",
+    
+    # GraphQL API - Neighborhood & Area Functions
+    "get_neighborhoods_by_address",
+    "get_schools_by_address",
+    "get_serviceability",
+    
+    # GraphQL API - Additional Relationship Functions
+    "get_parcel_by_owner_detailed",
+    "get_address_family"
 ]
+
+print("MCP Server Started")
 
 if __name__ == "__main__":
     mcp.run()
