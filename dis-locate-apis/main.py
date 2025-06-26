@@ -87,12 +87,7 @@ from precisely_sdk.graphql_api import (
     get_neighborhoods_by_address,
     get_schools_by_address,
     get_serviceability,
-    
-    # Spatial Query Functions
-    get_spatial_addresses,
-    get_spatial_buildings,
-    get_spatial_parcels,
-    get_spatial_places,
+
     
     # Additional Relationship Functions
     get_parcel_by_owner_detailed,
