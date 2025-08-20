@@ -1,5 +1,10 @@
 import base64
 from typing import Optional, Dict
+import os
+from dotenv import load_dotenv
+
+# Load environment variables once at module level
+load_dotenv()
 
 
 class ApiClient:
@@ -55,3 +60,43 @@ class ApiClient:
             headers.update(custom_headers)
 
         return headers
+
+
+# Centralized client factory
+_client_instance = None
+
+def get_default_client() -> ApiClient:
+    """
+    Get a shared ApiClient instance configured with environment variables.
+    
+    Returns:
+        ApiClient: Configured client instance
+    """
+    global _client_instance
+    
+    if _client_instance is None:
+        api_key = os.getenv('API_KEY')
+        api_secret = os.getenv('API_SECRET')
+        base_url = os.getenv('BASE_URL')
+        bearer_token = os.getenv('BEARER_TOKEN')
+        
+        if not base_url:
+            raise ValueError("BASE_URL environment variable is required")
+        
+        if not (api_key or bearer_token):
+            raise ValueError("Either API_KEY or BEARER_TOKEN environment variable is required")
+        
+        _client_instance = ApiClient(
+            base_url=base_url,
+            api_key=api_key,
+            api_secret=api_secret,
+            bearer_token=bearer_token
+        )
+    
+    return _client_instance
+
+
+def reset_client():
+    """Reset the shared client instance (useful for testing)"""
+    global _client_instance
+    _client_instance = None

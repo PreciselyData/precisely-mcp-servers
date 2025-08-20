@@ -2,11 +2,7 @@ import requests
 from typing import Optional, Dict, Any
 from precisely_sdk.server import mcp
 
-from precisely_sdk.api_client import ApiClient
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
+from precisely_sdk.api_client import get_default_client
 
 
 @mcp.tool()
@@ -31,16 +27,8 @@ def psap_address(client, json_data: Dict[str, Any], x_request_id: Optional[str] 
     }
     }
         """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/v1/emergency-info/psap/address"
     headers = client.get_headers()
     if x_request_id:
@@ -62,16 +50,8 @@ def psap_location(client, json_data: Dict[str, Any], x_request_id: Optional[str]
         }
     }
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/v1/emergency-info/psap/location"
     headers = client.get_headers()
     if x_request_id:
@@ -103,16 +83,8 @@ def psap_ahj_address(client, json_data: Dict[str, Any], x_request_id: Optional[s
     }
     }
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/v1/emergency-info/psap-ahj/address"
     headers = client.get_headers()
     if x_request_id:
@@ -134,16 +106,8 @@ def psap_ahj_location(client, json_data: Dict[str, Any], x_request_id: Optional[
         }
     }
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/v1/emergency-info/psap-ahj/location"
     headers = client.get_headers()
     if x_request_id:
@@ -161,15 +125,7 @@ def psap_ahj_fccid(client, fcc_id: str, x_request_id: Optional[str] = None) -> D
     Required Parameter:
     - fcc_id: FCC ID as string.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
+    client = get_default_client()
     
     url = f"{client.base_url}/v1/emergency-info/psap-ahj/fccid"
     headers = client.get_headers()

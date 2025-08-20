@@ -1,18 +1,10 @@
 from precisely_sdk.server import mcp
-from precisely_sdk.api_client import ApiClient
-from dotenv import load_dotenv
-import os
+from precisely_sdk.api_client import get_default_client
 print("started")
-load_dotenv()
-API_KEY = os.getenv('API_KEY')
-API_SECRET = os.getenv('API_SECRET')
-BASE_URL = os.getenv('BASE_URL')
 
-client = ApiClient(
-    base_url=BASE_URL,
-    api_key=API_KEY,
-    api_secret=API_SECRET
-)   
+# Initialize the centralized client
+client = get_default_client()
+print("MCP Server Started")
 
 from precisely_sdk.geo_addressing_api import (
     autocomplete,
@@ -172,8 +164,5 @@ __all__ = [
     "get_parcel_by_owner_detailed",
     "get_address_family"
 ]
-
-print("MCP Server Started")
-
 if __name__ == "__main__":
     mcp.run()

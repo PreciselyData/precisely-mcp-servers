@@ -1,10 +1,6 @@
 import requests
 from typing import Optional, Dict, Any
-from precisely_sdk.api_client import ApiClient
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
+from precisely_sdk.api_client import get_default_client
 
 from precisely_sdk.server import mcp
 
@@ -34,16 +30,8 @@ def parse_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )  
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/v1/address/parse"
     headers = client.get_headers()
     if x_request_id:
@@ -82,15 +70,7 @@ def parse_address_batch(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )  
+    client = get_default_client()
     
     url = f"{client.base_url}/v1/address/parse/batch"
     headers = client.get_headers()
