@@ -1,0 +1,14 @@
+﻿# Precisely MCP Server - Production Dependencies
+# Minimal dependencies for production MCP server operations
+
+# MCP Protocol Support
+mcp>=1.0.0
+
+# HTTP Client for API Calls
+requests>=2.32.0
+
+# Environment Variable Management
+python-dotenv>=1.0.0
+
+# Core Python Dependencies
+typing-extensions>=4.0.0
