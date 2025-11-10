@@ -1,5 +1,7 @@
 # Precisely SDK MCP Server
 
+> **⚠️ DEPRECATED:** This project is deprecated and will no longer receive updates. Please migrate to [`dis-locate-apis-v2`](../dis-locate-apis-v2/) for the latest features and improvements.
+
 A Model Context Protocol (MCP) server that provides access to Precisely's comprehensive Data Integrity Suite's API assistants to answer complex questions about addresses, properties, demographics, risk assessments, and spatial analysis.
 
 ## Features

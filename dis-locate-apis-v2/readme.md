@@ -22,8 +22,7 @@ A Model Context Protocol (MCP) server that exposes 48 Precisely location intelli
 ### 1. Clone or Download Repository
 
 ```
-git clone repository-url
-cd v8
+git clone https://github.com/PreciselyData/precisely-mcp-servers/tree/main/dis-locate-apis-v2
 ```
 
 ### 2. Install Dependencies
@@ -182,7 +181,6 @@ Pass Rate: 100.0%
 ## Project Structure
 
 ```
-v8/
  precisely_api_core.py              # Core API implementation (1,672 lines, 48 methods)
  test_precisely_mcp.py              # Unified 3-tier test suite (596 lines, 48 tests)
  requirements.txt                   # Python dependencies (4 packages)
@@ -191,8 +189,8 @@ v8/
  mcp_servers/
     precisely_wrapper_server.py   # MCP server wrapper (668 lines, 48 tools)
     setup_claude_desktop.ps1      # Windows setup script (UTF-8 no-BOM)
- logs/                              # Application logs
- test_logs/                         # Test results and reports
+ logs/                              # Application logs(Automatically generated)
+ test_logs/                         # Test results and reports(Automatically generated)
 ```
 
 ## Recent Changes (v8.0 - November 2025)
