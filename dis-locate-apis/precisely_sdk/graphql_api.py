@@ -1,10 +1,6 @@
 import requests
 from typing import Optional, Dict, Any, List, Union
-from precisely_sdk.api_client import ApiClient
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
+from precisely_sdk.api_client import get_default_client
 
 from precisely_sdk.server import mcp
 
@@ -71,16 +67,8 @@ def get_addresses_detailed(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -162,16 +150,8 @@ def get_parcel_by_owner_detailed(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -245,16 +225,8 @@ def get_address_family(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -341,16 +313,8 @@ def get_coastal_risk(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -446,16 +410,8 @@ def get_crime_index_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -531,16 +487,8 @@ def get_psyte_geodemographics_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -688,16 +636,8 @@ def get_ground_view_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -760,16 +700,8 @@ def get_replacement_cost_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -858,16 +790,8 @@ def get_property_attributes_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -948,16 +872,8 @@ def get_neighborhoods_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1045,16 +961,8 @@ def get_schools_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1123,16 +1031,8 @@ def get_buildings_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1197,16 +1097,8 @@ def get_parcels_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1304,16 +1196,8 @@ def get_places_nearby(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1403,16 +1287,8 @@ def get_property_fire_risk(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1503,16 +1379,8 @@ def get_earth_risk(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1618,16 +1486,8 @@ def get_wildfire_risk_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1711,16 +1571,8 @@ def get_flood_risk_by_address(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1794,16 +1646,8 @@ def get_historical_weather_risk(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()
     headers["Content-Type"] = "application/json"
@@ -1873,15 +1717,7 @@ def get_serviceability(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/data-graph/graphql"
     headers = client.get_headers()

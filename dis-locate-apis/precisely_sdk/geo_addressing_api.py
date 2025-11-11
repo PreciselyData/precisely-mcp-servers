@@ -1,11 +1,7 @@
 import requests
 from typing import Optional, Dict, Any, List
 from precisely_sdk.server import mcp
-from precisely_sdk.api_client import ApiClient
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
+from precisely_sdk.api_client import get_default_client
 
 
 
@@ -48,15 +44,7 @@ def autocomplete(
     Raises:
         requests.HTTPError: For 4xx/5xx responses.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
+    client = get_default_client()
 
 
     url = f"{client.base_url}/v1/autocomplete"
@@ -107,15 +95,7 @@ def autocomplete_postal_city(
     Returns:
         dict: Autocomplete Postal City response object.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
+    client = get_default_client()
 
     url = f"{client.base_url}/v1/autocomplete/postal-city"
     headers = client.get_headers()
@@ -166,15 +146,7 @@ def autocomplete_v2(
     Returns:
         dict: Autocomplete V2 response object.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
+    client = get_default_client()
 
     url = f"{client.base_url}/v1/express-autocomplete"
     headers = client.get_headers()
@@ -223,15 +195,7 @@ def geocode(
     Returns:
         dict: Geocode response object.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
+    client = get_default_client()
 
     url = f"{client.base_url}/v1/geocode"
     headers = client.get_headers()
@@ -278,15 +242,7 @@ def lookup(
     Returns:
         dict: Lookup response object.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
+    client = get_default_client()
 
     url = f"{client.base_url}/v1/lookup"
     headers = client.get_headers()
@@ -334,15 +290,7 @@ def reverse_geocode(
     Returns:
         dict: Reverse Geocode response object.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
+    client = get_default_client()
 
     url = f"{client.base_url}/v1/reverse-geocode"
     headers = client.get_headers()
@@ -388,15 +336,7 @@ def verify_address(
     Returns:
         dict: Verify response object containing cleaned and validated address results.
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )
+    client = get_default_client()
 
     url = f"{client.base_url}/v1/verify"
     headers = client.get_headers()

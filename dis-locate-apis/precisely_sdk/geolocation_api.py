@@ -2,11 +2,7 @@ import requests
 from typing import Optional, Dict, Any
 from precisely_sdk.server import mcp
 
-from precisely_sdk.api_client import ApiClient
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
+from precisely_sdk.api_client import get_default_client
 
 
 @mcp.tool()
@@ -31,16 +27,8 @@ def geo_locate_ip_address(
     Returns:
         dict: IP geolocation response containing
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
-
+    client = get_default_client()
+    
     url = f"{client.base_url}/v1/geolocation/ip-address"
     headers = client.get_headers()
     if x_request_id:
@@ -88,15 +76,7 @@ def geo_locate_wifi_access_point(
     Returns:
         dict: WiFi geolocation response containing
     """
-    API_KEY = os.getenv('API_KEY')
-    API_SECRET = os.getenv('API_SECRET')
-    BASE_URL = os.getenv('BASE_URL')
-
-    client = ApiClient(
-        base_url=BASE_URL,
-        api_key=API_KEY,
-        api_secret=API_SECRET
-    )   
+    client = get_default_client()
     
     url = f"{client.base_url}/v1/geolocation/access-point"
     headers = client.get_headers()
