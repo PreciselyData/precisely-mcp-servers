@@ -118,7 +118,7 @@ TOOLS = [
         inputSchema={
             "type": "object",
             "properties": {
-                "keys": {"type": "array"},
+                "keys": {"type": "array", "items": {"type": "object", "properties": {"key": {"type": "string"}, "country": {"type": "string"}, "type": {"type": "string"}}}},
                 "preferences": {"type": "object"}
             },
             "required": ["keys"]
@@ -141,7 +141,7 @@ TOOLS = [
         inputSchema={
             "type": "object",
             "properties": {
-                "addresses": {"type": "array"}
+                "addresses": {"type": "array", "items": {"type": "object", "properties": {"id": {"type": "string"}, "address": {"type": "string"}}}}
             },
             "required": ["addresses"]
         }
@@ -374,7 +374,7 @@ TOOLS = [
         inputSchema={
             "type": "object",
             "properties": {
-                "addresses": {"type": "array"},
+                "addresses": {"type": "array", "items": {"type": "object", "properties": {"addressLines": {"type": "array", "items": {"type": "string"}}}}},
                 "preferences": {"type": "object"}
             },
             "required": ["addresses"]
@@ -398,7 +398,7 @@ TOOLS = [
         inputSchema={
             "type": "object",
             "properties": {
-                "locations": {"type": "array"},
+                "locations": {"type": "array", "items": {"type": "object", "properties": {"longitude": {"type": "number"}, "latitude": {"type": "number"}}}},
                 "preferences": {"type": "object"}
             },
             "required": ["locations"]
@@ -502,7 +502,7 @@ TOOLS = [
         inputSchema={
             "type": "object",
             "properties": {
-                "emails": {"type": "array"}
+                "emails": {"type": "array", "items": {"type": "object", "properties": {"id": {"type": "string"}, "email": {"type": "string"}}}}
             },
             "required": ["emails"]
         }
