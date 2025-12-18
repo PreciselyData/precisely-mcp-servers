@@ -9,10 +9,10 @@ $API_SECRET = ""
 if (Test-Path $envPath) {
     Write-Host "Found .env file" -ForegroundColor Green
     Get-Content $envPath | ForEach-Object {
-        if ($_ -match '^\s*API_KEY\s*=\s*(.*)$') {
+        if ($_ -match '^\s*PRECISELY_API_KEY\s*=\s*(.*)$') {
             $API_KEY = $matches[1].Trim().Trim('"')
         }
-        if ($_ -match '^\s*API_SECRET\s*=\s*(.*)$') {
+        if ($_ -match '^\s*PRECISELY_API_SECRET\s*=\s*(.*)$') {
             $API_SECRET = $matches[1].Trim().Trim('"')
         }
     }
@@ -74,4 +74,4 @@ Write-Host "4. Look for 'precisely' in the connectors list - it should be enable
 Write-Host "5. Ask Claude: Use precisely to geocode 1600 Pennsylvania Ave" -ForegroundColor White
 Write-Host ""
 Write-Host "Setup Complete for Claude Desktop!" -ForegroundColor Green
-Write-Host "You now have 51 Precisely API tools available in Claude!" -ForegroundColor Cyan
+Write-Host "You now have 48 Precisely API tools available in Claude!" -ForegroundColor Cyan
