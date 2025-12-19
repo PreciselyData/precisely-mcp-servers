@@ -1,17 +1,33 @@
 """
 Precisely MCP Server - Wrapper Architecture
 Uses the PreciselyAPI class from precisely_api_core_clean module
+Supports both stdio (default) and Streamable HTTP transports
 """
 import asyncio
 import sys
 import os
+import argparse
+import contextlib
 from pathlib import Path
 from typing import Any, Dict, Optional
+from collections.abc import AsyncIterator
 from mcp.server import Server
 from mcp.types import Tool, TextContent
 from mcp.server.stdio import stdio_server
 import logging
 from dotenv import load_dotenv
+
+# HTTP Transport imports (optional - loaded only when needed)
+HTTP_AVAILABLE = False
+try:
+    from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
+    from starlette.applications import Starlette
+    from starlette.routing import Mount
+    from starlette.types import Receive, Scope, Send
+    import uvicorn
+    HTTP_AVAILABLE = True
+except ImportError:
+    pass  # HTTP transport not available - stdio only
 
 # Add parent directory to path to import from precisely_api_core.py
 parent_dir = Path(__file__).parent.parent
@@ -693,14 +709,131 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
         logger.error(f"Error calling tool {name}: {e}", exc_info=True)
         return [TextContent(type="text", text=f'{{"error": "{str(e)}"}}')]
 
-async def main():
-    """Run the MCP server"""
-    logger.info("Starting Precisely Complete MCP Server")
-    logger.info(f"Using PreciselyAPI core module")
+# ============================================
+# TRANSPORT: STDIO (default)
+# ============================================
+async def run_stdio():
+    """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
+    logger.info("Starting Precisely MCP Server with stdio transport")
     logger.info(f"48 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
+
+# ============================================
+# TRANSPORT: STREAMABLE HTTP
+# ============================================
+def create_http_app(json_response: bool = True, stateless: bool = True) -> "Starlette":
+    """
+    Create a Starlette app with Streamable HTTP transport.
+    
+    Args:
+        json_response: If True, return JSON responses. If False, use SSE streams.
+        stateless: If True, no session persistence (recommended for scalability).
+    
+    Returns:
+        Starlette ASGI application
+    """
+    if not HTTP_AVAILABLE:
+        raise ImportError(
+            "HTTP transport requires additional dependencies. "
+            "Install with: pip install starlette uvicorn sse-starlette"
+        )
+    
+    # Create session manager wrapping our Server instance
+    session_manager = StreamableHTTPSessionManager(
+        app=app,
+        event_store=None,  # Set to EventStore impl for resumability
+        json_response=json_response,
+        stateless=stateless,
+    )
+
+    # ASGI handler that delegates to session manager
+    async def handle_streamable_http(scope: "Scope", receive: "Receive", send: "Send") -> None:
+        await session_manager.handle_request(scope, receive, send)
+
+    # Lifespan context manager for proper startup/shutdown
+    @contextlib.asynccontextmanager
+    async def lifespan(starlette_app: "Starlette") -> "AsyncIterator[None]":
+        async with session_manager.run():
+            logger.info("Streamable HTTP server started")
+            try:
+                yield
+            finally:
+                logger.info("Streamable HTTP server shutting down")
+
+    # Create Starlette app
+    starlette_app = Starlette(
+        debug=False,
+        routes=[
+            Mount("/mcp", app=handle_streamable_http),
+        ],
+        lifespan=lifespan,
+    )
+
+    return starlette_app
+
+
+def run_http(host: str = "127.0.0.1", port: int = 8000):
+    """Run the server using Streamable HTTP transport."""
+    logger.info(f"Starting Precisely MCP Server with HTTP transport")
+    logger.info(f"Endpoint: http://{host}:{port}/mcp")
+    logger.info(f"48 tools available")
+    
+    starlette_app = create_http_app(
+        json_response=True,  # Simpler client integration
+        stateless=True,      # Better scalability
+    )
+    
+    uvicorn.run(starlette_app, host=host, port=port, log_level="info")
+
+
+# ============================================
+# MAIN ENTRY POINT
+# ============================================
+def main():
+    """Main entry point with transport selection."""
+    parser = argparse.ArgumentParser(
+        description="Precisely MCP Server - Location Intelligence APIs",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # stdio transport (default, for Claude Desktop)
+  python precisely_wrapper_server.py
+
+  # HTTP transport (for LangChain, LlamaIndex, web clients)
+  python precisely_wrapper_server.py --transport http --port 8000
+
+  # HTTP with custom host (for remote access)
+  python precisely_wrapper_server.py --transport http --host 0.0.0.0 --port 8080
+"""
+    )
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "http"],
+        default="stdio",
+        help="Transport type: stdio (default) or http"
+    )
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="HTTP host (default: 127.0.0.1, use 0.0.0.0 for remote access)"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="HTTP port (default: 8000)"
+    )
+    
+    args = parser.parse_args()
+    
+    if args.transport == "http":
+        run_http(host=args.host, port=args.port)
+    else:
+        asyncio.run(run_stdio())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
