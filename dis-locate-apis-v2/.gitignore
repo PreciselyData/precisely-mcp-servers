@@ -49,3 +49,6 @@ test_logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# HTTP Transport Test (uses optional dependencies)
+test_http_transport.py

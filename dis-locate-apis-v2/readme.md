@@ -1,21 +1,31 @@
 ﻿# Precisely MCP Server
 
-A Model Context Protocol (MCP) server that exposes 48 Precisely location intelligence APIs to AI assistants like Claude Desktop.
+A Model Context Protocol (MCP) server that exposes 48 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
 
 ## Features
 
 - **48 Production-Ready API Tools**: Complete location intelligence suite
+- **Dual Transport Support**: stdio (default) and Streamable HTTP transports
 - **MCP Protocol**: Standard interface for AI assistants  
 - **100% Test Coverage**: Comprehensive unified test suite with 48/48 tests passing
 - **Enhanced Documentation**: GraphQL tools with complete query examples
 - **Clean Architecture**: Zero duplicate code, optimized implementation
 - **Detailed Logging**: Full request/response logging for debugging
 
+## Transport Options
+
+The server supports two transport methods:
+
+| Transport | Use Case | Command |
+|-----------|----------|---------|
+| **stdio** (default) | Claude Desktop, VS Code, Cursor, local CLI tools | `python precisely_wrapper_server.py` |
+| **Streamable HTTP** | LangChain, LlamaIndex, web apps, remote access | `python precisely_wrapper_server.py --transport http` |
+
 ## Prerequisites
 
 1. **Python 3.8+**
 2. **Precisely API Credentials** - Get them at https://developer.precisely.com
-3. **Claude Desktop** - Download at https://claude.ai/desktop
+3. **Claude Desktop** - Download at https://claude.ai/desktop (for stdio transport)
 
 ## Installation
 
@@ -27,15 +37,21 @@ git clone https://github.com/PreciselyData/precisely-mcp-servers/tree/main/dis-l
 
 ### 2. Install Dependencies
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
-Only 4 dependencies:
+Core dependencies (always required):
 - mcp>=1.0.0 - Model Context Protocol
 - requests>=2.32.0 - HTTP requests
 - python-dotenv>=1.0.0 - Environment management
 - typing-extensions>=4.0.0 - Type hints
+
+HTTP transport dependencies (optional, only for `--transport http`):
+- starlette>=0.27.0 - ASGI framework
+- uvicorn>=0.23.0 - ASGI server
+- sse-starlette>=1.6.0 - Server-Sent Events
+- anyio>=4.0.0 - Async utilities
 
 ### 3. Configure Credentials
 
@@ -52,7 +68,7 @@ cp .env.template .env
 
 For Windows PowerShell:
 
-```
+```bash
 cd mcp_servers
 .\setup_claude_desktop.ps1
 ```
@@ -60,6 +76,213 @@ cd mcp_servers
 Or manually edit %APPDATA%\Claude\claude_desktop_config.json
 
 Close and reopen Claude Desktop. Click the menu icon in the bottom-left corner to see 'precisely' in your connectors list.
+
+## Usage
+
+### Option 1: stdio Transport (Default)
+
+Best for: Claude Desktop, VS Code, Cursor, local development
+
+```bash
+# Default - stdio transport
+python mcp_servers/precisely_wrapper_server.py
+
+# Show help
+python mcp_servers/precisely_wrapper_server.py --help
+```
+
+**Claude Desktop Configuration** (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "precisely": {
+      "command": "python",
+      "args": ["C:\\path\\to\\mcp_servers\\precisely_wrapper_server.py"],
+      "env": {
+        "PRECISELY_API_KEY": "your_api_key",
+        "PRECISELY_API_SECRET": "your_api_secret"
+      }
+    }
+  }
+}
+```
+
+**VS Code Configuration** (`.vscode/mcp.json`):
+```json
+{
+  "servers": {
+    "precisely": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["${workspaceFolder}/mcp_servers/precisely_wrapper_server.py"],
+      "env": {
+        "PRECISELY_API_KEY": "${input:api-key}",
+        "PRECISELY_API_SECRET": "${input:api-secret}"
+      }
+    }
+  }
+}
+```
+
+### Option 2: Streamable HTTP Transport
+
+Best for: LangChain, LlamaIndex, web applications, remote access, multi-client scenarios
+
+```bash
+# Start HTTP server on default port 8000
+python mcp_servers/precisely_wrapper_server.py --transport http
+
+# Custom port
+python mcp_servers/precisely_wrapper_server.py --transport http --port 8080
+
+# Allow remote access (bind to all interfaces)
+python mcp_servers/precisely_wrapper_server.py --transport http --host 0.0.0.0 --port 8000
+```
+
+**MCP Endpoint**: `http://localhost:8000/mcp`
+
+#### Testing HTTP Transport
+
+```powershell
+# PowerShell - Initialize request
+Invoke-WebRequest -Uri "http://127.0.0.1:8000/mcp" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Headers @{"Accept"="application/json, text/event-stream"} `
+  -Body '{"jsonrpc": "2.0", "method": "initialize", "params": {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "test", "version": "1.0"}}, "id": 1}'
+```
+
+#### Python MCP Client
+
+**For Python scripts:**
+```python
+import asyncio
+from mcp import ClientSession
+from mcp.client.streamable_http import streamablehttp_client
+
+async def test_http():
+    async with streamablehttp_client("http://127.0.0.1:8000/mcp") as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            
+            # List all 48 tools
+            tools = await session.list_tools()
+            print(f"Available tools: {len(tools.tools)}")
+            
+            # Call geocode tool
+            result = await session.call_tool("geocode", {
+                "address": "1600 Pennsylvania Ave, Washington DC",
+                "country": "USA"
+            })
+            print(result)
+
+# For regular Python scripts
+asyncio.run(test_http())
+```
+
+**For Jupyter notebooks:**
+```python
+from mcp import ClientSession
+from mcp.client.streamable_http import streamablehttp_client
+
+async def test_http():
+    async with streamablehttp_client("http://127.0.0.1:8000/mcp") as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            
+            # List all 48 tools
+            tools = await session.list_tools()
+            print(f"Available tools: {len(tools.tools)}")
+            
+            # Call geocode tool
+            result = await session.call_tool("geocode", {
+                "address": "1600 Pennsylvania Ave, Washington DC",
+                "country": "USA"
+            })
+            print(result)
+
+# For Jupyter notebooks (use await directly)
+await test_http()
+```
+
+#### LangChain Integration
+
+```python
+# pip install langchain-mcp-adapters
+import asyncio
+from langchain_mcp_adapters.client import MultiServerMCPClient
+
+async def use_with_langchain():
+    # Create client (no context manager needed)
+    client = MultiServerMCPClient({
+        "precisely": {
+            "url": "http://127.0.0.1:8000/mcp",
+            "transport": "streamable_http"
+        }
+    })
+    
+    # Get all 48 tools as LangChain tools
+    tools = await client.get_tools()
+    print(f"LangChain tools: {len(tools)} tools available")
+    
+    # Use tools with any LangChain agent
+    # from langchain.agents import create_tool_calling_agent
+    # agent = create_tool_calling_agent(llm, tools, prompt)
+
+asyncio.run(use_with_langchain())
+```
+
+#### LlamaIndex Integration
+
+```python
+# pip install llama-index-tools-mcp
+import asyncio
+from mcp import ClientSession
+from mcp.client.streamable_http import streamablehttp_client
+from llama_index.tools.mcp import McpToolSpec
+
+async def use_with_llamaindex():
+    # Connect via MCP client and create tool spec
+    async with streamablehttp_client("http://127.0.0.1:8000/mcp") as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            
+            # Create LlamaIndex tool spec from session
+            tool_spec = McpToolSpec(client=session)
+            tools = await tool_spec.to_tool_list_async()
+            print(f"LlamaIndex tools: {len(tools)} tools available")
+            
+            # Use with LlamaIndex agents
+            # from llama_index.core.agent import ReActAgent
+            # agent = ReActAgent.from_tools(tools, llm=llm)
+
+asyncio.run(use_with_llamaindex())
+```
+
+### CLI Reference
+
+```
+usage: precisely_wrapper_server.py [-h] [--transport {stdio,http}] [--host HOST] [--port PORT]
+
+Precisely MCP Server - Location Intelligence APIs
+
+options:
+  -h, --help            show this help message and exit
+  --transport {stdio,http}
+                        Transport type: stdio (default) or http
+  --host HOST           HTTP host (default: 127.0.0.1, use 0.0.0.0 for remote access)
+  --port PORT           HTTP port (default: 8000)
+
+Examples:
+  # stdio transport (default, for Claude Desktop)
+  python precisely_wrapper_server.py
+
+  # HTTP transport (for LangChain, LlamaIndex, web clients)
+  python precisely_wrapper_server.py --transport http --port 8000
+
+  # HTTP with custom host (for remote access)
+  python precisely_wrapper_server.py --transport http --host 0.0.0.0 --port 8080
+```
 
 ## Testing
 
@@ -183,17 +406,24 @@ Pass Rate: 100.0%
 ```
  precisely_api_core.py              # Core API implementation (1,672 lines, 48 methods)
  test_precisely_mcp.py              # Unified 3-tier test suite (596 lines, 48 tests)
- requirements.txt                   # Python dependencies (4 packages)
+ requirements.txt                   # Python dependencies (core + HTTP transport)
  .env.template                      # Credential configuration template
  readme.md                          # This file
  mcp_servers/
-    precisely_wrapper_server.py   # MCP server wrapper (668 lines, 48 tools)
+    precisely_wrapper_server.py   # MCP server wrapper (840 lines, 48 tools, dual transport)
     setup_claude_desktop.ps1      # Windows setup script (UTF-8 no-BOM)
- logs/                              # Application logs(Automatically generated)
- test_logs/                         # Test results and reports(Automatically generated)
+ logs/                              # Application logs (automatically generated)
+ test_logs/                         # Test results and reports (automatically generated)
 ```
 
-## Recent Changes (v8.0 - November 2025)
+## Recent Changes (v9.0 - December 2025)
+
+### Dual Transport Support
+
+- Added Streamable HTTP transport alongside stdio
+- CLI arguments for transport selection (`--transport`, `--host`, `--port`)
+- Optional HTTP dependencies (graceful fallback for stdio-only users)
+- Compatible with LangChain, LlamaIndex, and custom MCP clients
 
 ### Code Quality Improvements
 
@@ -231,6 +461,18 @@ Logging:
 
 ## Troubleshooting
 
+### Issue: HTTP transport not available
+
+Solution:
+1. Install HTTP dependencies: `pip install starlette uvicorn sse-starlette anyio`
+2. Verify installation: `python -c "from mcp.server.streamable_http_manager import StreamableHTTPSessionManager; print('OK')"`
+
+### Issue: Port already in use
+
+Solution:
+1. Use a different port: `python precisely_wrapper_server.py --transport http --port 8001`
+2. Or stop the process using the port: `netstat -ano | findstr :8000`
+
 ### Issue: 'precisely' not showing in Claude Desktop
 
 Solution:
@@ -266,17 +508,20 @@ Solution:
 ## Production-Ready Checklist
 
 - 100% test coverage (48/48 tests passing)
+- Dual transport support (stdio + HTTP)
 - Comprehensive error handling
 - Detailed logging (application + tests)
-- Clean architecture (4 dependencies only)
+- Clean architecture (minimal dependencies)
 - Zero duplicate code
 - Well-documented APIs with complete examples
 - Secure credential management
 - Optimized file sizes
+- Compatible with major AI frameworks (LangChain, LlamaIndex)
 
 ---
 
-**Version**: 8.0 Production  
-**Last Updated**: November 9, 2025  
+**Version**: 9.0 Production  
+**Last Updated**: December 19, 2025  
 **Tool Count**: 48 APIs  
+**Transports**: stdio (default), Streamable HTTP  
 **Test Coverage**: 100% (48/48 passing)
