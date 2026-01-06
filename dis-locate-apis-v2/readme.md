@@ -1,13 +1,13 @@
 ﻿# Precisely MCP Server
 
-A Model Context Protocol (MCP) server that exposes 48 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
+A Model Context Protocol (MCP) server that exposes 49 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
 
 ## Features
 
-- **48 Production-Ready API Tools**: Complete location intelligence suite
+- **49 Production-Ready API Tools**: Complete location intelligence suite
 - **Dual Transport Support**: stdio (default) and Streamable HTTP transports
 - **MCP Protocol**: Standard interface for AI assistants  
-- **100% Test Coverage**: Comprehensive unified test suite with 48/48 tests passing
+- **100% Test Coverage**: Comprehensive unified test suite with 49/49 tests passing
 - **Enhanced Documentation**: GraphQL tools with complete query examples
 - **Clean Architecture**: Zero duplicate code, optimized implementation
 - **Detailed Logging**: Full request/response logging for debugging
@@ -165,7 +165,7 @@ async def test_http():
         async with ClientSession(read, write) as session:
             await session.initialize()
             
-            # List all 48 tools
+            # List all 49 tools
             tools = await session.list_tools()
             print(f"Available tools: {len(tools.tools)}")
             
@@ -190,7 +190,7 @@ async def test_http():
         async with ClientSession(read, write) as session:
             await session.initialize()
             
-            # List all 48 tools
+            # List all 49 tools
             tools = await session.list_tools()
             print(f"Available tools: {len(tools.tools)}")
             
@@ -221,7 +221,7 @@ async def use_with_langchain():
         }
     })
     
-    # Get all 48 tools as LangChain tools
+    # Get all 49 tools as LangChain tools
     tools = await client.get_tools()
     print(f"LangChain tools: {len(tools)} tools available")
     
@@ -297,13 +297,13 @@ python test_precisely_mcp.py
 Test Architecture:
 
 1. **Layer 1 - API Core**: Validates initialization and core functionality
-2. **Layer 2 - MCP Server**: Verifies all 48 tools are properly defined
-3. **Layer 3 - Functional**: Tests all 48 tools with real API calls
+2. **Layer 2 - MCP Server**: Verifies all 49 tools are properly defined
+3. **Layer 3 - Functional**: Tests all 49 tools with real API calls
 
 Test Features:
 
 - Single unified test file
-- 100% coverage (48/48 tools)
+- 100% coverage (49/49 tools)
 - Comprehensive logging (query, payload, response)
 - Detailed test reports in test_logs/
 - JSON results for CI/CD integration
@@ -313,15 +313,15 @@ Sample Output:
 ```
 Layer 1 (API Core):      [PASS]
 Layer 2 (MCP Server):    [PASS]
-Layer 3 (Functional):    [PASS] 48/48 tests
+Layer 3 (Functional):    [PASS] 49/49 tests
 
-Total:     48
-Passed:    48
+Total:     49
+Passed:    49
 Failed:    0
 Pass Rate: 100.0%
 ```
 
-## Available APIs (48 Tools)
+## Available APIs (49 Tools)
 
 ### Geocoding & Address (9 tools)
 
@@ -394,23 +394,24 @@ Pass Rate: 100.0%
 43. timezone_addresses - Get timezone for addresses
 44. timezone_locations - Get timezone for coordinates
 
-### GraphQL Advanced Queries (4 tools)
+### GraphQL Advanced Queries (5 tools)
 
 45. get_addresses_detailed - Comprehensive address details via GraphQL
 46. get_parcel_by_owner_detailed - Parcel ownership queries via GraphQL
 47. get_address_family - Related addresses via GraphQL
 48. get_serviceability - Broadband/utility serviceability via GraphQL
+49. get_places_by_address - Places/points of interest by address via GraphQL
 
 ## Project Structure
 
 ```
- precisely_api_core.py              # Core API implementation (1,672 lines, 48 methods)
- test_precisely_mcp.py              # Unified 3-tier test suite (596 lines, 48 tests)
+ precisely_api_core.py              # Core API implementation (1,700+ lines, 49 methods)
+ test_precisely_mcp.py              # Unified 3-tier test suite (600+ lines, 49 tests)
  requirements.txt                   # Python dependencies (core + HTTP transport)
  .env.template                      # Credential configuration template
  readme.md                          # This file
  mcp_servers/
-    precisely_wrapper_server.py   # MCP server wrapper (840 lines, 48 tools, dual transport)
+    precisely_wrapper_server.py   # MCP server wrapper (870+ lines, 49 tools, dual transport)
     setup_claude_desktop.ps1      # Windows setup script (UTF-8 no-BOM)
  logs/                              # Application logs (automatically generated)
  test_logs/                         # Test results and reports (automatically generated)
@@ -434,7 +435,7 @@ Pass Rate: 100.0%
 
 ### Architecture Changes
 
-- Perfect tool alignment: 48 methods = 48 tools = 48 tests
+- Perfect tool alignment: 49 methods = 49 tools = 49 tests
 - File size reductions: precisely_api_core.py 8% smaller
 - Removed redundant files
 
@@ -442,7 +443,7 @@ Pass Rate: 100.0%
 
 - Fixed UTF-8 BOM issue in setup_claude_desktop.ps1
 - Standardized credential naming
-- Updated test suite for 48 tools
+- Updated test suite for 49 tools
 
 ## Configuration
 
@@ -495,7 +496,7 @@ Solution: pip install -r requirements.txt --upgrade
 
 ### Issue: Tool not found errors
 
-Solution: Verify tool count matches 48
+Solution: Verify tool count matches 49
 
 ### Issue: Test failures
 
@@ -503,11 +504,11 @@ Solution:
 1. Check API credentials are valid
 2. Verify internet connectivity
 3. Review test logs in test_logs/
-4. Ensure all 48 methods exist in precisely_api_core.py
+4. Ensure all 49 methods exist in precisely_api_core.py
 
 ## Production-Ready Checklist
 
-- 100% test coverage (48/48 tests passing)
+- 100% test coverage (49/49 tests passing)
 - Dual transport support (stdio + HTTP)
 - Comprehensive error handling
 - Detailed logging (application + tests)
@@ -522,6 +523,6 @@ Solution:
 
 **Version**: 9.0 Production  
 **Last Updated**: December 19, 2025  
-**Tool Count**: 48 APIs  
+**Tool Count**: 49 APIs  
 **Transports**: stdio (default), Streamable HTTP  
-**Test Coverage**: 100% (48/48 passing)
+**Test Coverage**: 100% (49/49 passing)

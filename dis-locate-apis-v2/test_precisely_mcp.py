@@ -2,7 +2,7 @@
 Unified Test Suite for Precisely MCP Server
 Combines 3-tier testing: Layer 1 (API Core) → Layer 2 (MCP Server) → Layer 3 (Functional)
 
-Tests all 48 Precisely API tools with comprehensive validation and detailed logging
+Tests all 49 Precisely API tools with comprehensive validation and detailed logging
 """
 
 import os
@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'mcp_servers'))
 
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(override=True)
 except ImportError:
     pass
 
@@ -96,7 +96,7 @@ class PreciselyMCPTestSuite:
         """
         Layer 1: Test the foundation - can we call Precisely APIs?
         - Initialize API
-        - Verify all 48 methods exist
+        - Verify all 49 methods exist
         - Run sample tests to validate API responses
         """
         self.log_header("LAYER 1: API CORE TESTING")
@@ -122,10 +122,10 @@ class PreciselyMCPTestSuite:
         methods = [m for m in dir(self.api) if not m.startswith('_') and callable(getattr(self.api, m))]
         logger.info(f"  Found {len(methods)} API methods")
         
-        if len(methods) != 48:
-            logger.warning(f"  [WARN] Expected 48 methods, found {len(methods)}")
+        if len(methods) != 49:
+            logger.warning(f"  [WARN] Expected 49 methods, found {len(methods)}")
         else:
-            logger.info("  [PASS] All 48 API methods present")
+            logger.info("  [PASS] All 49 API methods present")
         
         # Test 3: Quick smoke tests
         logger.info("\n[3/3] Running Quick Smoke Tests...")
@@ -159,7 +159,7 @@ class PreciselyMCPTestSuite:
         """
         Layer 2: Test the wrapper - are all tools exposed via MCP?
         - Load MCP server module
-        - Verify 48 tool definitions
+        - Verify 49 tool definitions
         - Cross-reference MCP tools with API methods
         """
         self.log_header("LAYER 2: MCP SERVER TESTING")
@@ -186,10 +186,10 @@ class PreciselyMCPTestSuite:
                 logger.error(f"  [FAIL] Duplicate tools found: {set(duplicates)}")
                 return False
             
-            if len(tools) != 48:
-                logger.warning(f"  [WARN] Expected 48 tools, found {len(tools)}")
+            if len(tools) != 49:
+                logger.warning(f"  [WARN] Expected 49 tools, found {len(tools)}")
             else:
-                logger.info("  [PASS] All 48 MCP tools defined")
+                logger.info("  [PASS] All 49 MCP tools defined")
             
         except Exception as e:
             logger.error(f"  [FAIL] Failed to load MCP server: {e}")
@@ -307,7 +307,7 @@ class PreciselyMCPTestSuite:
     def test_layer3_functional(self) -> bool:
         """
         Layer 3: Comprehensive functional testing
-        - Test all 48 tools with real API calls
+        - Test all 49 tools with real API calls
         - Validate responses
         - Log every query, payload, and response
         """
@@ -531,6 +531,9 @@ class PreciselyMCPTestSuite:
             
             ("Get Serviceability", "get_serviceability", "What broadband services are available at 2755 Milwaukee St, Denver, 80238 CO?",
              {"data": {"query": "query GetServiceability($address: String!, $country: String) { getByAddress(address: $address, country: $country) { addresses(pageNumber: 1, pageSize: 1) { data { preciselyID serviceability { metadata { pageNumber pageCount totalPages count vintage } data { serviceabilityID preciselyID serviceableAddress } } } } } }", "variables": {"address": "2755 Milwaukee St, Denver, 80238 CO", "country": "US"}}}),
+            
+            ("Get Places by Address", "get_places_by_address", "What places and points of interest are near 123 Main St, Boston, MA 02101?",
+             {"data": {"query": "query GetPlacesByAddress($address: String!, $country: String) { getByAddress(address: $address, country: $country) { places(pageNumber: 1, pageSize: 20) { metadata { pageNumber pageCount totalPages count vintage } data { PBID pointOfInterestID preciselyID businessName brandName city admin1ShortName postalCode formattedAddress longitude latitude phone email web lineOfBusiness sic8Description } } } }", "variables": {"address": "123 Main St, Boston, MA 02101", "country": "US"}}}),
         ]
     
     # ========================================

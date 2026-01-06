@@ -14,8 +14,8 @@ from logging.handlers import RotatingFileHandler
 import traceback
 import uuid
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (override=True ensures fresh values)
+load_dotenv(override=True)
 
 # Configure logging with a unique identifier
 log_uuid = str(uuid.uuid4())[:8]
@@ -1593,6 +1593,21 @@ class PreciselyAPI:
             return response.json()
         except Exception as e:
             logger.error(f"Serviceability error: {e}")
+            return {"error": str(e)}
+    
+    def get_places_by_address(self, data: Dict, **kwargs) -> Dict[str, Any]:
+        """Get places (points of interest) by address via GraphQL"""
+        try:
+            url = f"{self.base_url}/data-graph/graphql"
+            json_data = data
+            
+            logger.debug(f"[get_places_by_address] Request payload: {json.dumps(json_data, indent=2)}")
+            response = self.session.post(url, json=json_data)
+            logger.debug(f"[get_places_by_address] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Places by address error: {e}")
             return {"error": str(e)}
     
     def parse_name(self, data: Dict, **kwargs) -> Dict[str, Any]:
