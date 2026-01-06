@@ -40,8 +40,8 @@ from precisely_api_core import PreciselyAPI
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("precisely-mcp-wrapper")
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (override=True ensures fresh values)
+load_dotenv(override=True)
 API_KEY = os.getenv("PRECISELY_API_KEY")
 API_SECRET = os.getenv("PRECISELY_API_SECRET")
 BASE_URL = "https://api.cloud.precisely.com"
@@ -52,7 +52,7 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 # Create MCP server
 app = Server("precisely-complete-mcp")
 
-# Tool definitions (48 tools covering all Precisely APIs)
+# Tool definitions (49 tools covering all Precisely APIs)
 TOOLS = [
     # Geocoding & Address (9 tools)
     Tool(
@@ -677,11 +677,42 @@ IMPORTANT: Use ONLY these tested fields in the serviceability data section:
             "required": ["data"]
         }
     ),
+    Tool(
+        name="get_places_by_address",
+        description="""Get places (points of interest) by address using GraphQL query.
+        
+Example request:
+{'data': {
+  'query': 'query GetPlacesByAddress($address: String!, $country: String) { getByAddress(address: $address, country: $country) { places(pageNumber: 1, pageSize: 20) { metadata { pageNumber pageCount totalPages count vintage } data { PBID pointOfInterestID preciselyID parentPreciselyID businessName brandName tradeName franchiseName countryIsoAlpha3Code localityName city admin2 admin1 admin1ShortName addressNumber streetName postalCode formattedAddress addressLine1 addressLine2 longitude latitude georesult { value description } georesultConfidence { value description } countryCallingCode phone fax email web open24Hours { value description } lineOfBusiness sic1 sic2 sic8 sic8Description altIndustryCode { value description } miCode tradeDivision groupName mainClass subClass } } } }',
+  'variables': {'address': '123 Main St, Boston, MA 02101', 'country': 'US'}
+}}
+
+Returns: Places (points of interest) of the specified address including business information, contact details, and industry codes.
+
+Available fields in places data section:
+- Identity: PBID, pointOfInterestID, preciselyID, parentPreciselyID
+- Business: businessName, brandName, tradeName, franchiseName
+- Location: countryIsoAlpha3Code, localityName, city, admin2, admin1, admin1ShortName
+- Address: addressNumber, streetName, postalCode, formattedAddress, addressLine1, addressLine2
+- Coordinates: longitude, latitude
+- Georesult: georesult { value description }, georesultConfidence { value description }
+- Contact: countryCallingCode, phone, fax, email, web
+- Hours: open24Hours { value description }
+- Industry: lineOfBusiness, sic1, sic2, sic8, sic8Description, altIndustryCode { value description }, miCode, tradeDivision, groupName, mainClass, subClass
+- Always include metadata section: pageNumber, pageCount, totalPages, count, vintage""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "data": {"type": "object", "description": "GraphQL query with variables: address (string, required), country (string, default 'US')"}
+            },
+            "required": ["data"]
+        }
+    ),
 ]
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 48 Precisely API tools"""
+    """List all 49 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -715,7 +746,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"48 tools available")
+    logger.info(f"49 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
@@ -779,7 +810,7 @@ def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
     logger.info(f"Endpoint: http://{host}:{port}/mcp")
-    logger.info(f"48 tools available")
+    logger.info(f"49 tools available")
     
     starlette_app = create_http_app(
         json_response=True,  # Simpler client integration

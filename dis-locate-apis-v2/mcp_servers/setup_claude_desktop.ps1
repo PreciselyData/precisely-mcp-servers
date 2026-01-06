@@ -74,4 +74,4 @@ Write-Host "4. Look for 'precisely' in the connectors list - it should be enable
 Write-Host "5. Ask Claude: Use precisely to geocode 1600 Pennsylvania Ave" -ForegroundColor White
 Write-Host ""
 Write-Host "Setup Complete for Claude Desktop!" -ForegroundColor Green
-Write-Host "You now have 48 Precisely API tools available in Claude!" -ForegroundColor Cyan
+Write-Host "You now have 49 Precisely API tools available in Claude!" -ForegroundColor Cyan
