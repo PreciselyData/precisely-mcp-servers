@@ -52,7 +52,7 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 # Create MCP server
 app = Server("precisely-complete-mcp")
 
-# Tool definitions (50 tools covering all Precisely APIs)
+# Tool definitions (51 tools covering all Precisely APIs)
 TOOLS = [
     # Geocoding & Address (9 tools)
     Tool(
@@ -769,11 +769,74 @@ Returns: GeoJSON FeatureCollection with nearest features and their distances."""
             "required": ["tableName", "location", "withinDistance", "attributes"]
         }
     ),
+    Tool(
+        name="search_at_location",
+        description="""Search for spatial features at a location (Search At Location).
+
+Searches for locations or points of interest within or intersecting a defined
+geographic area (geometry or address) or a buffer around a specified location.
+
+Example request:
+{
+  'tableName': '/risks/flood_risk',
+  'location': {'format': 'WKT', 'value': 'POINT(-122.399306 37.712211)'},
+  'attributes': ['statecode', 'type', 'mapname'],
+  'spatialOperation': 'INTERSECTS'
+}
+
+Example with buffer:
+{
+  'tableName': '/risks/flood_risk',
+  'location': {'format': 'WKT', 'value': 'POINT(-118.2504 34.0553)'},
+  'attributes': ['*'],
+  'spatialOperation': 'INTERSECTS',
+  'bufferDistance': '500 m'
+}
+
+Spatial Operations:
+- INTERSECTS: Features that intersect with the input geometry (default)
+- WITHIN: Features completely within the input geometry
+- CONTAINS: Features that contain the input geometry
+
+Common table names:
+- /risks/flood_risk - Flood risk zones
+- /risks/earthquake - Earthquake risk data
+- /risks/wildfire - Wildfire risk zones
+
+Returns: GeoJSON FeatureCollection with matching features.""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/risks/flood_risk')"},
+                "location": {
+                    "type": "object",
+                    "description": "Input geometry or address. Use {'format': 'WKT', 'value': 'POINT(lon lat)'} for coordinates"
+                },
+                "attributes": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of column names to include in response. Use ['*'] for all columns."
+                },
+                "spatialOperation": {
+                    "type": "string",
+                    "enum": ["INTERSECTS", "WITHIN", "CONTAINS"],
+                    "default": "INTERSECTS",
+                    "description": "Type of spatial query: INTERSECTS, WITHIN, or CONTAINS"
+                },
+                "bufferDistance": {"type": "string", "description": "Distance to buffer the input geometry (e.g., '100 m', '1 km', '500 ft')"},
+                "sortBy": {"type": "string", "description": "Attribute to sort results by"},
+                "sortOrder": {"type": "string", "enum": ["ASC", "DESC"], "default": "ASC", "description": "Sort order"},
+                "limit": {"type": "integer", "default": 10, "description": "Maximum results to return"},
+                "offset": {"type": "integer", "default": 0, "description": "Number of records to skip"}
+            },
+            "required": ["tableName", "location", "attributes"]
+        }
+    ),
 ]
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 50 Precisely API tools"""
+    """List all 51 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -807,7 +870,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"50 tools available")
+    logger.info(f"51 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
@@ -871,7 +934,7 @@ def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
     logger.info(f"Endpoint: http://{host}:{port}/mcp")
-    logger.info(f"50 tools available")
+    logger.info(f"51 tools available")
     
     starlette_app = create_http_app(
         json_response=True,  # Simpler client integration

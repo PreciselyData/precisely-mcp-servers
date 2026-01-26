@@ -1760,4 +1760,69 @@ class PreciselyAPI:
         except Exception as e:
             logger.error(f"Find nearest candidates error: {e}")
             return {"error": str(e)}
+    
+    def search_at_location(self, tableName: str, location: Dict, attributes: List[str],
+                           spatialOperation: str = "INTERSECTS",
+                           bufferDistance: str = None,
+                           sortBy: str = None, sortOrder: str = "ASC",
+                           limit: int = 10, offset: int = 0, **kwargs) -> Dict[str, Any]:
+        """Search for spatial features at a location.
+        
+        Searches for locations or points of interest within or intersecting a defined
+        geographic area (geometry or address) or a buffer around a specified location.
+        
+        Args:
+            tableName: Name of the table containing spatial data (e.g., "/risks/flood_risk")
+            location: Input geometry or address for spatial analysis
+                - For WKT: {"format": "WKT", "value": "POINT(-122.4 37.7)"}
+                - For address: {"format": "ADDRESS", "value": "123 Main St, City, ST"}
+            attributes: List of column names to include in response (use ["*"] for all)
+            spatialOperation: Type of spatial query - "INTERSECTS", "WITHIN", or "CONTAINS" (default: "INTERSECTS")
+            bufferDistance: Distance to buffer the input geometry (e.g., "100 m", "1 km")
+            sortBy: Attribute to sort results by
+            sortOrder: Sort order - "ASC" or "DESC" (default: "ASC")
+            limit: Maximum results to return (default: 10)
+            offset: Number of records to skip (default: 0)
+        
+        Returns:
+            GeoJSON FeatureCollection with matching features
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/searchAtLocation"
+            
+            # Build query parameters
+            params = {
+                "limit": limit,
+                "offset": offset,
+                "sortOrder": sortOrder
+            }
+            if sortBy:
+                params["sortBy"] = sortBy
+            
+            # Build request body
+            json_data = {
+                "tableName": tableName,
+                "location": location,
+                "attributes": attributes,
+                "spatialOperation": spatialOperation
+            }
+            
+            # Add optional buffer distance
+            if bufferDistance:
+                json_data["bufferDistance"] = bufferDistance
+            
+            # Use appropriate headers for spatial API
+            headers = {
+                "Accept": "application/geo+json"
+            }
+            
+            logger.debug(f"[search_at_location] Request params: {params}")
+            logger.debug(f"[search_at_location] Request payload: {json.dumps(json_data, indent=2)}")
+            response = self.session.post(url, params=params, json=json_data, headers=headers)
+            logger.debug(f"[search_at_location] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Search at location error: {e}")
+            return {"error": str(e)}
 
