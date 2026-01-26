@@ -52,7 +52,7 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 # Create MCP server
 app = Server("precisely-complete-mcp")
 
-# Tool definitions (49 tools covering all Precisely APIs)
+# Tool definitions (50 tools covering all Precisely APIs)
 TOOLS = [
     # Geocoding & Address (9 tools)
     Tool(
@@ -708,11 +708,72 @@ Available fields in places data section:
             "required": ["data"]
         }
     ),
+    
+    # Spatial Analysis
+    Tool(
+        name="find_nearest_candidates",
+        description="""Find nearest spatial features to a location or geometry (Search Nearby).
+
+Identifies the nearest locations or points of interest to a specified geometry or address
+based on distance criteria, returning spatial features in distance order with distance values.
+
+Example request:
+{
+  'tableName': '/risks/flood_risk',
+  'location': {'format': 'WKT', 'value': 'POINT(-122.399306 37.712211)'},
+  'withinDistance': '100 m',
+  'attributes': ['statecode', 'type', 'mapname'],
+  'maxFeatures': 5
+}
+
+Example with address:
+{
+  'tableName': '/risks/flood_risk',
+  'location': {'format': 'ADDRESS', 'value': '123 Main St, San Francisco, CA'},
+  'withinDistance': '1 km',
+  'attributes': ['*'],
+  'maxFeatures': 10
+}
+
+Common table names:
+- /risks/flood_risk - Flood risk zones
+- /risks/earthquake - Earthquake risk data
+- /risks/wildfire - Wildfire risk zones
+
+Returns: GeoJSON FeatureCollection with nearest features and their distances.""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/risks/flood_risk')"},
+                "location": {
+                    "type": "object",
+                    "description": "Input geometry or address. Use {'format': 'WKT', 'value': 'POINT(lon lat)'} for coordinates or {'format': 'ADDRESS', 'value': 'address string'} for address"
+                },
+                "withinDistance": {"type": "string", "description": "Search distance with unit (e.g., '100 m', '1 km', '500 ft')"},
+                "attributes": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of column names to include in response. Use ['*'] for all columns."
+                },
+                "maxFeatures": {"type": "integer", "default": 10, "description": "Maximum features to return per geometry (default: 10, min: 1)"},
+                "distanceAttributeName": {"type": "string", "default": "distance", "description": "Custom name for distance attribute in response"},
+                "uomAttributeName": {"type": "string", "default": "uom", "description": "Custom name for unit of measurement attribute"},
+                "inputPointAttributeName": {"type": "string", "default": "inputPoint", "description": "Custom name for input point attribute"},
+                "targetPointAttributeName": {"type": "string", "default": "targetPoint", "description": "Custom name for target point attribute"},
+                "bearingAttributeName": {"type": "string", "default": "bearing", "description": "Custom name for bearing attribute"},
+                "sortBy": {"type": "string", "description": "Attribute to sort results by"},
+                "sortOrder": {"type": "string", "enum": ["ASC", "DESC"], "default": "ASC", "description": "Sort order"},
+                "limit": {"type": "integer", "default": 10, "description": "Maximum results to return"},
+                "offset": {"type": "integer", "default": 0, "description": "Number of records to skip"}
+            },
+            "required": ["tableName", "location", "withinDistance", "attributes"]
+        }
+    ),
 ]
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 49 Precisely API tools"""
+    """List all 50 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -746,7 +807,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"49 tools available")
+    logger.info(f"50 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
@@ -810,7 +871,7 @@ def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
     logger.info(f"Endpoint: http://{host}:{port}/mcp")
-    logger.info(f"49 tools available")
+    logger.info(f"50 tools available")
     
     starlette_app = create_http_app(
         json_response=True,  # Simpler client integration

@@ -1684,4 +1684,80 @@ class PreciselyAPI:
         except Exception as e:
             logger.error(f"Timezone locations error: {e}")
             return {"error": str(e)}
+    
+    def find_nearest_candidates(self, tableName: str, location: Dict, withinDistance: str, 
+                                 attributes: List[str], maxFeatures: int = 10,
+                                 distanceAttributeName: str = "distance",
+                                 uomAttributeName: str = "uom",
+                                 inputPointAttributeName: str = "inputPoint",
+                                 targetPointAttributeName: str = "targetPoint",
+                                 bearingAttributeName: str = "bearing",
+                                 sortBy: str = None, sortOrder: str = "ASC",
+                                 limit: int = 10, offset: int = 0, **kwargs) -> Dict[str, Any]:
+        """Find nearest spatial features to a location or geometry.
+        
+        Identifies the nearest locations or points of interest to a specified geometry
+        or address based on distance criteria, returning spatial features in distance order.
+        
+        Args:
+            tableName: Name of the table containing spatial data (e.g., "/risks/flood_risk")
+            location: Input geometry or address for spatial analysis
+                - For WKT: {"format": "WKT", "value": "POINT(-122.4 37.7)"}
+                - For address: {"format": "ADDRESS", "value": "123 Main St, City, ST"}
+            withinDistance: Search distance with unit (e.g., "100 m", "1 km", "500 ft")
+            attributes: List of column names to include in response (use ["*"] for all)
+            maxFeatures: Maximum features per geometry (default: 10, min: 1)
+            distanceAttributeName: Custom name for distance attribute (default: "distance")
+            uomAttributeName: Custom name for unit of measurement (default: "uom")
+            inputPointAttributeName: Custom name for input point attribute (default: "inputPoint")
+            targetPointAttributeName: Custom name for target point attribute (default: "targetPoint")
+            bearingAttributeName: Custom name for bearing attribute (default: "bearing")
+            sortBy: Attribute to sort results by
+            sortOrder: Sort order - "ASC" or "DESC" (default: "ASC")
+            limit: Maximum results to return (default: 10)
+            offset: Number of records to skip (default: 0)
+        
+        Returns:
+            GeoJSON FeatureCollection with nearest features and distances
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/findNearest"
+            
+            # Build query parameters
+            params = {
+                "limit": limit,
+                "offset": offset,
+                "sortOrder": sortOrder
+            }
+            if sortBy:
+                params["sortBy"] = sortBy
+            
+            # Build request body
+            json_data = {
+                "tableName": tableName,
+                "location": location,
+                "withinDistance": withinDistance,
+                "attributes": attributes,
+                "maxFeatures": maxFeatures,
+                "distanceAttributeName": distanceAttributeName,
+                "uomAttributeName": uomAttributeName,
+                "inputPointAttributeName": inputPointAttributeName,
+                "targetPointAttributeName": targetPointAttributeName,
+                "bearingAttributeName": bearingAttributeName
+            }
+            
+            # Use appropriate response header for spatial API
+            headers = {
+                "Accept": "application/geo+json"
+            }
+            
+            logger.debug(f"[find_nearest_candidates] Request params: {params}")
+            logger.debug(f"[find_nearest_candidates] Request payload: {json.dumps(json_data, indent=2)}")
+            response = self.session.post(url, params=params, json=json_data, headers=headers)
+            logger.debug(f"[find_nearest_candidates] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Find nearest candidates error: {e}")
+            return {"error": str(e)}
 
