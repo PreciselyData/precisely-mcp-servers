@@ -1826,3 +1826,97 @@ class PreciselyAPI:
             logger.error(f"Search at location error: {e}")
             return {"error": str(e)}
 
+    def overlap(self, tableName: str, location: Dict, attributes: List[str],
+                uom: str,
+                areaAttributeName: str = "intersectionArea",
+                lengthAttributeName: str = "intersectionLength",
+                percentTargetAttributeName: str = "percentageOfTarget",
+                percentInputAttributeName: str = "percentageOfInput",
+                uomAttributeName: str = "uom",
+                bufferDistance: str = None,
+                limit: int = 10, offset: int = 0, **kwargs) -> Dict[str, Any]:
+        """Identify spatial overlaps between a geometry/address and a spatial table.
+        
+        Identifies spatial intersections between a specified geometry or address in a
+        chosen Enrich spatial table returning the overlap geometry with the percentage and
+        area of overlap.
+        
+        Args:
+            tableName: Name of the table containing spatial data (e.g., "/properties/buildings")
+            location: Input geometry or address for spatial analysis
+                - Format: {"format": "wkt|geojson|lonlat|address", "value": "...", "country": "USA"}
+                - country is mandatory when format is "address"
+            attributes: List of column names to include in response. Use ["*"] for all scalar columns.
+            uom: Unit of measurement used to return intersection length/area (e.g., "m")
+            areaAttributeName: Custom name of intersection area parameter when intersection area is polygon.
+                              Default: "intersectionArea"
+            lengthAttributeName: Custom name of intersection length parameter when intersection area is linestring.
+                                Default: "intersectionLength"
+            percentTargetAttributeName: Custom name of parameter indicating percentage of overlap with target geometry.
+                                       Default: "percentageOfTarget"
+            percentInputAttributeName: Custom name of parameter indicating percentage of overlap with input geometry.
+                                      Default: "percentageOfInput"
+            uomAttributeName: Custom name of unit of measurement parameter. Default: "uom"
+            bufferDistance: Distance by which the input geometry will be extrapolated (e.g., "100 m", "2 km")
+            limit: Maximum results to return (default: 10, min: 1, max: 1000)
+            offset: Number of records to skip (default: 0, min: 0)
+        
+        Returns:
+            GeoJSON FeatureCollection with overlap features including intersection geometry,
+            area/length, and percentage of overlap
+        
+        Example:
+            overlap(
+                tableName="/properties/buildings",
+                location={"format": "WKT", "value": "POLYGON ((-74.01316 40.700479, -74.012028 40.700479, -74.012028 40.701403, -74.01316 40.701403, -74.01316 40.700479))"},
+                attributes=["fips"],
+                uom="m",
+                areaAttributeName="overlappedArea",
+                lengthAttributeName="overlappedLength",
+                percentTargetAttributeName="targetOverlapPercentage",
+                percentInputAttributeName="inputOverlapPercentage",
+                uomAttributeName="measurementUnit",
+                bufferDistance="2 km"
+            )
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/overlap"
+            
+            # Build query parameters
+            params = {
+                "limit": limit,
+                "offset": offset
+            }
+            
+            # Build request body
+            json_data = {
+                "tableName": tableName,
+                "location": location,
+                "attributes": attributes,
+                "uom": uom,
+                "areaAttributeName": areaAttributeName,
+                "lengthAttributeName": lengthAttributeName,
+                "percentTargetAttributeName": percentTargetAttributeName,
+                "percentInputAttributeName": percentInputAttributeName,
+                "uomAttributeName": uomAttributeName
+            }
+            
+            # Add optional buffer distance
+            if bufferDistance:
+                json_data["bufferDistance"] = bufferDistance
+            
+            # Use appropriate headers for spatial API
+            headers = {
+                "Accept": "application/geo+json"
+            }
+            
+            logger.debug(f"[overlap] Request params: {params}")
+            logger.debug(f"[overlap] Request payload: {json.dumps(json_data, indent=2)}")
+            response = self.session.post(url, params=params, json=json_data, headers=headers)
+            logger.debug(f"[overlap] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Overlap error: {e}")
+            return {"error": str(e)}
+

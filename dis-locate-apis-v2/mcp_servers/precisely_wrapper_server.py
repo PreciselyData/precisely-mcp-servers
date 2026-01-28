@@ -52,7 +52,7 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 # Create MCP server
 app = Server("precisely-complete-mcp")
 
-# Tool definitions (51 tools covering all Precisely APIs)
+# Tool definitions (52 tools covering all Precisely APIs)
 TOOLS = [
     # Geocoding & Address (9 tools)
     Tool(
@@ -832,11 +832,60 @@ Returns: GeoJSON FeatureCollection with matching features.""",
             "required": ["tableName", "location", "attributes"]
         }
     ),
+    Tool(
+        name="overlap",
+        description="""Identify spatial overlaps between a geometry/address and a spatial table (Overlap).
+
+Identifies spatial intersections between a specified geometry or address in a chosen Enrich spatial table returning the overlap geometry with the percentage and area of overlap.
+
+Example request:
+{
+  "tableName": "/properties/buildings",
+  "location": {"format": "WKT", "value": "POLYGON ((-74.01316 40.700479, -74.012028 40.700479, -74.012028 40.701403, -74.01316 40.701403, -74.01316 40.700479))"},
+  "attributes": ["fips"],
+  "uom": "m",
+  "areaAttributeName": "overlappedArea",
+  "lengthAttributeName": "overlappedLength",
+  "percentTargetAttributeName": "targetOverlapPercentage",
+  "percentInputAttributeName": "inputOverlapPercentage",
+  "uomAttributeName": "measurementUnit",
+  "bufferDistance": "2 km"
+}
+
+Note: "*" can be used to specify all columns; will only include scalar columns.
+
+Returns: GeoJSON FeatureCollection with overlap geometry, intersection area/length, and percentage of overlap with both target and input geometries.""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/properties/buildings', '/risks/flood_risk')"},
+                "location": {
+                    "type": "object",
+                    "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."
+                },
+                "attributes": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns, will only include scalar columns."
+                },
+                "uom": {"type": "string", "description": "Unit of measurement used to return intersection length/area (e.g., 'm')"},
+                "areaAttributeName": {"type": "string", "default": "intersectionArea", "description": "Custom name of intersection area parameter when intersection area is polygon. Default: 'intersectionArea'."},
+                "lengthAttributeName": {"type": "string", "default": "intersectionLength", "description": "Custom name of intersection length parameter when intersection area is linestring. Default: 'intersectionLength'."},
+                "percentTargetAttributeName": {"type": "string", "default": "percentageOfTarget", "description": "Custom name of parameter indicating percentage of overlap with target geometry. Default: 'percentageOfTarget'."},
+                "percentInputAttributeName": {"type": "string", "default": "percentageOfInput", "description": "Custom name of parameter indicating percentage of overlap with input geometry. Default: 'percentageOfInput'."},
+                "uomAttributeName": {"type": "string", "default": "uom", "description": "Custom name of unit of measurement parameter. Default: 'uom'."},
+                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
+                "limit": {"type": "integer", "default": 10, "minimum": 1, "maximum": 1000, "description": "Specifies the maximum number of results to return. Default: 10."},
+                "offset": {"type": "integer", "default": 0, "minimum": 0, "description": "Specifies the number of records to skip. Default: 0."}
+            },
+            "required": ["tableName", "location", "attributes", "uom"]
+        }
+    ),
 ]
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 51 Precisely API tools"""
+    """List all 52 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -870,7 +919,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"51 tools available")
+    logger.info(f"52 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
@@ -934,7 +983,7 @@ def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
     logger.info(f"Endpoint: http://{host}:{port}/mcp")
-    logger.info(f"51 tools available")
+    logger.info(f"52 tools available")
     
     starlette_app = create_http_app(
         json_response=True,  # Simpler client integration
