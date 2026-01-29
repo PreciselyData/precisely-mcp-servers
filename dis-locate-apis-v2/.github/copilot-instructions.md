@@ -50,14 +50,23 @@ Spatial endpoints (`/v1/spatial/*`) require `Accept: application/geo+json` heade
 ### GraphQL APIs
 Many tools use GraphQL via `/data-graph/graphql`. Query structure is embedded in method implementations. See `get_property_data()`, `get_flood_risk_by_address()` for patterns.
 
-### Location Formats
-```python
-# WKT format (spatial APIs)
-location = {"format": "WKT", "value": "POINT(-118.25 34.05)"}  # lon, lat order
+## Using Official Documentation
 
-# Address format
-location = {"format": "ADDRESS", "value": "123 Main St, City, ST"}
-```
+When adding or modifying API tools, use official Precisely documentation:
+
+### Accessible Documentation Sources
+- **Developer Portal** (`developer.cloud.precisely.com`): Scannable. Contains product pages and API try-out links. Documentation links redirect to Help Portal.
+- **OpenAPI Specs**: Available at each API's "products-try-out" page. Use examples verbatim from the spec.
+- **Help Portal** (`help.cloud.precisely.com`): Contains actual API documentation. NOT directly scannable (dynamic JavaScript). User must provide content as copied text or screenshot.
+
+### Workflow for API Documentation
+1. User provides the "API Tryout" link when requesting MCP tool implementation
+2. AI fetches the OpenAPI spec from the tryout page
+3. Use examples and field descriptions **verbatim** from the OpenAPI spec - do not infer or customize
+4. Include all examples from documentation in Tool() `description` field
+5. Include OpenAPI spec example in the corresponding `precisely_api_core.py` method's docstring
+
+If user doesn't provide documentation, prompt: *"Please provide the relevant Precisely API documentation (API Tryout link, OpenAPI spec, or paste documentation content)."*
 
 ## Development Commands
 
