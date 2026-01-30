@@ -52,7 +52,7 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 # Create MCP server
 app = Server("precisely-complete-mcp")
 
-# Tool definitions (54 tools covering all Precisely APIs)
+# Tool definitions (55 tools covering all Precisely APIs)
 TOOLS = [
     # Geocoding & Address (9 tools)
     Tool(
@@ -913,11 +913,31 @@ Returns: Array of table objects with tableName and tableFriendlyName.""",
             "required": []
         }
     ),
+    Tool(
+        name="get_table_metadata",
+        description="""Get metadata for a table present in database (Get Table Metadata).
+
+Returns metadata for a table present in database. Information in the response includes table name, schema, columns and their description and type, bounding box in case of spatial table and row count.
+
+Example request:
+{
+  "tableName": "properties/buildings"
+}
+
+Returns: Table metadata object with tableName, schemaName, geometryType, numberOfRows, columns array, and bounding box coordinates (xMin, xMax, yMin, yMax).""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "tableName": {"type": "string", "description": "Name of the table for which the metadata needs to be described (e.g., 'properties/buildings', 'risks/flood_risk')"}
+            },
+            "required": ["tableName"]
+        }
+    ),
 ]
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 54 Precisely API tools"""
+    """List all 55 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -951,7 +971,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"54 tools available")
+    logger.info(f"55 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
@@ -1015,7 +1035,7 @@ def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
     logger.info(f"Endpoint: http://{host}:{port}/mcp")
-    logger.info(f"54 tools available")
+    logger.info(f"55 tools available")
     
     starlette_app = create_http_app(
         json_response=True,  # Simpler client integration

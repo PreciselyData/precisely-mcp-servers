@@ -1975,3 +1975,35 @@ class PreciselyAPI:
             logger.error(f"List spatial tables error: {e}")
             return {"error": str(e)}
 
+    def get_table_metadata(self, tableName: str, **kwargs) -> Dict[str, Any]:
+        """Get metadata for a table present in database.
+        
+        Returns metadata for a table present in database. Information in the response
+        includes table name, schema, columns and their description and type, bounding
+        box in case of spatial table and row count.
+        
+        Args:
+            tableName: Name of the table for which the metadata needs to be described
+                       (e.g., "properties/buildings", "risks/flood_risk")
+        
+        Returns:
+            Table metadata object with tableName, schemaName, geometryType, numberOfRows,
+            columns array, and bounding box coordinates (xMin, xMax, yMin, yMax)
+        
+        Example:
+            get_table_metadata(tableName="properties/buildings")
+        """
+        try:
+            # Remove leading slash if present for URL construction
+            table_path = tableName.lstrip('/')
+            url = f"{self.base_url}/v1/spatial/tables/{table_path}/metadata"
+            
+            logger.debug(f"[get_table_metadata] Requesting metadata for table: {tableName}")
+            response = self.session.get(url)
+            logger.debug(f"[get_table_metadata] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Get table metadata error: {e}")
+            return {"error": str(e)}
+
