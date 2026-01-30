@@ -52,7 +52,7 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 # Create MCP server
 app = Server("precisely-complete-mcp")
 
-# Tool definitions (52 tools covering all Precisely APIs)
+# Tool definitions (53 tools covering all Precisely APIs)
 TOOLS = [
     # Geocoding & Address (9 tools)
     Tool(
@@ -881,11 +881,27 @@ Returns: GeoJSON FeatureCollection with overlap geometry, intersection area/leng
             "required": ["tableName", "location", "attributes", "uom"]
         }
     ),
+    Tool(
+        name="get_spatial_products",
+        description="""Get metadata about Enrich Data products available via Spatial APIs (Get Product Metadata).
+
+Returns metadata about the Enrich Data products available via Spatial APIs. Information in the response includes product family, applicable geographic area, vintage, available layers, appropriate zoom levels for display and styles to use in visualization application or API calls. A "layerId" value can be specified in Tiles API for getting tiles. A "featureTable" value can be used in Analysis API to invoke spatial operations on that layer.
+
+Example request:
+No parameters required - simple GET request.
+
+Returns: Array of product metadata objects with productId, productName, productFamily, vintage, geography, and layers array.""",
+        inputSchema={
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    ),
 ]
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 52 Precisely API tools"""
+    """List all 53 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -919,7 +935,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"52 tools available")
+    logger.info(f"53 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
@@ -983,7 +999,7 @@ def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
     logger.info(f"Endpoint: http://{host}:{port}/mcp")
-    logger.info(f"52 tools available")
+    logger.info(f"53 tools available")
     
     starlette_app = create_http_app(
         json_response=True,  # Simpler client integration

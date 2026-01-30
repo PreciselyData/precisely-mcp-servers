@@ -1920,3 +1920,32 @@ class PreciselyAPI:
             logger.error(f"Overlap error: {e}")
             return {"error": str(e)}
 
+    def get_spatial_products(self, **kwargs) -> Dict[str, Any]:
+        """Get metadata about Enrich Data products available via Spatial APIs.
+        
+        Returns metadata about the Enrich Data products available via Spatial APIs.
+        Information in the response includes product family, applicable geographic area,
+        vintage, available layers, appropriate zoom levels for display and styles to use
+        in visualization application or API calls. For example, a "layerId" value can be
+        specified in Tiles API for getting tiles. Similarly a "featureTable" value can be
+        used in Analysis API to invoke spatial operation on that layer.
+        
+        Returns:
+            List of product metadata objects with productId, productName, productFamily,
+            vintage, geography, and layers array
+        
+        Example:
+            get_spatial_products()
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/products"
+            
+            logger.debug(f"[get_spatial_products] Requesting product metadata")
+            response = self.session.get(url)
+            logger.debug(f"[get_spatial_products] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Get spatial products error: {e}")
+            return {"error": str(e)}
+
