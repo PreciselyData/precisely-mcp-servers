@@ -1949,3 +1949,29 @@ class PreciselyAPI:
             logger.error(f"Get spatial products error: {e}")
             return {"error": str(e)}
 
+    def list_spatial_tables(self, **kwargs) -> Dict[str, Any]:
+        """Get a list of available spatial tables from the database.
+        
+        Returns a list of available spatial tables from the database. Each table entry
+        includes the table name (path) and a friendly display name. The tableName values
+        can be used in spatial analysis APIs like find_nearest_candidates, search_at_location,
+        and overlap.
+        
+        Returns:
+            List of table objects with tableName and tableFriendlyName
+        
+        Example:
+            list_spatial_tables()
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/tables"
+            
+            logger.debug(f"[list_spatial_tables] Requesting available tables")
+            response = self.session.get(url)
+            logger.debug(f"[list_spatial_tables] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"List spatial tables error: {e}")
+            return {"error": str(e)}
+

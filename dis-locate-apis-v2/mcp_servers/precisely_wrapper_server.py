@@ -52,7 +52,7 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 # Create MCP server
 app = Server("precisely-complete-mcp")
 
-# Tool definitions (53 tools covering all Precisely APIs)
+# Tool definitions (54 tools covering all Precisely APIs)
 TOOLS = [
     # Geocoding & Address (9 tools)
     Tool(
@@ -897,11 +897,27 @@ Returns: Array of product metadata objects with productId, productName, productF
             "required": []
         }
     ),
+    Tool(
+        name="list_spatial_tables",
+        description="""Get a list of available spatial tables from the database (List Tables).
+
+Returns a list of available spatial tables from the database. Each table entry includes the table name (path) and a friendly display name. The tableName values can be used in spatial analysis APIs like find_nearest_candidates, search_at_location, and overlap.
+
+Example request:
+No parameters required - simple GET request.
+
+Returns: Array of table objects with tableName and tableFriendlyName.""",
+        inputSchema={
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    ),
 ]
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 53 Precisely API tools"""
+    """List all 54 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -935,7 +951,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"53 tools available")
+    logger.info(f"54 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
@@ -999,7 +1015,7 @@ def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
     logger.info(f"Endpoint: http://{host}:{port}/mcp")
-    logger.info(f"53 tools available")
+    logger.info(f"54 tools available")
     
     starlette_app = create_http_app(
         json_response=True,  # Simpler client integration
