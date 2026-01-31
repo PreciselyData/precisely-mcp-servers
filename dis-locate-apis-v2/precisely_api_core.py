@@ -2007,3 +2007,390 @@ class PreciselyAPI:
             logger.error(f"Get table metadata error: {e}")
             return {"error": str(e)}
 
+    def summarize(self, tableName: str, location: Dict, aggregateColumns: Dict,
+                  spatialOperation: str = "INTERSECTS",
+                  proportionalCalculation: bool = False,
+                  bufferDistance: str = None, **kwargs) -> Dict[str, Any]:
+        """Aggregate spatial data within a defined area (Spatial Summary API).
+        
+        The Spatial Summary API method aggregates spatial data within a defined area,
+        offering detailed statistics such as population density, area size, and other
+        location-specific attributes. It supports multiple distance metrics and provides
+        comprehensive statistical analysis.
+        
+        Args:
+            tableName: Name of the table containing the spatial data
+            location: Input geometry or address for proximity search
+                - format: "WKT", "GEOJSON", "LonLat", or "address"
+                - value: Geometry string or address string
+                - country: Required if format is "address"
+            aggregateColumns: Columns to be aggregated, grouped by additional properties.
+                             Format: {"column_name": ["min", "max", "avg", "sum", "MEDIAN"]}
+            spatialOperation: Type of spatial query. Values: "INTERSECTS" (default) or "WITHIN"
+            proportionalCalculation: Determines if proportional calculations should be applied.
+                                    Only applicable when spatialOperation is "INTERSECTS".
+                                    Default: false
+            bufferDistance: Buffered distance around the input geometry (e.g., "10 km", "100 m")
+        
+        Returns:
+            GeoJSON FeatureCollection with aggregated statistics
+        
+        Example:
+            summarize(
+                tableName="/precisely/riskdata/hwr_usa_windgrid",
+                location={"format": "wkt", "value": "POLYGON ((-122.766919 38.031512, -122.766919 38.051864, -122.741314 38.051864, -122.741314 38.031512, -122.766919 38.031512))"},
+                aggregateColumns={"w9": ["min", "max", "avg", "sum"]},
+                spatialOperation="INTERSECTS",
+                proportionalCalculation=True,
+                bufferDistance="10 km"
+            )
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/summarize"
+            
+            # Build request body
+            json_data = {
+                "tableName": tableName,
+                "location": location,
+                "aggregateColumns": aggregateColumns,
+                "spatialOperation": spatialOperation,
+                "proportionalCalculation": proportionalCalculation
+            }
+            
+            # Add optional buffer distance
+            if bufferDistance:
+                json_data["bufferDistance"] = bufferDistance
+            
+            # Use appropriate headers for spatial API
+            headers = {
+                "Accept": "application/geo+json"
+            }
+            
+            logger.debug(f"[summarize] Request payload: {json.dumps(json_data, indent=2)}")
+            response = self.session.post(url, json=json_data, headers=headers)
+            logger.debug(f"[summarize] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Summarize error: {e}")
+            return {"error": str(e)}
+    def ogc_landing_page(self, **kwargs) -> Dict[str, Any]:
+        """Get OGC API Features landing page with links to essential API resources.
+        
+        The landing page provides links to essential API resources, including:
+        - API Definition: A machine-readable specification of the API.
+        - Conformance Declaration: A list of standards that the API conforms to.
+        - Feature Collections: Information and links to the available feature collections.
+        
+        Use this endpoint to quickly navigate and explore the API's capabilities.
+        
+        Returns:
+            Landing page object with title, description, and links array
+        
+        Example:
+            ogc_landing_page()
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/"
+            
+            logger.debug(f"[ogc_landing_page] Requesting landing page")
+            response = self.session.get(url)
+            logger.debug(f"[ogc_landing_page] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC landing page error: {e}")
+            return {"error": str(e)}
+
+    def ogc_api_definition(self, **kwargs) -> Dict[str, Any]:
+        """Get the complete OpenAPI definition for the OGC API.
+        
+        The API endpoint retrieves the complete OpenAPI definition for the API.
+        The response is a machine-readable specification that describes all available
+        endpoints, security configurations, and request and response schemas.
+        
+        The API definition conforms to the OpenAPI 3.0.1 standard.
+        
+        Returns:
+            OpenAPI specification object
+        
+        Example:
+            ogc_api_definition()
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/api"
+            
+            logger.debug(f"[ogc_api_definition] Requesting API definition")
+            response = self.session.get(url)
+            logger.debug(f"[ogc_api_definition] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC API definition error: {e}")
+            return {"error": str(e)}
+
+    def ogc_functions(self, **kwargs) -> Dict[str, Any]:
+        """Get list of available spatial functions within the OGC API.
+        
+        This endpoint returns a list of available spatial functions within the API.
+        Provides supported spatial functions that can be used for querying features.
+        Function metadata includes function names, argument types, and return types.
+        
+        Returns:
+            Object with functions array containing name, arguments, and returns
+        
+        Example:
+            ogc_functions()
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/functions"
+            
+            logger.debug(f"[ogc_functions] Requesting functions list")
+            response = self.session.get(url)
+            logger.debug(f"[ogc_functions] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC functions error: {e}")
+            return {"error": str(e)}
+
+    def ogc_conformance(self, **kwargs) -> Dict[str, Any]:
+        """Get OGC API conformance declaration.
+        
+        This endpoint returns the conformance declaration for the API. The conformance
+        declaration is a list of all conformance classes specified in a standard that
+        the server adheres to. It helps clients determine whether the API meets the
+        required standards and their own requirements.
+        
+        Returns:
+            Object with conformsTo array listing OGC API conformance classes
+        
+        Example:
+            ogc_conformance()
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/conformance"
+            
+            logger.debug(f"[ogc_conformance] Requesting conformance declaration")
+            response = self.session.get(url)
+            logger.debug(f"[ogc_conformance] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC conformance error: {e}")
+            return {"error": str(e)}
+
+    def ogc_collections(self, **kwargs) -> Dict[str, Any]:
+        """Get list of feature collections available on the server.
+        
+        This endpoint returns the list of feature collections available on the server.
+        Each collection represents a spatial dataset that can be queried and provides
+        essential metadata, including:
+        - Collection ID: A unique identifier for the spatial dataset.
+        - Title and Description: Optional details that describe the collection.
+        - Links: Navigational links to access the collection's items and schema endpoints.
+        
+        Returns:
+            Object with links array and collections array
+        
+        Example:
+            ogc_collections()
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/collections"
+            
+            logger.debug(f"[ogc_collections] Requesting collections list")
+            response = self.session.get(url)
+            logger.debug(f"[ogc_collections] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC collections error: {e}")
+            return {"error": str(e)}
+
+    def ogc_collection(self, collectionId: str, **kwargs) -> Dict[str, Any]:
+        """Get information about a specific feature collection.
+        
+        This resource describes the feature collection identified in the path.
+        Information about the feature collection with id {collectionId} is provided.
+        The response contains:
+        - Collection ID: A unique identifier for the spatial dataset.
+        - Title and Description: Optional details that describe the collection.
+        - Links: Navigational links to access the collection's items and schema endpoints.
+        
+        Args:
+            collectionId: Unique identifier of the collection (e.g., "pbb_usa")
+        
+        Returns:
+            Collection object with id, title, description, itemType, and links
+        
+        Example:
+            ogc_collection(collectionId="pbb_usa")
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}"
+            
+            logger.debug(f"[ogc_collection] Requesting collection: {collectionId}")
+            response = self.session.get(url)
+            logger.debug(f"[ogc_collection] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC collection error: {e}")
+            return {"error": str(e)}
+
+    def ogc_collection_schema(self, collectionId: str, **kwargs) -> Dict[str, Any]:
+        """Get the schema for a specified feature collection.
+        
+        This resource provides the schema for a specified feature collection.
+        The schema defines the structure of the collection and includes details such as:
+        - Field Names: Names of each attribute in the collection.
+        - Data Types & Formats: The expected data type and format for each field.
+        - Descriptions: Explanatory details for each attribute.
+        - Geospatial Data Types: Specific spatial types for geospatial attributes.
+        
+        Args:
+            collectionId: Unique identifier of the collection (e.g., "pas_usa")
+        
+        Returns:
+            JSON Schema object with properties definitions
+        
+        Example:
+            ogc_collection_schema(collectionId="pas_usa")
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/schema"
+            
+            headers = {
+                "Accept": "application/schema+json"
+            }
+            
+            logger.debug(f"[ogc_collection_schema] Requesting schema for: {collectionId}")
+            response = self.session.get(url, headers=headers)
+            logger.debug(f"[ogc_collection_schema] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC collection schema error: {e}")
+            return {"error": str(e)}
+
+    def ogc_collection_queryables(self, collectionId: str, **kwargs) -> Dict[str, Any]:
+        """Get queryable attributes for a specific collection.
+        
+        This resource returns the queryable attributes for a specific collection.
+        These attributes are a subset of the collection's full set of attributes
+        which are returned by the schema endpoint.
+        
+        The queryable attributes provide detailed metadata for attributes that can
+        be used in filter queries. These attributes are indexed for performance.
+        
+        Args:
+            collectionId: Unique identifier of the collection (e.g., "pas_usa")
+        
+        Returns:
+            Queryable schema object with properties definitions
+        
+        Example:
+            ogc_collection_queryables(collectionId="pas_usa")
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/queryables"
+            
+            headers = {
+                "Accept": "application/schema+json"
+            }
+            
+            logger.debug(f"[ogc_collection_queryables] Requesting queryables for: {collectionId}")
+            response = self.session.get(url, headers=headers)
+            logger.debug(f"[ogc_collection_queryables] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC collection queryables error: {e}")
+            return {"error": str(e)}
+
+    def ogc_collection_items(self, collectionId: str,
+                             limit: int = None, offset: int = None,
+                             bbox: List[float] = None, filter: str = None,
+                             **kwargs) -> Dict[str, Any]:
+        """Get data records (items) associated with a collection.
+        
+        The Items operation retrieves the data records associated with a collection ID.
+        The response is always returned as GeoJSON.
+        
+        Several parameters can constrain or filter the response: limit records,
+        specify offset, filter using CQL2, or specify a bounding box.
+        
+        Args:
+            collectionId: Unique identifier of the collection
+            limit: Maximum number of records to return (max: 10000)
+            offset: Number of records to skip (for pagination)
+            bbox: Bounding box coordinates [minX, minY, maxX, maxY]
+            filter: CQL2 filter expression (e.g., "bldgid='B000CTOWD2PJ'")
+        
+        Returns:
+            GeoJSON FeatureCollection with features
+        
+        Example:
+            ogc_collection_items(collectionId="pbb_usa", limit=50)
+            ogc_collection_items(collectionId="pbb_usa", bbox=[-3.545148, 50.727083, -3.538470, 50.728095])
+            ogc_collection_items(collectionId="pbb_usa", filter="bldgid='B000CTOWD2PJ'")
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/items"
+            
+            params = {}
+            if limit is not None:
+                params["limit"] = limit
+            if offset is not None:
+                params["offset"] = offset
+            if bbox is not None:
+                params["bbox"] = ",".join(str(x) for x in bbox)
+            if filter is not None:
+                params["filter"] = filter
+            
+            headers = {
+                "Accept": "application/geo+json"
+            }
+            
+            logger.debug(f"[ogc_collection_items] Requesting items for: {collectionId}, params: {params}")
+            response = self.session.get(url, params=params, headers=headers)
+            logger.debug(f"[ogc_collection_items] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC collection items error: {e}")
+            return {"error": str(e)}
+
+    def ogc_feature_by_id(self, collectionId: str, featureId: str, **kwargs) -> Dict[str, Any]:
+        """Get a specific feature by its ID from a collection.
+        
+        Returns records from the enrich dataset which match the input feature ID.
+        All enrich datasets have a unique feature ID that is generated as a
+        sequential number. This ID can be used to return the record.
+        
+        Args:
+            collectionId: Unique identifier of the collection (e.g., "pbb_usa")
+            featureId: The sequential feature ID of the collection (e.g., "1234")
+        
+        Returns:
+            GeoJSON FeatureCollection with the matching feature
+        
+        Example:
+            ogc_feature_by_id(collectionId="pbb_usa", featureId="1234")
+        """
+        try:
+            url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/items/{featureId}"
+            
+            headers = {
+                "Accept": "application/geo+json"
+            }
+            
+            logger.debug(f"[ogc_feature_by_id] Requesting feature {featureId} from: {collectionId}")
+            response = self.session.get(url, headers=headers)
+            logger.debug(f"[ogc_feature_by_id] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"OGC feature by ID error: {e}")
+            return {"error": str(e)}

@@ -52,7 +52,7 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 # Create MCP server
 app = Server("precisely-complete-mcp")
 
-# Tool definitions (55 tools covering all Precisely APIs)
+# Tool definitions (66 tools covering all Precisely APIs)
 TOOLS = [
     # Geocoding & Address (9 tools)
     Tool(
@@ -933,11 +933,275 @@ Returns: Table metadata object with tableName, schemaName, geometryType, numberO
             "required": ["tableName"]
         }
     ),
+    Tool(
+        name="summarize",
+        description="""Aggregate spatial data within a defined area (Spatial Summary API).
+
+The Spatial Summary API method aggregates spatial data within a defined area, offering detailed statistics such as population density, area size, and other location-specific attributes. It supports multiple distance metrics and provides comprehensive statistical analysis.
+
+Example request (Geometry with INTERSECTS):
+{
+    "spatialOperation": "INTERSECTS",
+    "tableName": "/precisely/riskdata/hwr_usa_windgrid",
+    "aggregateColumns": {
+        "w9": ["min", "max", "avg", "sum"]
+    },
+    "location": {
+        "format": "wkt",
+        "value": "GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))"
+    },
+    "proportionalCalculation": true
+}
+
+Example request (Address with INTERSECTS):
+{
+    "spatialOperation": "INTERSECTS",
+    "tableName": "/precisely/riskdata/flr_usa_comm",
+    "location": {
+        "format": "address",
+        "value": "1 Global View Troy NY",
+        "country": "USA"
+    },
+    "aggregateColumns": {
+        "id": ["min", "max", "avg", "sum"]
+    },
+    "proportionalCalculation": true,
+    "bufferDistance": "10 km"
+}
+
+Example request (Geometry with WITHIN):
+{
+    "tableName": "/precisely/riskdata/wfr_usa_fireriskpro",
+    "location": {
+        "format": "WKT",
+        "value": "POLYGON ((-122.766919 38.031512, -122.766919 38.051864, -122.741314 38.051864, -122.741314 38.031512, -122.766919 38.031512))"
+    },
+    "spatialOperation": "within",
+    "proportionalCalculation": false,
+    "aggregateColumns": {
+        "INTENSITY": ["min", "MAX", "avg", "sum", "MEDIAN"],
+        "DAMAGE": ["min", "max", "SUM", "avg", "MEDIAN"]
+    }
+}
+
+Returns: GeoJSON FeatureCollection with aggregated statistics.""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "tableName": {"type": "string", "description": "Name of the table containing the spatial data"},
+                "location": {"type": "object", "description": "Input geometry or address. Format: {format: 'WKT'|'GEOJSON'|'LonLat'|'address', value: '...', country: 'USA'}"},
+                "aggregateColumns": {"type": "object", "description": "Columns to aggregate. Format: {column_name: ['min', 'max', 'avg', 'sum', 'MEDIAN']}"},
+                "spatialOperation": {"type": "string", "description": "Spatial query type: 'INTERSECTS' (default) or 'WITHIN'", "default": "INTERSECTS"},
+                "proportionalCalculation": {"type": "boolean", "description": "Apply proportional calculations (only for INTERSECTS)", "default": False},
+                "bufferDistance": {"type": "string", "description": "Buffer distance (e.g., '10 km', '100 m')"}
+            },
+            "required": ["tableName", "location", "aggregateColumns"]
+        }
+    ),
+    # OGC API Features (10 tools)
+    Tool(
+        name="ogc_landing_page",
+        description="""Get OGC API Features landing page with links to essential API resources.
+
+The landing page provides links to essential API resources, including:
+- API Definition: A machine-readable specification of the API.
+- Conformance Declaration: A list of standards that the API conforms to.
+- Feature Collections: Information and links to the available feature collections.
+
+Example request:
+No parameters required.
+
+Returns: Landing page object with title, description, and links array.""",
+        inputSchema={
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    ),
+    Tool(
+        name="ogc_api_definition",
+        description="""Get the complete OpenAPI definition for the OGC API.
+
+The API endpoint retrieves the complete OpenAPI definition for the API.
+The response is a machine-readable specification that describes all available
+endpoints, security configurations, and request and response schemas.
+
+The API definition conforms to the OpenAPI 3.0.1 standard.
+
+Example request:
+No parameters required.
+
+Returns: OpenAPI specification object.""",
+        inputSchema={
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    ),
+    Tool(
+        name="ogc_functions",
+        description="""Get list of available spatial functions within the OGC API.
+
+This endpoint returns a list of available spatial functions within the API.
+Provides supported spatial functions that can be used for querying features.
+Function metadata includes function names, argument types, and return types.
+
+Example request:
+No parameters required.
+
+Returns: Object with functions array containing name, arguments, and returns.""",
+        inputSchema={
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    ),
+    Tool(
+        name="ogc_conformance",
+        description="""Get OGC API conformance declaration.
+
+This endpoint returns the conformance declaration for the API. The conformance
+declaration is a list of all conformance classes specified in a standard that
+the server adheres to.
+
+Example request:
+No parameters required.
+
+Returns: Object with conformsTo array listing OGC API conformance classes.""",
+        inputSchema={
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    ),
+    Tool(
+        name="ogc_collections",
+        description="""Get list of feature collections available on the server.
+
+This endpoint returns the list of feature collections available on the server.
+Each collection represents a spatial dataset that can be queried and provides
+essential metadata including Collection ID, Title, Description, and Links.
+
+Example request:
+No parameters required.
+
+Returns: Object with links array and collections array.""",
+        inputSchema={
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    ),
+    Tool(
+        name="ogc_collection",
+        description="""Get information about a specific feature collection.
+
+This resource describes the feature collection identified by collectionId.
+The response contains Collection ID, Title, Description, itemType, and Links.
+
+Example request:
+{"collectionId": "pbb_usa"}
+
+Returns: Collection object with id, title, description, itemType, and links.""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'pbb_usa')"}
+            },
+            "required": ["collectionId"]
+        }
+    ),
+    Tool(
+        name="ogc_collection_schema",
+        description="""Get the schema for a specified feature collection.
+
+This resource provides the schema for a specified feature collection.
+The schema defines the structure including field names, data types,
+formats, descriptions, and geospatial data types.
+
+Example request:
+{"collectionId": "pas_usa"}
+
+Returns: JSON Schema object with properties definitions.""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'pas_usa')"}
+            },
+            "required": ["collectionId"]
+        }
+    ),
+    Tool(
+        name="ogc_collection_queryables",
+        description="""Get queryable attributes for a specific collection.
+
+This resource returns the queryable attributes for a specific collection.
+These attributes are a subset of the collection's full set of attributes
+and are indexed for performance in filter queries.
+
+Example request:
+{"collectionId": "pas_usa"}
+
+Returns: Queryable schema object with properties definitions.""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'pas_usa')"}
+            },
+            "required": ["collectionId"]
+        }
+    ),
+    Tool(
+        name="ogc_collection_items",
+        description="""Get data records (items) associated with a collection.
+
+The Items operation retrieves data records associated with a collection ID.
+The response is returned as GeoJSON. Supports filtering with limit, offset,
+bbox, and CQL2 filter expressions.
+
+Example requests:
+{"collectionId": "pbb_usa", "limit": 50}
+{"collectionId": "pbb_usa", "bbox": [-3.545148, 50.727083, -3.538470, 50.728095]}
+{"collectionId": "pbb_usa", "filter": "bldgid='B000CTOWD2PJ'"}
+
+Returns: GeoJSON FeatureCollection with features.""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "collectionId": {"type": "string", "description": "Unique identifier of the collection"},
+                "limit": {"type": "integer", "description": "Maximum number of records to return (max: 10000)"},
+                "offset": {"type": "integer", "description": "Number of records to skip (for pagination)"},
+                "bbox": {"type": "array", "items": {"type": "number"}, "description": "Bounding box [minX, minY, maxX, maxY]"},
+                "filter": {"type": "string", "description": "CQL2 filter expression"}
+            },
+            "required": ["collectionId"]
+        }
+    ),
+    Tool(
+        name="ogc_feature_by_id",
+        description="""Get a specific feature by its ID from a collection.
+
+Returns records from the enrich dataset which match the input feature ID.
+All enrich datasets have a unique feature ID (sequential number).
+
+Example request:
+{"collectionId": "pbb_usa", "featureId": "1234"}
+
+Returns: GeoJSON FeatureCollection with the matching feature.""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'pbb_usa')"},
+                "featureId": {"type": "string", "description": "The sequential feature ID (e.g., '1234')"}
+            },
+            "required": ["collectionId", "featureId"]
+        }
+    ),
 ]
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 55 Precisely API tools"""
+    """List all 66 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -971,7 +1235,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"55 tools available")
+    logger.info(f"66 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
@@ -1035,7 +1299,7 @@ def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
     logger.info(f"Endpoint: http://{host}:{port}/mcp")
-    logger.info(f"55 tools available")
+    logger.info(f"66 tools available")
     
     starlette_app = create_http_app(
         json_response=True,  # Simpler client integration
