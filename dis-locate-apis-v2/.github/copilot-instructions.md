@@ -9,16 +9,35 @@ This is a **Model Context Protocol (MCP) server** exposing Precisely location in
 
 **Data Flow**: MCP Client → `precisely_wrapper_server.py` (Tool definitions + routing) → `precisely_api_core.py` (HTTP calls) → Precisely Cloud APIs
 
+**Key Files**:
+- `precisely_api_core.py` - API methods (root folder)
+- `mcp_servers/precisely_wrapper_server.py` - MCP tool definitions
+- `implementation_user_prompts.txt` - User prompts for implementations (root folder)
+- `.github/copilot-instructions.md` - These instructions
+
 ## Workflow for handling user requests:
-1. Each user prompt will have 3 self-explanatory sections, "user-request:", "status-updates-to-user:", "official-documentation:"
-2. API's https://developer.cloud.precisely.com/apis/products-try-out/ link which needs to be implemented as MCP tool is provided in "user-request:" section
-3. Fetch and use the OpenAPI spec from the link provided in "user-request:" section to implement the MCP tool
-4. Use examples and field descriptions **verbatim** from the fetched OpenAPI spec - do not infer or customize
-5. Include the "Request" example from fetched OpenAPI spec inside method's docstring as a method call example, just like the code for overlap method in `precisely_api_core.py`
-6. Use any headers required based on value of response "Content-type:", mentioned in "official-documentation:" section of the user prompt. In case of conflict, ask user to select from choices, highlighting recommendation
-7. Include ALL "Request" examples found in "official-documentation:" section of the user prompt in Tool definition's `description` field, just like the code for overlap Tool in `precisely_wrapper_server.py`
-8. Do not include the "Response" section of examples
-9. Provide status updates to user according to "status-updates-to-user:" section of the user prompt
+1. User prompts are provided via chat or in `implementation_user_prompts.txt`
+2. Each prompt has 3 sections: "user-request:", "status-updates-to-user:", "official-documentation:"
+3. API try-out link is provided in "user-request:" section
+4. Fetch OpenAPI spec from the try-out link to implement the MCP tool
+5. "official-documentation:" contains copied documentation text (since pages are JS-rendered and cannot be fetched directly)
+6. Use examples and field descriptions **verbatim** from OpenAPI spec and official-documentation - do not infer or customize
+7. Include the "Request" example from OpenAPI spec inside method's docstring, like the `overlap` method in `precisely_api_core.py`
+8. Use headers based on "Response Content-type:" in "official-documentation:". If conflict exists, ask user to choose
+9. Include ALL "Request" examples from "official-documentation:" in Tool's `description` field, like the `overlap` Tool in `precisely_wrapper_server.py`
+10. Do not include "Response" sections from examples
+11. Provide status updates per "status-updates-to-user:" section
+
+## Prompt Template
+
+```
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/[api_tryout_path]
+status-updates-to-user:
+[User instructions for status updates]
+official-documentation:
+[Copied documentation text including Request examples]
+```
 
 ## Adding New API Tools
 
