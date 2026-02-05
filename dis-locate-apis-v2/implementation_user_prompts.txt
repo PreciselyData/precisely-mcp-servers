@@ -1,0 +1,2244 @@
+Opus prompts
+
+Spatial-SaaS-Analysis - 3 "GET" APIs
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialAnalysis_getProducts
+status-updates-to-user:
+List and expose all steps taken 
+official-documentation:
+Get Product Metadata
+This section describes how this endpoint works.
+
+URL Composition
+Base URL: https://api.cloud.precisely.com
+Get Product Metadata: /v1/spatial/products
+Supported Methods: GET only
+Rate Limit (Transactions per second): 100
+Authentication and Input Fields: Data Integrity Suite's APIs provide multiple authentication methods. Whether you want to pass the API Key and Secret directly as part of the Basic Authentication header or use bearer tokens, you can do either using the same header. The two ways of authentication are:
+Basic Authentication (Using API Key and secret)
+Bearer Token Authentication
+For more information about authentication, see How to Authenticate and follow the instructions.
+
+Description
+Returns metadata about the Enrich Data products available via Spatial APIs. Information in the response includes product family, applicable geographic area, vintage, available layers, appropriate zoom levels for display and styles to use in visualization application or API calls. For example, a "layerId" value can be specified in Tiles API for getting tiles. Similarly a "featureTable" value can be used in Analysis API to invoke spatial operation on that layer.
+
+Query Parameters
+None.
+
+Examples
+Request
+
+https://api.cloud.precisely.com/v1/spatial/products
+Response
+
+[
+  {
+    "productId": "59B15AEF53187A000A8070B7",
+    "productName": "Parcels",
+    "productFamily": "properties",
+    "vintage": "2025.7",
+    "geography": "PGC_USA",
+    "layers": [
+      {
+        "vintage": "2025.7",
+        "layerId": "parcels",
+        "displayName": "parcels",
+        "featureTable": "properties/parcels",
+        "geometryReturnedInFeatureAPIs": true,
+        "recommendedDisplayMinZoom": 3,
+        "recommendedDisplayMaxZoom": 18,
+        "recommendedDisplayZIndex": 46,
+        "recommendedQueryMinZoom": 5,
+        "recommendedQueryMaxZoom": 18,
+        "recommendedStyle": {
+          "paint": {
+            "fill-color": "#00FFFF",
+            "fill-opacity": "0",
+            "fill-outline-color": "#00FFFF"
+          },
+          "geometryType": "polygon",
+          "legendSymbol": "pentagon"
+        },
+        "recommendedSummaryAttributes": [
+          {
+            "name": "prclid",
+            "label": "Parcel ID"
+          },
+          {
+            "name": "parcel_apn",
+            "label": "Parcel APN"
+          },
+          {
+            "name": "tax_apn",
+            "label": "APN"
+          },
+          {
+            "name": "fips",
+            "label": "FIPS"
+          },
+          {
+            "name": "unit_num",
+            "label": "Unit"
+          },
+          {
+            "name": "city",
+            "label": "City"
+          },
+          {
+            "name": "state",
+            "label": "State"
+          },
+          {
+            "name": "postcode",
+            "label": "ZIP Code"
+          }
+        ],
+        "copyrightAttributions": "© 2025 Precisely. All rights reserved."
+      }
+    ]
+  },
+  {
+    "productId": "59E4F6A692D820000AC1546F",
+    "productName": "Address Fabric",
+    "productFamily": "properties",
+    "vintage": "2025.8",
+    "geography": "PGC_USA",
+    "layers": [
+      {
+        "vintage": "2025.8",
+        "layerId": "address_fabric",
+        "displayName": "address fabric",
+        "featureTable": "properties/address_fabric",
+        "geometryReturnedInFeatureAPIs": true,
+        "recommendedDisplayMinZoom": 3,
+        "recommendedDisplayMaxZoom": 18,
+        "recommendedDisplayZIndex": 97,
+        "recommendedQueryMinZoom": 14,
+        "recommendedQueryMaxZoom": 18,
+        "recommendedStyle": {
+          "paint": {
+            "circle-color": "#FF5722",
+            "circle-radius": "5"
+          },
+          "geometryType": "point",
+          "legendSymbol": "circle"
+        },
+        "recommendedSummaryAttributes": [
+          {
+            "name": "pbkey",
+            "label": "PreciselyID"
+          },
+          {
+            "name": "city",
+            "label": "City"
+          },
+          {
+            "name": "state",
+            "label": "State"
+          },
+          {
+            "name": "zipcode",
+            "label": "Postcode"
+          },
+          {
+            "name": "parent",
+            "label": "Parent PreciselyID"
+          },
+          {
+            "name": "prop_type",
+            "label": "Property Type"
+          }
+        ],
+        "copyrightAttributions": "© 2025 Precisely. All rights reserved. © 2006-2025 TomTom © United States Postal Service (USPS) 2025"
+      }
+    ]
+  }
+]
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialAnalysis_listTables
+status-updates-to-user:
+List and expose all steps taken 
+official-documentation:
+This section describes how this API works. You may want to try it out with a Free Trial Account.
+
+HTTP Request
+URL Composition
+Base URL: https://api.cloud.precisely.com
+Get Tables: /v1/spatial/tables
+Supported Methods: GET only
+Rate Limit (Transactions per second): 100
+Authentication and Input Fields: Data Integrity Suite's APIs provide multiple authentication methods. Whether you want to pass the API Key and Secret directly as part of the Basic Authentication header or use bearer tokens, you can do either using the same header. The two ways of authentication are:
+
+Basic Authentication (Using API Key and secret)
+Bearer Token Authentication
+For more information about authentication, see How to Authenticate and follow the instructions.
+
+Description
+Returns a list of available spatial tables from the database.
+
+GET URL Format
+The following format is used for HTTP GET requests.
+
+HTTP GET
+https://api.cloud.precisely.com/v1/spatial/tables
+Examples
+Request
+
+https://api.cloud.precisely.com/v1/spatial/tables
+Response
+
+[ 
+    { 
+        "tableName": "/precisely/segmentationgeodemographics/crp_usa_lookup", 
+        "tableFriendlyName": "PreciselyID Demographics Lookup (US)" 
+    }, 
+    { 
+        "tableName": "/precisely/riskdata/flr_usa_floodrisk", 
+        "tableFriendlyName": "Flood Risk" 
+    }, 
+    { 
+        "tableName": "/precisely/adminboundaries/wbp_glb_postcodes_hires", 
+        "tableFriendlyName": "Postcodes high resolution" 
+    }, 
+    { 
+        "tableName": "/precisely/addressing/pgr_usa_class1", 
+        "tableFriendlyName": "Property Graph Relationship Class 1" 
+    }, 
+    { 
+        "tableName": "/boundaries/census_blockgroup", 
+        "tableFriendlyName": "Census Block Group Boundaries Shorelined" 
+    }, 
+    { 
+        "tableName": "/precisely/adminboundaries/wbp_glb_postcodes", 
+        "tableFriendlyName": "Postcodes" 
+    }, 
+    { 
+        "tableName": "/boundaries/census_mcd", 
+        "tableFriendlyName": "MCD Boundaries Shorelined" 
+    }, 
+    { 
+        "tableName": "/risks/historical_weather_hurricanegrid", 
+        "tableFriendlyName": "Aggregate Hurricane Events" 
+    }, 
+    { 
+        "tableName": "/precisely/postaladmin/cbb_usa_state_b", 
+        "tableFriendlyName": "State Boundaries" 
+    }, 
+    { 
+        "tableName": "/precisely/riskdata/hwr_usa_hailgrid", 
+        "tableFriendlyName": "Aggregate Hail Storm Events" 
+    }, 
+    { 
+        "tableName": "/precisely/addressing/pgr_usa_class3", 
+        "tableFriendlyName": "Property Graph" 
+    }, 
+    { 
+        "tableName": "/boundaries/census_state", 
+        "tableFriendlyName": "State Boundaries Shorelined" 
+    }, 
+    { 
+        "tableName": "/properties/address_fabric", 
+        "tableFriendlyName": "Address Fabric" 
+    }, 
+    { 
+        "tableName": "/boundaries/census_place", 
+        "tableFriendlyName": "Place Boundaries Shorelined" 
+    }, 
+    { 
+        "tableName": "/risks/historical_weather_hurricanelines_world", 
+        "tableFriendlyName": "World Hurricane Path" 
+    }, 
+    { 
+        "tableName": "/precisely/postaladmin/zcr_usa_boun", 
+        "tableFriendlyName": "ZIP Code Boundaries" 
+    }, 
+    { 
+        "tableName": "/precisely/riskdata/hwr_usa_hailranges", 
+        "tableFriendlyName": "Hail Storm Severity Ranges" 
+    }, 
+    { 
+        "tableName": "/risks/coastal_shoreline_world", 
+        "tableFriendlyName": "World Shoreline" 
+    }, 
+    { 
+        "tableName": "/precisely/riskdata/hwr_usa_hail", 
+        "tableFriendlyName": "Hail Storm Historical Events" 
+    }, 
+    { 
+        "tableName": "/precisely/propertyfeatures/pbb_usa", 
+        "tableFriendlyName": "Building Objects" 
+    }, 
+    { 
+        "tableName": "/precisely/riskdata/wfr_usa_fireriskpro", 
+        "tableFriendlyName": "Fire Risk Pro" 
+    }, 
+    { 
+        "tableName": "/precisely/riskdata/hwr_usa_tornado", 
+        "tableFriendlyName": "Historical Tornado Events" 
+    }, 
+    { 
+        "tableName": "/precisely/segmentationgeodemographics/crp_usa", 
+        "tableFriendlyName": "CrimeIndex (US)" 
+    }, 
+    { 
+        "tableName": "/precisely/riskdata/cfr_usa_fireextreme", 
+        "tableFriendlyName": "Fire Risk Pro Extreme" 
+    } 
+]
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialAnalysis_getTableMetadata
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+Get Table Metadata
+This section describes how this API works. You may want to try it out with a Free Trial Account.
+
+HTTP Request
+URL Composition
+Base URL: https://api.cloud.precisely.com
+Get Table Metadata: /v1/spatial/tables/{tableName}/metadata
+Supported Methods: GET only
+Rate Limit (Transactions per second): 100
+Authentication and Input Fields: Data Integrity Suite's APIs provide multiple authentication methods. Whether you want to pass the API Key and Secret directly as part of the Basic Authentication header or use bearer tokens, you can do either using the same header. The two ways of authentication are:
+
+Basic Authentication (Using API Key and secret)
+Bearer Token Authentication
+For more information about authentication, see How to Authenticate and follow the instructions.
+
+Description
+Returns metadata for a table present in database. Information in the response includes table name, schema, columns and their description and type, bounding box in case of spatial table and row count.
+
+GET URL Format
+The following format is used for HTTP GET requests.
+
+HTTP GET
+https://api.cloud.precisely.com/v1/spatial/tables/{tableName}/metadata
+Query Parameters
+This operation takes these query parameters.
+
+Parameter	Type	Required	Description
+tableName	String	Yes	Name of the table for which the metadata needs to be described.
+Examples
+Request
+
+https://api.cloud.precisely.com/v1/spatial/tables/properties/buildings/metadata
+Response
+
+{ 
+    "tableName": "/properties/buildings", 
+    "schemaName": "propertyfeatures", 
+    "geometryType": "POLYGON", 
+    "numberOfRows": 164419242, 
+    "columns": [ 
+        { 
+            "columnName": "incremental_s_no", 
+            "description": "", 
+            "dataType": "LONG_INTEGER" 
+        }, 
+        { 
+            "columnName": "bldgid", 
+            "description": "Unique building identifier", 
+            "dataType": "STRING" 
+        }, 
+        { 
+            "columnName": "fips", 
+            "description": "Combination of the FIPS codes for the state (first two digits) and county (last three digits) in which the property is located", 
+            "dataType": "STRING" 
+        }, 
+        { 
+            "columnName": "geoid", 
+            "description": "Geography ID; 15-digit ID from TIGER block (state FIPS, county FIPS, tract FIPS, block group FIPS, and block FIPS)", 
+            "dataType": "STRING" 
+        }, 
+        { 
+            "columnName": "lon", 
+            "description": "Longitude of polygon centroid",
+            "dataType": "DOUBLE" 
+        }, 
+        { 
+            "columnName": "lat", 
+            "description": "Latitude of polygon centroid", 
+            "dataType": "DOUBLE" 
+        }, 
+        { 
+            "columnName": "elevation", 
+            "description": "Elevation at building centroid, in feet above sea level. Value will be -9,999 when no elevation data is available.", 
+            "dataType": "INTEGER" 
+        }, 
+        { 
+            "columnName": "elevhigh", 
+            "description": "Highest elevation along building polygon perimeter, in feet above sea level", 
+            "dataType": "INTEGER" 
+        }, 
+        { 
+            "columnName": "elevlow", 
+            "description": "Lowest elevation along building polygon perimeter, in feet above sea level", 
+            "dataType": "INTEGER" 
+        }, 
+        { 
+            "columnName": "area", 
+            "description": "Total area of building in square feet", 
+            "dataType": "INTEGER" 
+        }, 
+        { 
+            "columnName": "bldgtype", 
+            "description": "Building type residential/business classification", 
+            "dataType": "STRING" 
+        }, 
+        { 
+            "columnName": "ubid", 
+            "description": "Unique ID from the Department of Energy that is based on building shape. This ID is not persistent.", 
+            "dataType": "STRING" 
+        }, 
+        { 
+            "columnName": "last_seen", 
+            "description": "Last recorded date on which building was present in source data", 
+            "dataType": "DATE" 
+        }, 
+        { 
+            "columnName": "wkt", 
+            "description": "", 
+            "dataType": "STRING" 
+        }, 
+        { 
+            "columnName": "geom", 
+            "description": "Geometry", 
+            "dataType": "FEATURE_GEOMETRY" 
+        } 
+    ], 
+    "xMin": -176.67506, 
+    "xMax": 174.15048, 
+    "yMin": 13.23767, 
+    "yMax": 71.34754 
+}
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialAnalysis_summarizeData
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+Spatial Summary API
+The Spatial Summary API method aggregates spatial data within a defined area, offering detailed statistics such as population density, area size, and other location-specific attributes. It supports multiple distance metrics and provides comprehensive statistical analysis, making it useful for market analysis, urban planning, and identifying trends within geographic regions.
+
+Spatial Summary API Key Features
+The Spatial Summary API method has the following key features:
+
+Aggregate numerical and date data based on a spatial region.
+Perform proportional calculations for selected attributes.
+Customize aggregation using user-defined columns.
+
+Spatial Summary API Request and Response
+This section describes how this API works. You may want to try it out with a Free Trial Account.
+
+This method will consume credits.
+HTTP Request
+URL Composition
+Base URL: https://api.cloud.precisely.com
+Spatial summary : /v1/spatial/summary
+Supported Methods: POST only
+Rate Limit (Transactions per second): 100
+Authentication and Input Fields: Data Integrity Suite's APIs provide multiple authentication methods. Whether you want to pass the API Key and Secret directly as part of the Basic Authentication header or use bearer tokens, you can do either using the same header. The two ways of authentication are:
+
+Basic Authentication (Using API Key and secret)
+Bearer Token Authentication
+For more information about authentication, see How to Authenticate and follow the instructions.
+
+Response
+Content-type: application/geo+json
+Description
+The Spatial Summary endpoint performs calculations on geospatial data by aggregating numerical and date fields based on spatial queries. Users can perform proportional calculations and return aggregated results for a given geometry.
+
+POST URL Format
+The following format is used for HTTP POST requests:
+
+HTTP POST:
+https://api.cloud.precisely.com/v1/spatial/summarize
+
+POST BODY:
+{ 
+    "spatialOperation": "String", 
+    "tableName": "String", 
+    "aggregateColumns": Array { "column1": ["attribute_1", "attribute_2", "attribute_3"] },
+    "location": { 
+        "format": "String", 
+        "value": "Collection (Object_1 (longitude1 latitude1, longitude2 latitude2), Object_2 (longitude1 latitude1, longitude2 latitude2))"
+    }, 
+    "proportionalCalculation": Boolean 
+} 
+Request Body Parameters
+This operation takes these request body parameters.
+
+Parameter	Type	Required	Description
+tableName	String	Yes	Name of the table containing the spatial data.
+location.format	String	Yes	Format of the input geometry. Possible values are:
+WKT (Default)
+GEOJSON
+LonLat
+For example, "[-122.777231, 38.009251]"
+
+Address
+For example, "1 GLOBAL VW, TROY NY 12180-8371, UNITED STATES OF AMERICA"
+
+location.value	Object	Yes	
+Input geometry or address for proximity search.
+
+Geometry must include the geometry type and the coordinates that should be specified in EPSG:4326 with the Longitude (for the X coordinate) and Latitude (for the Y coordinate).
+For example, "value":"POLYGON(((-96.8,30.5),(-97.7,30.5),(-97.7,29.9),(-96.8,29.9),(-96.8,30.5)))"
+
+Address can be provided as a postal address string, including street, city, state, postal code, and country.
+For example, "value":"1 GLOBAL VW, TROY NY 12180-8371, UNITED STATES OF AMERICA"
+
+location.country	String	No	Country of the address given. This parameter is mandatory if location.format is set to address.
+proportionalCalculation	Boolean	No	Determines if proportional calculations should be applied. This parameter is only applicable where the spatialOperation parameter is specified as "intersects". Possible values are:
+true
+false (Default)
+spatialOperation	String	No	The type of spatial query. Possible values are:
+intersects: The geometry to be returned partially overlaps with the specified input geometry. (Default)
+within: The geometry to be returned is entirely within the specified input geometry.
+aggregateColumns	Array	Yes	Columns to be aggregated, grouped by additional properties. Possible values are: min, max, avg, sum
+bufferDistance	String	No	The buffered distance around the input geometry. If specified, the parameter must include the value and the measurement unit. For example, specify "100 m" to buffer the input geometry by 10 meters before performing the spatial operation. The valid distance units are:
+mi: miles
+km: kilometers
+ft: feet
+m: meters
+nm: nautical miles
+For example: "10 mi"
+
+Examples
+Request (Geometry) using "Intersects" spatial operation
+
+https://api.cloud.precisely.com/v1/spatial/summarize 
+
+{ 
+    "spatialOperation": "INTERSECTS", 
+    "tableName": "/precisely/riskdata/hwr_usa_windgrid", 
+    "aggregateColumns": { 
+        "w9": [ 
+            "min", 
+            "max", 
+            "avg", 
+            "sum" 
+        ] 
+    }, 
+    "location": { 
+        "format": "wkt", 
+        "value": "GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), 
+ LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))" 
+    }, 
+    "proportionalCalculation": true 
+} 
+Response (Geometry) using "Intersects" spatial operation
+
+{ 
+    "type": "FeatureCollection", 
+    "features": [ 
+        { 
+            "type": "Feature", 
+            "properties": { 
+                "w9_MIN": 0.0, 
+                "w9_MAX": 1.0, 
+                "w9_AVG": 0.523809739349376, 
+                "w9_SUM": 11.0, 
+                "count": 21 
+            }, 
+            "geometry": { 
+                "type": "GeometryCollection", 
+                "geometries": [ 
+                    { 
+                        "type": "MultiLineString", 
+                        "coordinates": [ 
+                            [ 
+                                [ 
+                                    -121.756899, 
+                                    37.653383 
+                                ], 
+                                [ 
+                                    -121.158302, 
+                                    37.304645 
+                                ], 
+                                [ 
+                                    -121.690998, 
+                                    37.120906 
+                                ] 
+                            ] 
+                        ] 
+                    }, 
+                    { 
+                        "type": "MultiPolygon", 
+                        "coordinates": [ 
+                            [ 
+                                [ 
+                                    [ 
+                                        -122.399306, 
+                                        37.712211 
+                                    ], 
+                                    [ 
+                                        -122.398975, 
+                                        37.712132 
+                                    ], 
+                                    [ 
+                                        -122.399007, 
+                                        37.712049 
+                                    ], 
+                                    [ 
+                                        -122.399338, 
+                                        37.712127 
+                                    ], 
+                                    [ 
+                                        -122.399316, 
+                                        37.712185 
+                                    ], 
+                                    [ 
+                                        -122.399306, 
+                                        37.712211 
+                                    ] 
+                                ] 
+                            ] 
+                        ] 
+                    } 
+                ] 
+            } 
+        } 
+    ] 
+} 
+Request (Address) using "Intersects" spatial operation
+
+https://api.cloud.precisely.com/v1/spatial/summarize 
+
+{ 
+    "spatialOperation": "INTERSECTS", 
+    "tableName": "/precisely/riskdata/flr_usa_comm", 
+    "location": { 
+        "format": "address", 
+        "value": "1 Global View Troy NY", 
+        "country": "USA" 
+    }, 
+    "aggregateColumns": { 
+        "id": [ 
+            "min", 
+            "max", 
+            "avg", 
+            "sum" 
+        ] 
+    }, 
+    "proportionalCalculation": true, 
+    "bufferDistance": "10 km" 
+}   
+Response (Address) using "Intersects" spatial operation
+
+{ 
+    "type": "FeatureCollection", 
+    "features": [ 
+        { 
+            "type": "Feature", 
+            "properties": { 
+                "id_MIN": 89.47365149071186, 
+                "id_MAX": 200708.0102922065, 
+                "id_AVG": 156446.39993704596, 
+                "id_SUM": 9386784.0, 
+                "count": 60 
+            }, 
+            "geometry": { 
+                "type": "MultiPolygon", 
+                "coordinates": [ 
+                    [ 
+                        [ 
+                            [ 
+                                -73.82677898627004, 
+                                42.682242 
+                            ], 
+                            [ 
+                                -73.81038907190688, 
+                                42.72720810146974 
+                            ], 
+                            [ 
+                                -73.76561099313503, 
+                                42.76012557236389 
+                            ], 
+                            [ 
+                                -73.704443, 
+                                42.77217420293948 
+                            ], 
+                            [ 
+                                -73.64327500686498, 
+                                42.76012557236389 
+                            ], 
+                            [ 
+                                -73.59849692809311, 
+                                42.72720810146974 
+                            ], 
+                            [ 
+                                -73.58210701372995, 
+                                42.682242 
+                            ], 
+                            [ 
+                                -73.59849692809311, 
+                                42.63727589853026 
+                            ], 
+                            [ 
+                                -73.64327500686497, 
+                                42.604358427636114 
+                            ], 
+                            [ 
+                                -73.704443, 
+                                42.59230979706052 
+                            ], 
+                            [ 
+                                -73.76561099313503, 
+                                42.604358427636114 
+                            ], 
+                            [ 
+                                -73.81038907190688, 
+                                42.63727589853026 
+                            ], 
+                            [ 
+                                -73.82677898627004, 
+                                42.682242 
+                            ] 
+                        ] 
+                    ] 
+                ] 
+            } 
+        } 
+    ] 
+} 
+Request (Geometry) using "Within" spatial operation
+
+https://api.cloud.precisely.com/v1/spatial/summarize 
+
+{ 
+    "tableName": "/precisely/riskdata/wfr_usa_fireriskpro", 
+    "location": { 
+        "format": "WKT", 
+        "value": "POLYGON ((-122.766919 38.031512, -122.766919 38.051864, -122.741314 38.051864, -122.741314 38.031512, -122.766919 38.031512))" 
+    }, 
+    "spatialOperation": "within", 
+    "proportionalCalculation": false, 
+    "aggregateColumns": { 
+        "INTENSITY": [ 
+            "min", 
+            "MAX", 
+            "avg", 
+            "sum", 
+            "MEDIAN" 
+        ], 
+        "DAMAGE": [ 
+            "min", 
+            "max", 
+            "SUM", 
+            "avg", 
+            "MEDIAN" 
+        ] 
+    } 
+} 
+Response (Geometry) using "Within" spatial operation
+
+{ 
+    "type": "FeatureCollection", 
+    "features": [ 
+        { 
+            "type": "Feature", 
+            "properties": { 
+                "intensity_MIN": 20, 
+                "intensity_MAX": 29, 
+                "intensity_AVG": 25.0, 
+                "intensity_SUM": 75.0, 
+                "intensity_MEDIAN": 26, 
+                "damage_MIN": 8, 
+                "damage_MAX": 10, 
+                "damage_SUM": 26.0, 
+                "damage_AVG": 8.666666666666666, 
+                "damage_MEDIAN": 8, 
+                "count": 3 
+            }, 
+            "geometry": { 
+                "type": "MultiPolygon", 
+                "coordinates": [ 
+                    [ 
+                        [ 
+                            [ 
+                                -122.766919, 
+                                38.031512 
+                            ], 
+                            [ 
+                                -122.766919, 
+                                38.051864 
+                            ], 
+                            [ 
+                                -122.741314, 
+                                38.051864 
+                            ], 
+                            [ 
+                                -122.741314, 
+                                38.031512 
+                            ], 
+                            [ 
+                                -122.766919, 
+                                38.031512 
+                            ] 
+                        ] 
+                    ] 
+                ] 
+            } 
+        } 
+    ] 
+} 
+Request (Address) using "Within" spatial operation
+
+https://api.cloud.precisely.com/v1/spatial/summarize 
+
+{ 
+    "tableName": "/precisely/riskdata/wfr_usa_fireriskpro", 
+    "location": { 
+        "format": "address", 
+        "value": "1 Global View Troy NY", 
+        "country": "USA" 
+    }, 
+    "spatialOperation": "within", 
+    "proportionalCalculation": false, 
+    "bufferDistance": "10 km", 
+    "aggregateColumns": { 
+        "INTENSITY": [ 
+            "min", 
+            "MAX", 
+            "avg", 
+            "sum", 
+            "MEDIAN" 
+        ], 
+        "DAMAGE": [ 
+            "min", 
+            "max", 
+            "SUM", 
+            "avg", 
+            "MEDIAN" 
+        ] 
+    } 
+} 
+Response (Address) using "Within" spatial operation
+
+{ 
+    "type": "FeatureCollection", 
+    "features": [ 
+        { 
+            "type": "Feature", 
+            "properties": { 
+                "intensity_MIN": 0, 
+                "intensity_MAX": 19, 
+                "intensity_AVG": 8.431985294117647, 
+                "intensity_SUM": 4587.0, 
+                "intensity_MEDIAN": 9, 
+                "damage_MIN": 0, 
+                "damage_MAX": 0,
+                "damage_SUM": 0.0, 
+                "damage_AVG": 0.0, 
+                "damage_MEDIAN": 0, 
+                "count": 544 
+            }, 
+            "geometry": { 
+                "type": "MultiPolygon", 
+                "coordinates": [ 
+                    [ 
+                        [ 
+                            [ 
+                                -73.82677898627004, 
+                                42.682242 
+                            ], 
+                            [ 
+                                -73.81038907190688, 
+                                42.72720810146974 
+                            ], 
+                            [ 
+                                -73.76561099313503, 
+                                42.76012557236389 
+                            ], 
+                            [ 
+                                -73.704443, 
+                                42.77217420293948 
+                            ], 
+                            [ 
+                                -73.64327500686498, 
+                                42.76012557236389 
+                            ], 
+                            [ 
+                                -73.59849692809311, 
+                                42.72720810146974 
+                            ], 
+                            [ 
+                                -73.58210701372995, 
+                                42.682242 
+                            ], 
+                            [ 
+                                -73.59849692809311, 
+                                42.63727589853026 
+                            ], 
+                            [ 
+                                -73.64327500686497, 
+                                42.604358427636114 
+                            ], 
+                            [ 
+                                -73.704443, 
+                                42.59230979706052 
+                            ], 
+                            [ 
+                                -73.76561099313503, 
+                                42.604358427636114 
+                            ], 
+                            [ 
+                                -73.81038907190688, 
+                                42.63727589853026 
+                            ], 
+                            [ 
+                                -73.82677898627004, 
+                                42.682242 
+                            ] 
+                        ] 
+                    ] 
+                ] 
+            } 
+        } 
+    ] 
+}  
+Spatial Operations and Proportional Calculation
+Spatial Operations
+The Spatial Summary API supports two spatial operations: INTERSECTS and WITHIN. These operations define how the API selects spatial geometries from the spatial table based on the input geometry.
+
+INTERSECTS: returns geometries in the spatial table that intersect with the input geometry.
+WITHIN: returns geometries that are entirely contained within the input geometry.
+Example - Polygon Geometry
+Results where spatial table has polygon geometries
+Intersects	Within	Proportional Intersects
+100% of numeric data from the selected features are used in the summarize calculation.
+
+Intersects	
+100% of numeric data from the selected features are used in the summarize calculation.
+
+Within	
+Numeric data is multiplied by the percentage of the intersecting area of selected features to input polygon.
+
+Proportional Intersects
+Note: If the selected geometry is polygon, area based apportionment is applied.
+Example - Polyline Geometry
+Results where spatial table has line geometries
+Intersects	Within	Proportional Intersects
+100% of numeric data from the selected features is used in the summarize calculation.
+
+(each colour is a separate line feature)Intersects	
+100% of numeric data from the selected features is used in the summarize calculation.
+
+Within	
+Numeric data is multiplied by the percentage of the intersecting length of selected features to input polygon.
+
+Proportional Intersects
+Note: If the selected geometry is line, length based apportionment is applied.
+Proportional Calculation
+The proportionalCalculation parameter defines how numeric values are aggregated during an INTERSECTS operation. This parameter can be set to true or false (default is false)
+
+When set to true, the API calculates the percentage of the intersecting geometry (polygon area or line length) relative to the original input geometry.
+It then applies this percentage to numerical values before calculating aggregates such as minimum, maximum, average, or sum.
+When set to false, the aggregates such as minimum, maximum, average, or sum are calculated on the full value of the numerical columns, regardless of the extent of intersection.
+This option is useful when you need to proportionally apportion values—such as population within postal codes—based on the input geometry.
+
+Note: Proportional calculation is not supported for the WITHIN operation as it always returns entire polygon geometries.
+Examples
+Case 1: Intersects
+
+{
+    "spatialOperation": "INTERSECTS",
+    "tableName": "flr_usa_comm",
+    "geometryType": "WKT",
+    "geometry": "POLYGON ((-122.758738137637 37.9425625657615,-122.615019033612 37.9425625657615, -122.615019033612 37.8651544031703, -122.758738137637 37.8651544031703, -122.758738137637 37.9425625657615))",
+    "aggregateColumns": {
+        "id": ["min","max","avg","sum"]
+    }
+}
+Results - Intersects
+Intersects	
+{
+    "summary": {
+        "id_MIN": 30918,
+        "id_MAX": 31041,
+        "id_AVG": 30937.917,
+        "id_SUM": 371255.0,
+        "count": 12
+    }
+}               
+Case 2: Intersects with proportional Calculation parameter set as 'true'
+
+{
+    "spatialOperation": "INTERSECTS",
+    "tableName": "flr_usa_comm",
+    "geometryType": "WKT",
+    "geometry": "POLYGON ((-122.758738137637 37.9425625657615, -122.615019033612 37.9425625657615, -122.615019033612 37.8651544031703, -122.758738137637 37.8651544031703, -122.758738137637 37.9425625657615))",
+    "aggregateColumns": {
+        "id": ["min","max","avg","sum"]
+    },
+    "proportionalCalculation": true
+}     
+Results - Intersects (Proportional Calculation set as 'true')
+Proportional Intersects	
+{
+    "summary": {
+        "id_MIN": 102.90065719329732,
+        "id_MAX": 30925.99999999998,
+        "id_AVG": 15463.648538597992,
+        "id_SUM": 185563.78,
+        "count": 12
+    }
+}              
+Case 3: Within
+
+{
+    "spatialOperation": “WITHIN",
+    "tableName": "flr_usa_comm",
+    "geometryType": "WKT",
+    "geometry": "POLYGON ((-122.758738137637 37.9425625657615, -122.615019033612 37.9425625657615, -122.615019033612 37.8651544031703, -122.758738137637 37.8651544031703, -122.758738137637 37.9425625657615))",
+    "aggregateColumns": {
+        "id": ["min","max","avg","sum"]
+    }
+}     
+Results - Within
+Within	
+{
+    "summary": {
+        "id_MIN": 30922,
+        "id_MAX": 30926,
+        "id_AVG": 30924.0,
+        "id_SUM": 154620.0,
+        "count": 5
+    }
+}
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_getLandingPage
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+The landing page provides links to essential API resources, including:
+
+API Definition: A machine-readable specification of the API.
+Conformance Declaration: A list of standards that the API conforms to.
+Feature Collections: Information and links to the available feature collections in the dataset.
+Use this endpoint to quickly navigate and explore the API's capabilities. This is the endpoint you would use to add this API to OGC API Features-compliant client applications.
+
+Request format
+The request parameters are always sent as an HTTP query string.
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/
+Request parameters
+None
+
+Example
+Request:
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/
+Response:
+
+{
+    "title": "Precisely OGC API Features",
+    "description": "Access to Precisely enrich data via a web API that conforms to the OGC API Features specification.",
+    "links": [
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/",
+            "rel": "self",
+            "type": "application/json",
+            "title": "Information about all endpoints as list"
+       },
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/api",
+            "rel": "service-desc",
+            "type": "application/vnd.oai.openapi+json;version=3.0",
+            "title": "the API definition description"
+        },
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/conformance",
+            "rel": "conformance",
+            "type": "application/json",
+            "title": "OGC API conformance classes implemented by this service"
+        },
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/conformance",
+            "rel": "http://www.opengis.net/def/rel/ogc/1.0/conformance",
+            "title": "OGC API conformance classes implemented by this service"
+        },
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections",
+            "rel": "data",
+            "type": "application/json",
+            "title": "Information about the feature collections"
+        },
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections",
+            "rel": "http://www.opengis.net/def/rel/ogc/1.0/data",
+            "title": "Information about the feature collections"
+        },
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/functions",
+            "rel": "functions",
+            "type": "application/json",
+            "title": "Information about the functions"
+        },
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/{collectionId}/queryables",
+            "rel": "queryables",
+            "type": "application/json",
+            "title": "Information about the queryables"
+        }
+    ]
+}
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_getAPI
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+The API endpoint retrieves the complete OpenAPI definition for the API. The response is a machine-readable specification that describes all available endpoints, security configurations, and request and response schemas.
+
+The API definition conforms to the OpenAPI 3.0.1 standard.
+
+Request format
+https://api.cloud.precisely.com/v1/ogcapi/enrich/api
+Request parameters
+None
+
+Example
+Request:
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/api 
+Response:
+
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "OGCApiFeaturesEnrichService API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.cloud.precisely.com/v1/ogcapi/enrich",
+            "description": "Generated server url"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "paths": {
+        "/functions": {
+            "get": {
+                "operationId": "getFunctions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FunctionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/conformance": {
+            "get": {
+                "operationId": "conformanceDeclaration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConformancePageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        . . .
+        "/collections": {
+            "get": {
+                "operationId": "getCollectionsPage",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CollectionsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{collectionId}": {
+            "get": {
+                "operationId": "getCollection",
+                "parameters": [
+                    {
+                        "name": "collectionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CollectionIdResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{collectionId}/schema": {
+            "get": {
+                "operationId": "getSchema",
+                "parameters": [
+                    {
+                        "name": "collectionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/schema+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DescribeCollectionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{collectionId}/queryables": {
+            "get": {
+                "operationId": "getQueryables",
+                "parameters": [
+                    {
+                        "name": "collectionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/schema+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QueryableResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{collectionId}/items": {
+            "get": {
+                "operationId": "getCollectionItems",
+                "parameters": [
+                    {
+                        "name": "collectionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "bbox",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "number",
+                                "format": "double"
+                            }
+                        },
+                        "style": "form",
+                        "explode": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/geo+json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "format": "byte"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/": {
+            "get": {
+                "operationId": "getLandingPage",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LandingPageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ErrorDetail": {
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "errorCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "errorGroup": {
+                        "type": "string"
+                    },
+                    "httpStatus": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "stackTrace": {
+                        "type": "string"
+                    },
+                    "errors": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ErrorDetail"
+                        }
+                    },
+                    "timestamp": {
+                        "type": "string"
+                    },
+                    "traceId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Argument": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "Function": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "arguments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Argument"
+                        }
+                    },
+                    "returns": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "FunctionResponse": {
+                "type": "object",
+                "properties": {
+                    "functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Function"
+                        }
+                    }
+                }
+            },
+            "ConformancePageResponse": {
+                "type": "object",
+                "properties": {
+                    "conformsTo": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "CollectionsInfo": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "itemType": {
+                        "type": "string"
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "CollectionsResponse": {
+                "type": "object",
+                "properties": {
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    },
+                    "collections": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CollectionsInfo"
+                        }
+                    }
+                }
+            },
+            "Link": {
+                "type": "object",
+                "properties": {
+                    "href": {
+                        "type": "string"
+                    },
+                    "rel": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CollectionIdResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "itemType": {
+                        "type": "string"
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "DescribeCollectionResponse": {
+                "type": "object",
+                "properties": {
+                    "schema": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "properties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/SchemaProperties"
+                        }
+                    }
+                }
+            },
+            "SchemaProperties": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "format": {
+                        "type": "string"
+                    }
+                }
+            },
+            "PropertyInfo": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "format": {
+                        "type": "string"
+                    }
+                }
+            },
+            "QueryableResponse": {
+                "type": "object",
+                "properties": {
+                    "schema": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "properties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/PropertyInfo"
+                        }
+                    },
+                    "additionalProperties": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "GetCollectionItemsRequest": {
+                "required": [
+                    "collectionId"
+                ],
+                "type": "object",
+                "properties": {
+                    "collectionId": {
+                        "type": "string"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "bbox": {
+                        "maxItems": 4,
+                        "minItems": 4,
+                        "type": "array",
+                        "items": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    },
+                    "filter": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LandingPageResponse": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_getFunctions
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+This endpoint returns a list of available spatial functions within the API.
+
+Purpose: Provides supported spatial functions that can be used for querying features.
+Function Metadata: Includes function names, argument types, and return types.
+Request format
+The request parameters are always sent as an HTTP query string.
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/functions
+Request parameters
+None
+
+Example
+Request:
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/functions 
+Response:
+
+{
+  "functions": [
+    {
+      "name": "s_within",
+      "arguments": [
+        {
+          "type": [
+            "geometry"
+          ]
+        },
+        {
+          "type": [
+            "geometry"
+          ]
+        }
+      ],
+      "returns": [
+        "boolean"
+      ]
+    },
+    {
+      "name": "s_contains",
+      "arguments": [
+        {
+          "type": [
+            "geometry"
+          ]
+        },
+        {
+          "type": [
+            "geometry"
+          ]
+        }
+      ],
+      "returns": [
+        "boolean"
+      ]
+    },
+    {
+      "name": "s_intersects",
+      "arguments": [
+        {
+          "type": [
+            "geometry"
+          ]
+        },
+        {
+          "type": [
+            "geometry"
+          ]
+        }
+      ],
+      "returns": [
+        "boolean"
+      ]
+    }
+  ]
+}
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_conformanceDeclaration
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+This endpoint returns the conformance declaration for the API. The conformance declaration is a list of all conformance classes specified in a standard that the server adheres to. It helps clients determine whether the API meets the required standards and their own requirements.
+
+Purpose: Provides a comprehensive list of conformance classes to verify the API's compliance with OGC API standards and additional specifications.
+Standards: Includes OGC API conformance classes and any extra specifications the API supports.
+Request format
+https://api.cloud.precisely.com/v1/ogcapi/enrich/conformance
+Request parameters
+None
+
+Example
+Request:
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/conformance
+Response:
+
+{
+    "conformsTo": [
+        "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
+        "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json",
+        "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30",
+        "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+        "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
+        "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
+        "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter",
+        "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter",
+        "http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2",
+        "http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators",
+        "http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions",
+        "http://www.opengis.net/spec/cql2/1.0/conf/spatial-functions",
+        "http://www.opengis.net/spec/cql2/1.0/conf/property-property",
+        "http://www.opengis.net/spec/cql2/1.0/conf/functions",
+        "http://www.opengis.net/spec/cql2/1.0/conf/arithmetic",
+        "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text",
+        "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables"
+    ]
+}
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_getCollectionsPage
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+This endpoint returns the list of feature collections available on the server. Each collection represents a spatial dataset that can be queried and provides essential metadata, including:
+
+Collection ID: A unique identifier for the spatial dataset.
+Title and Description: Optional details that describe the collection.
+Links: Navigational links to access the collection's items and schema endpoints using Collection ID.
+This resource is designed to help clients discover available geospatial datasets and understand the structure of each collection before making queries.
+
+Request format
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections
+Request parameters
+None
+
+Example
+Request:
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections
+Response:
+
+{
+    "links": [
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections",
+            "rel": "self",
+            "type": "application/json",
+            "title": "Information about the feature collections"
+        },
+        {
+            "href": "https://www.precisely.com/legal/licensing/software-and-data-end-user-license-agreement",
+            "rel": "license",
+            "type": "text/html",
+            "title": "Software and Data End User License Agreement"
+        }
+    ],
+    "collections": [
+        {
+            "id": "hwr_usa_hurricanelines",
+            "title": "hwr_usa_hurricanelines",
+            "description": "Hurricane Path",
+            "itemType": "feature",
+            "links": [
+                {
+                    "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/hwr_usa_hurricanelines",
+                    "rel": "self",
+                    "type": "application/json",
+                    "title": "This collection"
+                },
+                {
+                    "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/hwr_usa_hurricanelines/items",
+                    "rel": "items",
+                    "type": "application/geo+json",
+                    "title": "Access the features in the collection 'hwr_usa_hurricanelines' as GeoJSON"
+                },
+                {
+                    "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/hwr_usa_hurricanelines/schema",
+                    "rel": "describedby",
+                    "type": "application/schema+json",
+                    "title": "Schema of features in 'hwr_usa_hurricanelines'"
+                }
+            ]
+        },
+        {
+            "id": "flr_usa_comm",
+            "title": "flr_usa_comm",
+            "description": "Community",
+            "itemType": "feature",
+            "links": [
+                {
+                    "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/flr_usa_comm",
+                    "rel": "self",
+                    "type": "application/json",
+                    "title": "This collection"
+                },
+                {
+                    "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/flr_usa_comm/items",
+                    "rel": "items",
+                    "type": "application/geo+json",
+                    "title": "Access the features in the collection 'flr_usa_comm' as GeoJSON"
+                },
+                {
+                    "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/flr_usa_comm/schema",
+                    "rel": "describedby",
+                    "type": "application/schema+json",
+                    "title": "Schema of features in 'flr_usa_comm'"
+                }
+            ]
+        }
+    ]
+}
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_getCollection
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+This resource describes the feature collection identified in the path. The response is the same as the Collections API's response, but Collection ID returns the information for the specified collection only.
+Information about the feature collection with id {collectionId} is provided. The response contains:
+Collection ID: A unique identifier for the spatial dataset.
+Title and Description: Optional details that describe the collection.
+Links: Navigational links to access the collection's items and schema endpoints using Collection ID.
+Request format
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/{collectionId}
+Request parameters
+The request parameters are always sent as an HTTP query string. The following are sample specific table info request:
+
+Name	Type	Required	Description
+collectionId *	string	Required	
+Unique identifier of the collection.
+
+Example: pbb_usa
+
+Example
+Request:
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pbb_usa
+Response:
+
+{
+    "id": "pbb_usa",
+    "title": "pbb_usa",
+    "description": "Building Objects",
+    "itemType": "feature",
+    "links": [
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pbb_usa",
+            "rel": "self",
+            "type": "application/json",
+            "title": "This collection"
+        },
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pbb_usa/items",
+            "rel": "items",
+            "type": "application/geo+json",
+            "title": "Access the features in the collection 'pbb_usa' as GeoJSON"
+        },
+        {
+            "href": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pbb_usa/schema",
+            "rel": "describedby",
+            "type": "application/schema+json",
+            "title": "Schema of features in 'pbb_usa'"
+        }
+    ]
+}
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_getSchema
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+This resource provides the schema for a specified feature collection. The schema defines the structure of the collection and includes details such as field names, data types, formats, and descriptions.
+
+The collection id is a unique identifier used to reference a specific dataset. When you provide a collection id, the response includes:
+
+Field Names: Names of each attribute in the collection.
+Data Types & Formats: The expected data type (such as string, integer, or double) and the format for each field.
+Descriptions: Explanatory details for each attribute to clarify its purpose.
+Geospatial Data Types: Specific spatial types for any geospatial attributes, along with the default coordinate reference system.
+This information is essential for validating client queries and constructing dynamic interfaces.
+
+Request format
+The request parameters are always sent as an HTTP query string.
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/{collectionId}/schema
+Request parameters
+Name	Type	Required	Description
+collectionId *
+(path)
+
+string	Required	
+Unique identifier of the collection.
+
+Example: pas_usa
+
+Example
+Request:
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pas_usa/schema
+Response:
+
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pas_usa/schema",
+    "type": "object",
+    "title": "pas_usa",
+    "description": "Property Attributes Assessment",
+    "properties": {
+        "parent": {
+            "title": "parent",
+            "description": "For secondary (child) address records (e.g. units, apartments, or suites), the Precisely ID of the parent address. Only present when applicable.",
+            "format": "string"
+        },
+        "new_const": {
+            "title": "new_const",
+            "description": "Property flagged as new construction.",
+            "format": "string"
+        },
+
+        ... and so on ...
+
+        "appraised_val_imp": {
+            "title": "appraised_val_imp",
+            "description": "The appraised improvement values as provided by the county or local tax/assessment authority",
+            "format": "long"
+        }
+    }
+}
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_getQueryables
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+This resource returns the queryable attributes for a specific collection identified by its unique ID. These attributes are a subset of the collection’s full set of attributes which are returned by the schema endpoint (see below).
+
+The queryable attributes provide detailed metadata for those attributes in the collection that can be used in filter queries. These attributes are indexed for performance and typically include the id of the feature, the geometry and in some cases other fields.
+
+Field Names: The names of the attributes in the collection.
+Descriptions: A description of each attribute to clarify its purpose and usage.
+Formats: The data types or formats of each attribute, such as string, number, or geospatial.
+Geospatial Data Types: Specific spatial types for attributes that support geospatial queries.
+This metadata is essential for clients to build dynamic query interfaces and validate their requests against the collection's schema.
+
+Request format
+The request parameters are sent in the URL path.
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/{collectionId}/queryables
+Path parameters
+Name	Type	Required	Description
+collectionId *	string	Required	
+Unique identifier of the collection.
+
+Example: pas_usa
+
+Example
+Request:
+
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pas_usa/queryables
+Response:
+
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pas_usa/queryables",
+    "type": "object",
+    "title": "pas_usa",
+    "description": "Property Attributes Assessment",
+    "properties": {
+         "owner_name2": {
+            "title": "owner_name2",
+            "description": "Property Owner2 full Name or DBA name",
+            "format": "string"
+            },
+         "owner_name": {
+             "title": "owner_name",
+             "description": "Property Owner full Name",
+             "format": "string"
+             },
+         "pbkey": {
+             "title": "pbkey",
+             "description": "Unique ID for an addressable location. Not always available.",
+             "format": "string"
+             },
+         "Obj": {
+             "title": "Obj",
+             "description": "Geometry",
+             "format": "geospatial"
+             },
+         "paid": {
+            "title": "paid",
+            "description": "Unique and persistent ID for a tax record. This ID serves as the unique record ID for the Property Attributes Assessment. Use this field to link to the Precisely Property Historical Sales Product.",
+            "format": "string"
+            },
+         "prop_apn": {
+             "title": "prop_apn",
+             "description": "Formatted assessor's parcel number (APN) or parcel identification number - an identifier assigned by the assessing agency to simplify the identification of parcels. APN formatting and composition vary by agency, but the APN is usually composed of map-book, page, and parcel numbers. Some jurisdictions use section-township-range values as part of the APN.",
+             "format": "string"
+             }
+         },
+     "additionalProperties": false
+    }
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_getCollectionItems
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+The Items operation retrieves the data records associated with a collection ID. The response is always returned as GeoJSON.
+
+Several parameters are supported that can be used to constrain or filter the response. You can limit the number of records, specify the number of records returned, filter the records using the CQL2 filter language, or specify a bounding box to restrict the response to only records within the box. The parameters can be used individually or in combination as needed.
+
+Request format
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/{collectionId}/items?<parameters-as-specified-below>
+Request header and query parameters
+Name	Type	Required	Description
+collectionId *	string	Yes	Unique identifier of the collection.
+Format:
+
+/collections/{collectionId}/items
+If no parameters other than collectionId are specified, the API returns the first 10 records by default.
+
+Example:
+
+/collections/buildings/items 
+limit	Integer	No	Returns the first number of records specified. The example below returns the first 50 records. The maximum limit allowed is 10000
+Example:
+
+/collections/{collectionId}/items?limit=50
+See also offset below.
+
+offset	Integer	No	Returns the number of specified records starting at the specified offset. In the below example we return the 50 records starting at offset 100 (i.e. records 100 to 149). The response includes links to the next and previous pages when using offset
+Example: Returns the 50 records starting at record 100.
+
+/collections/{collectionId}/items?limit=50&offset=100
+See also limit above.
+
+bbox	string	No	Returns the records within the specified bounding box. The co-ordinates for the bbox are in the order (minX, minY, maxX, maxY), where X is the longitude value and Y is the latitude value.
+The default limit and offset rules apply. Hence it is usually necessary to specify the limit if more than 10 records are expected.
+
+Example:
+
+/collections/{collectionId}/items?bbox=-3.545148,50.727083,-3.538470,50.728095
+See also Items with bbox.
+
+filter	string	No	This parameter accepts a filter clause in the CQL2 filter language standard. Both spatial and attribute filters are supported by CQL2 . The standard is defined here https://www.ogc.org/publications/standard/cql2/. Both spatial and attribute filters are supported by CQL2
+The supported spatial filters are listed using the Functions endpoint. They are:
+
+s_contains: Returns features from the collection that entirely contain the input geometry.
+s_within: Returns features from the collection that are entirely within the input geometry.
+s_intersects: Returns features from the collection that intersect (partially or entirely overlap) the input geometry.
+bldgid: Returns records relating to the specified building ID.
+Example:
+
+/collections/{collectionId}/items?filter=bldgid%3D%27B000CTOWD2PJ%27
+Below are some examples of typical filter queries. For a full reference to all of the operations supported by CQL please refer to the standard at the above link.
+
+
+user-request:
+Implement MCP tool for API at try-out link: https://developer.cloud.precisely.com/apis/products-try-out/spatialFeatures_getFeatureById
+status-updates-to-user:
+List and expose all steps taken
+official-documentation:
+Returns records from the enrich buildings dataset which match the input feature ID.
+Note: All enrich datasets have a unique feature ID that is generated in a sequential number. This ID can be used to return the record.
+Example Request
+https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pbb_usa/items/1234
+Request parameters
+Name	Type	Required	Description
+collectionId *	String	Yes	
+Unique identifier of the collection.
+
+Example: pbb_usa
+
+featureID *	String	No	
+The sequential feature ID of the collection.
+
+Example: 1234
+
+Example Response
+{
+    "type": "FeatureCollection",
+    "features": []
+}

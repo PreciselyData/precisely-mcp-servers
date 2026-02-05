@@ -39,6 +39,56 @@ official-documentation:
 [Copied documentation text including Request examples]
 ```
 
+## Implementation Rules (STRICT - Follow for EVERY prompt)
+
+1. Process prompts from `implementation_user_prompts.txt` sequentially (user may specify starting line number)
+2. For EACH prompt:
+   a. Fetch OpenAPI spec from the try-out link FIRST
+   b. Add method to `precisely_api_core.py` (match `overlap` method pattern EXACTLY)
+   c. Add Tool to `precisely_wrapper_server.py` (match `overlap` Tool pattern EXACTLY)
+   d. Update tool counts in ALL 4 locations (see Tool Count Updates section)
+   e. Commit with message: "Added <tool_name>. Committed by GitHub Copilot"
+3. Copy examples and field descriptions VERBATIM - NEVER invent or customize example data
+4. If unsure, refer to `overlap` implementation as the canonical reference
+5. After completing ALL prompts, push to remote
+
+## Git Commit Rules (MANDATORY for EVERY commit)
+
+**Files to commit:**
+- `precisely_api_core.py` - Stage fully
+- `mcp_servers/precisely_wrapper_server.py` - Stage EXCEPT line 48 (dev BASE_URL)
+
+**Line 48 contains dev URL (NEVER commit):**
+```python
+BASE_URL = 'https://api-dev.cloud.precisely.services/'
+```
+Line 47 already has prod URL, so simply delete line 48 before commit, restore after.
+
+**Before EVERY commit, execute these steps:**
+1. Delete line 48 in `mcp_servers/precisely_wrapper_server.py` (the dev BASE_URL line)
+2. Stage both files:
+   ```bash
+   git add precisely_api_core.py
+   git add mcp_servers/precisely_wrapper_server.py
+   ```
+3. Commit:
+   ```bash
+   git commit -m "Added <tool_name>. Committed by GitHub Copilot"
+   ```
+4. Restore line 48 immediately after commit:
+   ```python
+   BASE_URL = 'https://api-dev.cloud.precisely.services/'
+   ```
+   (Add this line back after `BASE_URL = "https://api.cloud.precisely.com"`)
+
+## Tool Count Updates (MANDATORY after EACH tool added)
+
+Update the count in ALL 4 locations in `precisely_wrapper_server.py`:
+1. Comment above `TOOLS` list: `# Tool definitions (XX tools...)`
+2. `list_tools()` docstring: `"""List available tools (XX tools)..."""`
+3. `run_stdio()` logger message
+4. `run_http()` logger message
+
 ## Adding New API Tools
 
 When adding a new Precisely API endpoint as a tool:
