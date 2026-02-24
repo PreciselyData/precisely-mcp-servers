@@ -1,4 +1,4 @@
-"""
+﻿"""
 Precisely API Core Module for MCP Server
 Production-ready module containing the PreciselyAPI class for MCP server use.
 Pure API functionality with minimal dependencies.
@@ -1684,141 +1684,116 @@ class PreciselyAPI:
         except Exception as e:
             logger.error(f"Timezone locations error: {e}")
             return {"error": str(e)}
-    
-    def find_nearest_candidates(self, tableName: str, location: Dict, withinDistance: str, 
-                                 attributes: List[str], maxFeatures: int = 10,
-                                 distanceAttributeName: str = "distance",
-                                 uomAttributeName: str = "uom",
-                                 inputPointAttributeName: str = "inputPoint",
-                                 targetPointAttributeName: str = "targetPoint",
-                                 bearingAttributeName: str = "bearing",
-                                 sortBy: str = None, sortOrder: str = "ASC",
-                                 limit: int = 10, offset: int = 0, **kwargs) -> Dict[str, Any]:
-        """Find nearest spatial features to a location or geometry.
-        
-        Identifies the nearest locations or points of interest to a specified geometry
-        or address based on distance criteria, returning spatial features in distance order.
-        
+
+    # ========================================
+    # Spatial Analysis APIs
+    # ========================================
+
+    def find_nearest_candidates(self, tableName: str, attributes: list, location: dict, withinDistance: str, **kwargs) -> Dict[str, Any]:
+        """Identifies the nearest locations or points of interest to a specified geometry or address based on distance or defined criteria, returning the spatial features in distance order with the distance value.
+
         Args:
-            tableName: Name of the table containing spatial data (e.g., "/risks/flood_risk")
-            location: Input geometry or address for spatial analysis
-                - For WKT: {"format": "WKT", "value": "POINT(-122.4 37.7)"}
-                - For address: {"format": "ADDRESS", "value": "123 Main St, City, ST"}
-            withinDistance: Search distance with unit (e.g., "100 m", "1 km", "500 ft")
-            attributes: List of column names to include in response (use ["*"] for all)
-            maxFeatures: Maximum features per geometry (default: 10, min: 1)
-            distanceAttributeName: Custom name for distance attribute (default: "distance")
-            uomAttributeName: Custom name for unit of measurement (default: "uom")
-            inputPointAttributeName: Custom name for input point attribute (default: "inputPoint")
-            targetPointAttributeName: Custom name for target point attribute (default: "targetPoint")
-            bearingAttributeName: Custom name for bearing attribute (default: "bearing")
-            sortBy: Attribute to sort results by
-            sortOrder: Sort order - "ASC" or "DESC" (default: "ASC")
-            limit: Maximum results to return (default: 10)
-            offset: Number of records to skip (default: 0)
-        
+            tableName (str): Name of the table containing the spatial data.
+            attributes (list): Comma separated list of column names of enrich table to be included in the response. "*" can be used to specify all columns.
+            location (dict): input for which spatial analysis is to be done. Can be a geometry or address
+            withinDistance (str): The distance to search around the geometry.
+            **kwargs: Additional keyword arguments passed to the API.
+                distanceAttributeName (str): The name of the distance attribute between input geometry and target geometry. Default value is "distance".
+                maxFeatures (int): Maximum number of features returned against each geometry. Default value is 10 and minimum value is 1.
+                uomAttributeName (str): Custom name of parameter showing unit of measurement for distance between input and target geometry. Default value is "uom".
+                inputPointAttributeName (str): Custom name of parameter indicating point on input geometry which was used to calculate the distance. Default value is "inputPoint".
+                targetPointAttributeName (str): Custom name of parameter indicating point on target geometry which was used to calculate the distance. Default value is "targetPoint".
+                bearingAttributeName (str): Custom name of parameter for bearing value. Default value is "bearing".
+                sortBy (str): Defines the attribute by which the results should be sorted.
+                sortOrder (str): Specifies the order of sorting.
+                limit (int): Specifies the maximum number of results to return.
+                offset (int): Specifies the number of records to skip.
+
         Returns:
-            GeoJSON FeatureCollection with nearest features and distances
+            Dict[str, Any]: GeoJSON FeatureCollection with keys 'type' (str), 'features' (list of Feature objects
+                with properties and geometry), 'responseParameters' (dict with recordsMatched, recordsReturned),
+                and 'Metadata' (list of attribute definitions with name and type).
+
+        Example:
+            find_nearest_candidates(
+                tableName="/risks/flood_risk",
+                attributes=["statecode", "type", "mapname"],
+                location={"format": "WKT", "value": "MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))"},
+                withinDistance="10 mi",
+                distanceAttributeName="dist",
+                maxFeatures=2,
+                uomAttributeName="unit",
+                inputPointAttributeName="ip",
+                targetPointAttributeName="tp",
+                bearingAttributeName="bearingAngle"
+            )
         """
         try:
             url = f"{self.base_url}/v1/spatial/findNearest"
-            
-            # Build query parameters
-            params = {
-                "limit": limit,
-                "offset": offset,
-                "sortOrder": sortOrder
-            }
-            if sortBy:
-                params["sortBy"] = sortBy
-            
-            # Build request body
-            json_data = {
-                "tableName": tableName,
-                "location": location,
-                "withinDistance": withinDistance,
-                "attributes": attributes,
-                "maxFeatures": maxFeatures,
-                "distanceAttributeName": distanceAttributeName,
-                "uomAttributeName": uomAttributeName,
-                "inputPointAttributeName": inputPointAttributeName,
-                "targetPointAttributeName": targetPointAttributeName,
-                "bearingAttributeName": bearingAttributeName
-            }
-            
-            # Use appropriate response header for spatial API
-            headers = {
-                "Accept": "application/geo+json"
-            }
-            
+            params = {}
+            for p in ["sortBy", "sortOrder", "limit", "offset"]:
+                if p in kwargs:
+                    params[p] = kwargs[p]
+            json_data = {"tableName": tableName, "attributes": attributes, "location": location, "withinDistance": withinDistance}
+            for k in ["distanceAttributeName", "maxFeatures", "uomAttributeName", "inputPointAttributeName", "targetPointAttributeName", "bearingAttributeName"]:
+                if k in kwargs:
+                    json_data[k] = kwargs[k]
+            headers = {"Accept": "application/geo+json"}
+            logger.debug(f"[find_nearest_candidates] POST {url}")
             logger.debug(f"[find_nearest_candidates] Request params: {params}")
             logger.debug(f"[find_nearest_candidates] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, params=params, json=json_data, headers=headers)
+            response = self.session.post(url, json=json_data, params=params, headers=headers)
             logger.debug(f"[find_nearest_candidates] Raw response: {response.text}")
             response.raise_for_status()
             return response.json()
         except Exception as e:
             logger.error(f"Find nearest candidates error: {e}")
             return {"error": str(e)}
-    
-    def search_at_location(self, tableName: str, location: Dict, attributes: List[str],
-                           spatialOperation: str = "INTERSECTS",
-                           bufferDistance: str = None,
-                           sortBy: str = None, sortOrder: str = "ASC",
-                           limit: int = 10, offset: int = 0, **kwargs) -> Dict[str, Any]:
-        """Search for spatial features at a location.
-        
-        Searches for locations or points of interest within or intersecting a defined
-        geographic area (geometry or address) or a buffer around a specified location.
-        
+
+    def search_at_location(self, tableName: str, attributes: list, location: dict, **kwargs) -> Dict[str, Any]:
+        """Searches for locations or points of interest within or intersecting a defined geographic area(geometry or address) or a buffer around a specified location.
+
         Args:
-            tableName: Name of the table containing spatial data (e.g., "/risks/flood_risk")
-            location: Input geometry or address for spatial analysis
-                - For WKT: {"format": "WKT", "value": "POINT(-122.4 37.7)"}
-                - For address: {"format": "ADDRESS", "value": "123 Main St, City, ST"}
-            attributes: List of column names to include in response (use ["*"] for all)
-            spatialOperation: Type of spatial query - "INTERSECTS", "WITHIN", or "CONTAINS" (default: "INTERSECTS")
-            bufferDistance: Distance to buffer the input geometry (e.g., "100 m", "1 km")
-            sortBy: Attribute to sort results by
-            sortOrder: Sort order - "ASC" or "DESC" (default: "ASC")
-            limit: Maximum results to return (default: 10)
-            offset: Number of records to skip (default: 0)
-        
+            tableName (str): Name of the table containing the spatial data.
+            attributes (list): Comma separated list of column names of enrich table to be included in the response. "*" can be used to specify all columns.
+            location (dict): input for which spatial analysis is to be done. Can be a geometry or address
+            **kwargs: Additional keyword arguments passed to the API.
+                spatialOperation (str): The type of spatial query. Possible values are: intersects, within, contains. Default value is "intersects".
+                bufferDistance (str): Distance by which the input geometry will be extrapolated.
+                sortBy (str): Defines the attribute by which the results should be sorted.
+                sortOrder (str): Specifies the order of sorting.
+                limit (int): Specifies the maximum number of results to return.
+                offset (int): Specifies the number of records to skip.
+
         Returns:
-            GeoJSON FeatureCollection with matching features
+            Dict[str, Any]: GeoJSON FeatureCollection with keys 'type' (str), 'features' (list of Feature objects
+                with properties and geometry), 'responseParameters' (dict with recordsMatched, recordsReturned),
+                and 'Metadata' (list of attribute definitions with name and type).
+
+        Example:
+            search_at_location(
+                tableName="/risks/flood_risk",
+                attributes=["statecode", "type", "mapname"],
+                location={"format": "WKT", "value": "MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))"},
+                spatialOperation="INTERSECTS",
+                bufferDistance="10 mi"
+            )
         """
         try:
             url = f"{self.base_url}/v1/spatial/searchAtLocation"
-            
-            # Build query parameters
-            params = {
-                "limit": limit,
-                "offset": offset,
-                "sortOrder": sortOrder
-            }
-            if sortBy:
-                params["sortBy"] = sortBy
-            
-            # Build request body
-            json_data = {
-                "tableName": tableName,
-                "location": location,
-                "attributes": attributes,
-                "spatialOperation": spatialOperation
-            }
-            
-            # Add optional buffer distance
-            if bufferDistance:
-                json_data["bufferDistance"] = bufferDistance
-            
-            # Use appropriate headers for spatial API
-            headers = {
-                "Accept": "application/geo+json"
-            }
-            
+            params = {}
+            for p in ["sortBy", "sortOrder", "limit", "offset"]:
+                if p in kwargs:
+                    params[p] = kwargs[p]
+            json_data = {"tableName": tableName, "attributes": attributes, "location": location}
+            for k in ["spatialOperation", "bufferDistance"]:
+                if k in kwargs:
+                    json_data[k] = kwargs[k]
+            headers = {"Accept": "application/geo+json"}
+            logger.debug(f"[search_at_location] POST {url}")
             logger.debug(f"[search_at_location] Request params: {params}")
             logger.debug(f"[search_at_location] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, params=params, json=json_data, headers=headers)
+            response = self.session.post(url, json=json_data, params=params, headers=headers)
             logger.debug(f"[search_at_location] Raw response: {response.text}")
             response.raise_for_status()
             return response.json()
@@ -1826,45 +1801,29 @@ class PreciselyAPI:
             logger.error(f"Search at location error: {e}")
             return {"error": str(e)}
 
-    def overlap(self, tableName: str, location: Dict, attributes: List[str],
-                uom: str,
-                areaAttributeName: str = "intersectionArea",
-                lengthAttributeName: str = "intersectionLength",
-                percentTargetAttributeName: str = "percentageOfTarget",
-                percentInputAttributeName: str = "percentageOfInput",
-                uomAttributeName: str = "uom",
-                bufferDistance: str = None,
-                limit: int = 10, offset: int = 0, **kwargs) -> Dict[str, Any]:
-        """Identify spatial overlaps between a geometry/address and a spatial table.
-        
-        Identifies spatial intersections between a specified geometry or address in a
-        chosen Enrich spatial table returning the overlap geometry with the percentage and
-        area of overlap.
-        
+    def overlap(self, tableName: str, attributes: list, location: dict, uom: str, **kwargs) -> Dict[str, Any]:
+        """Identifies spatial intersections between a specified geometry or address in a chosen Enrich spatial table returning the overlap geometry with the percentage and area of overlap.
+
         Args:
-            tableName: Name of the table containing spatial data (e.g., "/properties/buildings")
-            location: Input geometry or address for spatial analysis
-                - Format: {"format": "wkt|geojson|lonlat|address", "value": "...", "country": "USA"}
-                - country is mandatory when format is "address"
-            attributes: List of column names to include in response. Use ["*"] for all scalar columns.
-            uom: Unit of measurement used to return intersection length/area (e.g., "m")
-            areaAttributeName: Custom name of intersection area parameter when intersection area is polygon.
-                              Default: "intersectionArea"
-            lengthAttributeName: Custom name of intersection length parameter when intersection area is linestring.
-                                Default: "intersectionLength"
-            percentTargetAttributeName: Custom name of parameter indicating percentage of overlap with target geometry.
-                                       Default: "percentageOfTarget"
-            percentInputAttributeName: Custom name of parameter indicating percentage of overlap with input geometry.
-                                      Default: "percentageOfInput"
-            uomAttributeName: Custom name of unit of measurement parameter. Default: "uom"
-            bufferDistance: Distance by which the input geometry will be extrapolated (e.g., "100 m", "2 km")
-            limit: Maximum results to return (default: 10, min: 1, max: 1000)
-            offset: Number of records to skip (default: 0, min: 0)
-        
+            tableName (str): Name of the table containing the spatial data.
+            attributes (list): Comma separated list of column names of enrich table to be included in the response. "*" can be used to specify all columns, will only include scalar columns
+            location (dict): input for which spatial analysis is to be done. Can be a geometry or address
+            uom (str): Unit of measurement used to return intersection length/area
+            **kwargs: Additional keyword arguments passed to the API.
+                areaAttributeName (str): Custom name of intersection area parameter when intersection area is polygon. Default value is "intersectionArea".
+                lengthAttributeName (str): Custom name of intersection length parameter when intersection area is linestring. Default value is "intersectionLength".
+                percentTargetAttributeName (str): Custom name of parameter indicating percentage of overlap with target geometry. Default value is "percentageOfTarget".
+                percentInputAttributeName (str): Custom name of parameter indicating percentage of overlap with input geometry. Default value is "percentageOfInput".
+                uomAttributeName (str): Custom name of unit of measurement parameter. Default value is "uom".
+                bufferDistance (str): Distance by which the input geometry will be extrapolated.
+                limit (int): Specifies the maximum number of results to return.
+                offset (int): Specifies the number of records to skip.
+
         Returns:
-            GeoJSON FeatureCollection with overlap features including intersection geometry,
-            area/length, and percentage of overlap
-        
+            Dict[str, Any]: GeoJSON FeatureCollection with keys 'type' (str), 'features' (list of Feature objects
+                with properties including overlap area/length/percentage and geometry), 'responseParameters'
+                (dict with recordsMatched, recordsReturned), and 'Metadata' (list of attribute definitions).
+
         Example:
             overlap(
                 tableName="/properties/buildings",
@@ -1881,38 +1840,19 @@ class PreciselyAPI:
         """
         try:
             url = f"{self.base_url}/v1/spatial/overlap"
-            
-            # Build query parameters
-            params = {
-                "limit": limit,
-                "offset": offset
-            }
-            
-            # Build request body
-            json_data = {
-                "tableName": tableName,
-                "location": location,
-                "attributes": attributes,
-                "uom": uom,
-                "areaAttributeName": areaAttributeName,
-                "lengthAttributeName": lengthAttributeName,
-                "percentTargetAttributeName": percentTargetAttributeName,
-                "percentInputAttributeName": percentInputAttributeName,
-                "uomAttributeName": uomAttributeName
-            }
-            
-            # Add optional buffer distance
-            if bufferDistance:
-                json_data["bufferDistance"] = bufferDistance
-            
-            # Use appropriate headers for spatial API
-            headers = {
-                "Accept": "application/geo+json"
-            }
-            
+            params = {}
+            for p in ["limit", "offset"]:
+                if p in kwargs:
+                    params[p] = kwargs[p]
+            json_data = {"tableName": tableName, "attributes": attributes, "location": location, "uom": uom}
+            for k in ["areaAttributeName", "lengthAttributeName", "percentTargetAttributeName", "percentInputAttributeName", "uomAttributeName", "bufferDistance"]:
+                if k in kwargs:
+                    json_data[k] = kwargs[k]
+            headers = {"Accept": "application/geo+json"}
+            logger.debug(f"[overlap] POST {url}")
             logger.debug(f"[overlap] Request params: {params}")
             logger.debug(f"[overlap] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, params=params, json=json_data, headers=headers)
+            response = self.session.post(url, json=json_data, params=params, headers=headers)
             logger.debug(f"[overlap] Raw response: {response.text}")
             response.raise_for_status()
             return response.json()
@@ -1921,26 +1861,22 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def get_spatial_products(self, **kwargs) -> Dict[str, Any]:
-        """Get metadata about Enrich Data products available via Spatial APIs.
-        
-        Returns metadata about the Enrich Data products available via Spatial APIs.
-        Information in the response includes product family, applicable geographic area,
-        vintage, available layers, appropriate zoom levels for display and styles to use
-        in visualization application or API calls. For example, a "layerId" value can be
-        specified in Tiles API for getting tiles. Similarly a "featureTable" value can be
-        used in Analysis API to invoke spatial operation on that layer.
-        
+        """Get a list of available Enrich Data products along with their metadata such as product family, applicable geographic area, vintage, available layers, appropriate zoom levels for display and styles to use.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            List of product metadata objects with productId, productName, productFamily,
-            vintage, geography, and layers array
-        
+            Dict[str, Any]: List of product metadata objects, each with keys 'productId' (str), 'productName' (str),
+                'productFamily' (str), 'vintage' (str), 'geography' (str), and 'layers' (list of layer objects
+                with layerId, displayName, featureTable, recommendedStyle, etc.).
+
         Example:
             get_spatial_products()
         """
         try:
             url = f"{self.base_url}/v1/spatial/products"
-            
-            logger.debug(f"[get_spatial_products] Requesting product metadata")
+            logger.debug(f"[get_spatial_products] GET {url}")
             response = self.session.get(url)
             logger.debug(f"[get_spatial_products] Raw response: {response.text}")
             response.raise_for_status()
@@ -1950,23 +1886,20 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def list_spatial_tables(self, **kwargs) -> Dict[str, Any]:
-        """Get a list of available spatial tables from the database.
-        
-        Returns a list of available spatial tables from the database. Each table entry
-        includes the table name (path) and a friendly display name. The tableName values
-        can be used in spatial analysis APIs like find_nearest_candidates, search_at_location,
-        and overlap.
-        
+        """This endpoint retrieves a list of spatial tables from database
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            List of table objects with tableName and tableFriendlyName
-        
+            Dict[str, Any]: List of table name strings (e.g., ["/properties/buildings", "/risks/flood_risk", ...]).
+
         Example:
             list_spatial_tables()
         """
         try:
             url = f"{self.base_url}/v1/spatial/tables"
-            
-            logger.debug(f"[list_spatial_tables] Requesting available tables")
+            logger.debug(f"[list_spatial_tables] GET {url}")
             response = self.session.get(url)
             logger.debug(f"[list_spatial_tables] Raw response: {response.text}")
             response.raise_for_status()
@@ -1976,29 +1909,25 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def get_table_metadata(self, tableName: str, **kwargs) -> Dict[str, Any]:
-        """Get metadata for a table present in database.
-        
-        Returns metadata for a table present in database. Information in the response
-        includes table name, schema, columns and their description and type, bounding
-        box in case of spatial table and row count.
-        
+        """This endpoint retrieves a metadata information of a specific/given table from database
+
         Args:
-            tableName: Name of the table for which the metadata needs to be described
-                       (e.g., "properties/buildings", "risks/flood_risk")
-        
+            tableName (str): Name of table for which metadata request will be executed
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            Table metadata object with tableName, schemaName, geometryType, numberOfRows,
-            columns array, and bounding box coordinates (xMin, xMax, yMin, yMax)
-        
+            Dict[str, Any]: Table metadata object with keys 'tableName' (str), 'geometryType' (str),
+                'numberOfRows' (int), 'columns' (list of ColumnDetail objects with columnName, description,
+                dataType), 'xMin' (float), 'xMax' (float), 'yMin' (float), 'yMax' (float).
+
         Example:
-            get_table_metadata(tableName="properties/buildings")
+            get_table_metadata(tableName="risks/flood_risk")
         """
         try:
             # Remove leading slash if present for URL construction
             table_path = tableName.lstrip('/')
             url = f"{self.base_url}/v1/spatial/tables/{table_path}/metadata"
-            
-            logger.debug(f"[get_table_metadata] Requesting metadata for table: {tableName}")
+            logger.debug(f"[get_table_metadata] GET {url}")
             response = self.session.get(url)
             logger.debug(f"[get_table_metadata] Raw response: {response.text}")
             response.raise_for_status()
@@ -2007,65 +1936,41 @@ class PreciselyAPI:
             logger.error(f"Get table metadata error: {e}")
             return {"error": str(e)}
 
-    def summarize(self, tableName: str, location: Dict, aggregateColumns: Dict,
-                  spatialOperation: str = "INTERSECTS",
-                  proportionalCalculation: bool = False,
-                  bufferDistance: str = None, **kwargs) -> Dict[str, Any]:
-        """Aggregate spatial data within a defined area (Spatial Summary API).
-        
-        The Spatial Summary API method aggregates spatial data within a defined area,
-        offering detailed statistics such as population density, area size, and other
-        location-specific attributes. It supports multiple distance metrics and provides
-        comprehensive statistical analysis.
-        
+    def summarize(self, tableName: str, location: Dict, aggregateColumns: Dict, **kwargs) -> Dict[str, Any]:
+        """Generates detailed data summaries within a user defined region(geometry or address), including total, average, minimum and maximum values for data such as population.
+
         Args:
-            tableName: Name of the table containing the spatial data
-            location: Input geometry or address for proximity search
-                - format: "WKT", "GEOJSON", "LonLat", or "address"
-                - value: Geometry string or address string
-                - country: Required if format is "address"
-            aggregateColumns: Columns to be aggregated, grouped by additional properties.
-                             Format: {"column_name": ["min", "max", "avg", "sum", "MEDIAN"]}
-            spatialOperation: Type of spatial query. Values: "INTERSECTS" (default) or "WITHIN"
-            proportionalCalculation: Determines if proportional calculations should be applied.
-                                    Only applicable when spatialOperation is "INTERSECTS".
-                                    Default: false
-            bufferDistance: Buffered distance around the input geometry (e.g., "10 km", "100 m")
-        
+            tableName (str): Name of the table containing the spatial data.
+            location (dict): Input for which spatial analysis is to be done. Can be a geometry or address.
+            aggregateColumns (dict): Columns to be aggregated and corresponding aggregation operations to be performed. Possible values are: min, max, avg, sum, median.
+            **kwargs: Additional keyword arguments passed to the API.
+                spatialOperation (str): The type of spatial operation. Possible values are: intersects, within. Default value is "intersects".
+                proportionalCalculation (bool): Determines if proportional calculations should be applied. Only applicable where the spatialOperation parameter is "intersects".
+                bufferDistance (str): Distance by which the input geometry will be extrapolated.
+
         Returns:
-            GeoJSON FeatureCollection with aggregated statistics
-        
+            Dict[str, Any]: GeoJSON FeatureCollection with keys 'type' (str), 'features' (list of Feature objects
+                with aggregated summary properties such as column_MIN, column_MAX, column_AVG, column_SUM,
+                column_MEDIAN, and count).
+
         Example:
             summarize(
-                tableName="/precisely/riskdata/hwr_usa_windgrid",
-                location={"format": "wkt", "value": "POLYGON ((-122.766919 38.031512, -122.766919 38.051864, -122.741314 38.051864, -122.741314 38.031512, -122.766919 38.031512))"},
-                aggregateColumns={"w9": ["min", "max", "avg", "sum"]},
-                spatialOperation="INTERSECTS",
+                tableName="/risks/historical_weather_windgrid",
+                aggregateColumns={"w11": ["min", "max", "avg", "sum"], "w10": ["min", "max", "sum", "avg", "median"]},
+                location={"format": "WKT", "value": "GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))"},
+                spatialOperation="intersects",
                 proportionalCalculation=True,
-                bufferDistance="10 km"
+                bufferDistance="10 mi"
             )
         """
         try:
             url = f"{self.base_url}/v1/spatial/summarize"
-            
-            # Build request body
-            json_data = {
-                "tableName": tableName,
-                "location": location,
-                "aggregateColumns": aggregateColumns,
-                "spatialOperation": spatialOperation,
-                "proportionalCalculation": proportionalCalculation
-            }
-            
-            # Add optional buffer distance
-            if bufferDistance:
-                json_data["bufferDistance"] = bufferDistance
-            
-            # Use appropriate headers for spatial API
-            headers = {
-                "Accept": "application/geo+json"
-            }
-            
+            json_data = {"tableName": tableName, "location": location, "aggregateColumns": aggregateColumns}
+            for k in ["spatialOperation", "proportionalCalculation", "bufferDistance"]:
+                if k in kwargs:
+                    json_data[k] = kwargs[k]
+            headers = {"Accept": "application/geo+json"}
+            logger.debug(f"[summarize] POST {url}")
             logger.debug(f"[summarize] Request payload: {json.dumps(json_data, indent=2)}")
             response = self.session.post(url, json=json_data, headers=headers)
             logger.debug(f"[summarize] Raw response: {response.text}")
@@ -2074,26 +1979,32 @@ class PreciselyAPI:
         except Exception as e:
             logger.error(f"Summarize error: {e}")
             return {"error": str(e)}
+
+    # ========================================
+    # OGC Features APIs
+    # ========================================
+
     def ogc_landing_page(self, **kwargs) -> Dict[str, Any]:
-        """Get OGC API Features landing page with links to essential API resources.
-        
-        The landing page provides links to essential API resources, including:
-        - API Definition: A machine-readable specification of the API.
-        - Conformance Declaration: A list of standards that the API conforms to.
-        - Feature Collections: Information and links to the available feature collections.
-        
-        Use this endpoint to quickly navigate and explore the API's capabilities.
-        
+        """The landing page provides links to essential API resources, including:
+- **API Definition:** A machine-readable specification of the API.
+- **Conformance Declaration:** A list of standards that the API conforms to.
+- **Feature Collections:** Information and links to the available feature collections in the dataset.
+
+Use this endpoint to quickly navigate and explore the API's capabilities.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            Landing page object with title, description, and links array
-        
+            Dict[str, Any]: LandingPageResponse with keys 'title' (str), 'description' (str),
+                and 'links' (list of Link objects with href, rel, type, title).
+
         Example:
             ogc_landing_page()
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/"
-            
-            logger.debug(f"[ogc_landing_page] Requesting landing page")
+            logger.debug(f"[ogc_landing_page] GET {url}")
             response = self.session.get(url)
             logger.debug(f"[ogc_landing_page] Raw response: {response.text}")
             response.raise_for_status()
@@ -2103,24 +2014,23 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def ogc_api_definition(self, **kwargs) -> Dict[str, Any]:
-        """Get the complete OpenAPI definition for the OGC API.
-        
-        The API endpoint retrieves the complete OpenAPI definition for the API.
-        The response is a machine-readable specification that describes all available
-        endpoints, security configurations, and request and response schemas.
-        
-        The API definition conforms to the OpenAPI 3.0.1 standard.
-        
+        """This endpoint retrieves the complete OpenAPI definition for the API. The response is a machine-readable specification that describes all available endpoints, request/response schemas, and security configurations.
+
+- **Format:** The API definition conforms to the OpenAPI 3.0.1 standard.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            OpenAPI specification object
-        
+            Dict[str, Any]: Complete OpenAPI 3.0.1 definition as a JSON object with keys 'openapi' (str),
+                'info' (dict), 'servers' (list), 'paths' (dict), and 'components' (dict).
+
         Example:
             ogc_api_definition()
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/api"
-            
-            logger.debug(f"[ogc_api_definition] Requesting API definition")
+            logger.debug(f"[ogc_api_definition] GET {url}")
             response = self.session.get(url)
             logger.debug(f"[ogc_api_definition] Raw response: {response.text}")
             response.raise_for_status()
@@ -2130,22 +2040,23 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def ogc_functions(self, **kwargs) -> Dict[str, Any]:
-        """Get list of available spatial functions within the OGC API.
-        
-        This endpoint returns a list of available spatial functions within the API.
-        Provides supported spatial functions that can be used for querying features.
-        Function metadata includes function names, argument types, and return types.
-        
+        """This endpoint returns a list of available spatial functions within the API.
+- **Purpose:** Provides supported spatial functions that can be used for querying features.
+- **Function Metadata:** Includes function names, argument types, and return types.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            Object with functions array containing name, arguments, and returns
-        
+            Dict[str, Any]: FunctionResponse with key 'functions' (list of Function objects,
+                each with 'name' (str), 'arguments' (list of type arrays), and 'returns' (list of str)).
+
         Example:
             ogc_functions()
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/functions"
-            
-            logger.debug(f"[ogc_functions] Requesting functions list")
+            logger.debug(f"[ogc_functions] GET {url}")
             response = self.session.get(url)
             logger.debug(f"[ogc_functions] Raw response: {response.text}")
             response.raise_for_status()
@@ -2155,23 +2066,23 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def ogc_conformance(self, **kwargs) -> Dict[str, Any]:
-        """Get OGC API conformance declaration.
-        
-        This endpoint returns the conformance declaration for the API. The conformance
-        declaration is a list of all conformance classes specified in a standard that
-        the server adheres to. It helps clients determine whether the API meets the
-        required standards and their own requirements.
-        
+        """This endpoint returns the conformance declaration for the API. The conformance declaration is a list of all conformance classes specified in a standard that the server adheres to. It helps clients determine whether the API meets the required standards and their own requirements.
+
+- **Purpose:** Provides a comprehensive list of conformance classes to verify the API's compliance with OGC API standards and additional specifications.
+- **Standards:** Includes OGC API conformance classes and any extra specifications the API supports.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            Object with conformsTo array listing OGC API conformance classes
-        
+            Dict[str, Any]: ConformancePageResponse with key 'conformsTo' (list of conformance class URI strings).
+
         Example:
             ogc_conformance()
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/conformance"
-            
-            logger.debug(f"[ogc_conformance] Requesting conformance declaration")
+            logger.debug(f"[ogc_conformance] GET {url}")
             response = self.session.get(url)
             logger.debug(f"[ogc_conformance] Raw response: {response.text}")
             response.raise_for_status()
@@ -2181,25 +2092,29 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def ogc_collections(self, **kwargs) -> Dict[str, Any]:
-        """Get list of feature collections available on the server.
-        
-        This endpoint returns the list of feature collections available on the server.
-        Each collection represents a spatial dataset that can be queried and provides
-        essential metadata, including:
-        - Collection ID: A unique identifier for the spatial dataset.
-        - Title and Description: Optional details that describe the collection.
-        - Links: Navigational links to access the collection's items and schema endpoints.
-        
+        """This endpoint returns the list of feature collections available on the server. Each collection represents a spatial dataset that can be queried and provides essential metadata, including:
+
+- **Collection ID:** A unique identifier for the spatial dataset.
+- **Title and Description:** Optional details that describe the collection.
+- **Spatial and Temporal Extents:** Indicators of the geographical and time-based coverage of the data.
+- **Coordinate Reference Systems (CRS):** A list of supported CRS, with the first being the default (typically WGS 84).
+- **Links:** Navigational links to access the collection’s items (e.g., `/collections/{collectionId}/items`).
+
+This resource is designed to help clients discover available geospatial datasets and understand the structure of each collection before making queries.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            Object with links array and collections array
-        
+            Dict[str, Any]: CollectionsResponse with keys 'links' (list of Link objects) and
+                'collections' (list of CollectionsInfo objects with id, title, description, itemType, links).
+
         Example:
             ogc_collections()
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections"
-            
-            logger.debug(f"[ogc_collections] Requesting collections list")
+            logger.debug(f"[ogc_collections] GET {url}")
             response = self.session.get(url)
             logger.debug(f"[ogc_collections] Raw response: {response.text}")
             response.raise_for_status()
@@ -2209,28 +2124,31 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def ogc_collection(self, collectionId: str, **kwargs) -> Dict[str, Any]:
-        """Get information about a specific feature collection.
-        
-        This resource describes the feature collection identified in the path.
-        Information about the feature collection with id {collectionId} is provided.
-        The response contains:
-        - Collection ID: A unique identifier for the spatial dataset.
-        - Title and Description: Optional details that describe the collection.
-        - Links: Navigational links to access the collection's items and schema endpoints.
-        
+        """This resource describes the feature collection identified in the path.
+
+Information about the feature collection with id `{collectionId}` is provided. The response contains:
+
+- A link to the items in the collection (path `/collections/{collectionId}/items`, relation: items).
+- A unique local identifier for the collection.
+- A list of coordinate reference systems (CRS) in which geometries may be returned; the first CRS is the default (typically WGS 84 with axis order longitude/latitude).
+- An optional title and description for the collection.
+- An optional spatial and temporal extent derived from the data.
+- An optional indicator of the item type (default is 'feature').
+
         Args:
-            collectionId: Unique identifier of the collection (e.g., "pbb_usa")
-        
+            collectionId (str): Unique identifier of the collection.
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            Collection object with id, title, description, itemType, and links
-        
+            Dict[str, Any]: CollectionIdResponse with keys 'id' (str), 'title' (str), 'description' (str),
+                'itemType' (str), and 'links' (list of Link objects with href, rel, type, title).
+
         Example:
             ogc_collection(collectionId="pbb_usa")
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}"
-            
-            logger.debug(f"[ogc_collection] Requesting collection: {collectionId}")
+            logger.debug(f"[ogc_collection] GET {url}")
             response = self.session.get(url)
             logger.debug(f"[ogc_collection] Raw response: {response.text}")
             response.raise_for_status()
@@ -2240,33 +2158,33 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def ogc_collection_schema(self, collectionId: str, **kwargs) -> Dict[str, Any]:
-        """Get the schema for a specified feature collection.
-        
-        This resource provides the schema for a specified feature collection.
-        The schema defines the structure of the collection and includes details such as:
-        - Field Names: Names of each attribute in the collection.
-        - Data Types & Formats: The expected data type and format for each field.
-        - Descriptions: Explanatory details for each attribute.
-        - Geospatial Data Types: Specific spatial types for geospatial attributes.
-        
+        """This resource provides the schema for a specified feature collection. The schema defines the structure of the collection and includes details such as field names, data types, formats, and descriptions.
+
+The **collection id** is a unique identifier used to reference a specific dataset. When you provide a collection id, the response includes:
+
+- **Field Names:** Names of each attribute in the collection.
+- **Data Types & Formats:** The expected data type (e.g., string, integer, double) and format for each field.
+- **Descriptions:** Explanatory details for each attribute to clarify its purpose.
+- **Geospatial Data Types:** Specific spatial types for any geospatial attributes, along with the default coordinate reference system.
+
+This information is essential for validating client queries and constructing dynamic interfaces.
+
         Args:
-            collectionId: Unique identifier of the collection (e.g., "pas_usa")
-        
+            collectionId (str): Unique identifier of the collection.
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            JSON Schema object with properties definitions
-        
+            Dict[str, Any]: DescribeCollectionResponse with keys '$schema' (str), '$id' (str),
+                'type' (str), 'title' (str), 'description' (str), and 'properties' (dict of field name
+                to SchemaProperties with title, description, format).
+
         Example:
-            ogc_collection_schema(collectionId="pas_usa")
+            ogc_collection_schema(collectionId="pbb_usa")
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/schema"
-            
-            headers = {
-                "Accept": "application/schema+json"
-            }
-            
-            logger.debug(f"[ogc_collection_schema] Requesting schema for: {collectionId}")
-            response = self.session.get(url, headers=headers)
+            logger.debug(f"[ogc_collection_schema] GET {url}")
+            response = self.session.get(url)
             logger.debug(f"[ogc_collection_schema] Raw response: {response.text}")
             response.raise_for_status()
             return response.json()
@@ -2275,33 +2193,31 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def ogc_collection_queryables(self, collectionId: str, **kwargs) -> Dict[str, Any]:
-        """Get queryable attributes for a specific collection.
-        
-        This resource returns the queryable attributes for a specific collection.
-        These attributes are a subset of the collection's full set of attributes
-        which are returned by the schema endpoint.
-        
-        The queryable attributes provide detailed metadata for attributes that can
-        be used in filter queries. These attributes are indexed for performance.
-        
+        """This resource returns the queryable properties for a specific collection identified by its unique id. Queryable properties provide detailed metadata for each attribute available in the collection that can be used to filter queries. The response includes information such as:
+
+- **Field Names:** The names of the attributes in the collection.
+- **Descriptions:** A description of each attribute to clarify its purpose and usage.
+- **Formats:** The data types or formats (e.g., string, number, geospatial) of each attribute.
+- **Geospatial Data Types:** Specific spatial types for attributes that support geospatial queries.
+
+This metadata is essential for clients to build dynamic query interfaces and validate their requests against the collection's schema.
+
         Args:
-            collectionId: Unique identifier of the collection (e.g., "pas_usa")
-        
+            collectionId (str): Unique identifier of the collection.
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            Queryable schema object with properties definitions
-        
+            Dict[str, Any]: QueryableResponse (JSON Schema) with keys '$schema' (str), '$id' (str),
+                'type' (str), 'title' (str), 'description' (str), 'properties' (dict of queryable
+                field name to PropertyInfo with title, description, format), and 'additionalProperties' (bool).
+
         Example:
-            ogc_collection_queryables(collectionId="pas_usa")
+            ogc_collection_queryables(collectionId="pbb_usa")
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/queryables"
-            
-            headers = {
-                "Accept": "application/schema+json"
-            }
-            
-            logger.debug(f"[ogc_collection_queryables] Requesting queryables for: {collectionId}")
-            response = self.session.get(url, headers=headers)
+            logger.debug(f"[ogc_collection_queryables] GET {url}")
+            response = self.session.get(url)
             logger.debug(f"[ogc_collection_queryables] Raw response: {response.text}")
             response.raise_for_status()
             return response.json()
@@ -2309,51 +2225,48 @@ class PreciselyAPI:
             logger.error(f"OGC collection queryables error: {e}")
             return {"error": str(e)}
 
-    def ogc_collection_items(self, collectionId: str,
-                             limit: int = None, offset: int = None,
-                             bbox: List[float] = None, filter: str = None,
-                             **kwargs) -> Dict[str, Any]:
-        """Get data records (items) associated with a collection.
-        
-        The Items operation retrieves the data records associated with a collection ID.
-        The response is always returned as GeoJSON.
-        
-        Several parameters can constrain or filter the response: limit records,
-        specify offset, filter using CQL2, or specify a bounding box.
-        
+    def ogc_collection_items(self, collectionId: str, **kwargs) -> Dict[str, Any]:
+        """Fetch features of the feature collection with id `{collectionId}`.
+
+Every feature in a dataset belongs to a collection. A dataset may consist of multiple feature collections, each representing a group of features that share a common schema and type.
+
+The **collection id** is a unique identifier for the spatial dataset and is used to reference a specific collection within the API.
+
+This endpoint supports content negotiation, allowing clients to request the response in HTML or GeoJSON format.
+
+Additional capabilities include:
+- **Filtering:** Supports attribute-based filtering using CQL (Common Query Language).
+- **Pagination:** Use `limit` and `offset` parameters to paginate results.
+- **Spatial Queries:**
+  - **Bounding Box (bbox):** Retrieve features within a rectangular spatial extent (`minX, minY, maxX, maxY`).
+  - **Spatial Filters:** Support for `contains`, `intersects`, and `within` (OGC Filter Encoding).
+
         Args:
-            collectionId: Unique identifier of the collection
-            limit: Maximum number of records to return (max: 10000)
-            offset: Number of records to skip (for pagination)
-            bbox: Bounding box coordinates [minX, minY, maxX, maxY]
-            filter: CQL2 filter expression (e.g., "bldgid='B000CTOWD2PJ'")
-        
+            collectionId (str): Unique identifier of the collection.
+            **kwargs: Additional keyword arguments passed to the API.
+                limit (str): Number of items to return (max: 10,000).
+                offset (str): Offset for pagination.
+                bbox (str): Bounding box for spatial filtering (minX, minY, maxX, maxY).
+                filter (str): Filter query in CQL format.
+
         Returns:
-            GeoJSON FeatureCollection with features
-        
+            Dict[str, Any]: FeatureCollectionResponse (GeoJSON) with keys 'type' (str), 'features'
+                (list of Feature objects with properties, geometry, and optional id), 'timeStamp' (str),
+                and 'links' (list of Link objects for pagination).
+
         Example:
-            ogc_collection_items(collectionId="pbb_usa", limit=50)
-            ogc_collection_items(collectionId="pbb_usa", bbox=[-3.545148, 50.727083, -3.538470, 50.728095])
-            ogc_collection_items(collectionId="pbb_usa", filter="bldgid='B000CTOWD2PJ'")
+            ogc_collection_items(collectionId="properties/buildings", limit=100, offset=0)
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/items"
             
             params = {}
-            if limit is not None:
-                params["limit"] = limit
-            if offset is not None:
-                params["offset"] = offset
-            if bbox is not None:
-                params["bbox"] = ",".join(str(x) for x in bbox)
-            if filter is not None:
-                params["filter"] = filter
-            
-            headers = {
-                "Accept": "application/geo+json"
-            }
-            
-            logger.debug(f"[ogc_collection_items] Requesting items for: {collectionId}, params: {params}")
+            for k in ["limit", "offset", "bbox", "filter"]:
+                if k in kwargs:
+                    params[k] = kwargs[k]
+            headers = {"Accept": "application/geo+json"}
+            logger.debug(f"[ogc_collection_items] GET {url}")
+            logger.debug(f"[ogc_collection_items] Request params: {params}")
             response = self.session.get(url, params=params, headers=headers)
             logger.debug(f"[ogc_collection_items] Raw response: {response.text}")
             response.raise_for_status()
@@ -2363,30 +2276,25 @@ class PreciselyAPI:
             return {"error": str(e)}
 
     def ogc_feature_by_id(self, collectionId: str, featureId: str, **kwargs) -> Dict[str, Any]:
-        """Get a specific feature by its ID from a collection.
-        
-        Returns records from the enrich dataset which match the input feature ID.
-        All enrich datasets have a unique feature ID that is generated as a
-        sequential number. This ID can be used to return the record.
-        
+        """Retrieves a single feature in GeoJSON format,
+
         Args:
-            collectionId: Unique identifier of the collection (e.g., "pbb_usa")
-            featureId: The sequential feature ID of the collection (e.g., "1234")
-        
+            collectionId (str): Unique collection identifier
+            featureId (str): Unique feature identifier
+            **kwargs: Additional keyword arguments passed to the API.
+
         Returns:
-            GeoJSON FeatureCollection with the matching feature
-        
+            Dict[str, Any]: FeatureCollectionResponse (GeoJSON) with keys 'type' (str), 'features'
+                (list containing the single Feature with properties, geometry, and id), 'timeStamp' (str),
+                and 'links' (list of Link objects).
+
         Example:
-            ogc_feature_by_id(collectionId="pbb_usa", featureId="1234")
+            ogc_feature_by_id(collectionId="properties/buildings", featureId="1")
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/items/{featureId}"
-            
-            headers = {
-                "Accept": "application/geo+json"
-            }
-            
-            logger.debug(f"[ogc_feature_by_id] Requesting feature {featureId} from: {collectionId}")
+            headers = {"Accept": "application/geo+json"}
+            logger.debug(f"[ogc_feature_by_id] GET {url}")
             response = self.session.get(url, headers=headers)
             logger.debug(f"[ogc_feature_by_id] Raw response: {response.text}")
             response.raise_for_status()
