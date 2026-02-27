@@ -1,4 +1,4 @@
-"""
+﻿"""
 Precisely MCP Server - Wrapper Architecture
 Uses the PreciselyAPI class from precisely_api_core_clean module
 Supports both stdio (default) and Streamable HTTP transports
@@ -708,166 +708,85 @@ Available fields in places data section:
             "required": ["data"]
         }
     ),
-    
-    # Spatial Analysis
+    # ========================================
+    # Spatial Analysis APIs (7 tools)
+    # ========================================
     Tool(
         name="find_nearest_candidates",
-        description="""Find nearest spatial features to a location or geometry (Search Nearby).
+        description="""Identifies the nearest locations or points of interest to a specified geometry or address based on distance or defined criteria, returning the spatial features in distance order with the distance value.
 
-Identifies the nearest locations or points of interest to a specified geometry or address
-based on distance criteria, returning spatial features in distance order with distance values.
+Returns: GeoJSON FeatureCollection with features sorted by distance, including distance values, response parameters (recordsMatched, recordsReturned), and metadata.
 
-Example request:
-{
-  'tableName': '/risks/flood_risk',
-  'location': {'format': 'WKT', 'value': 'POINT(-122.399306 37.712211)'},
-  'withinDistance': '100 m',
-  'attributes': ['statecode', 'type', 'mapname'],
-  'maxFeatures': 5
-}
+Example 1 Request (Geometry):
+{'tableName': '/risks/wildfire_risk_fire_perimeter', 'attributes': ['incremental_s_no', 'state', 'wr_id'], 'location': {'format': 'wkt', 'value': 'LINESTRING (-122.769499 38.005947, -122.773625 37.999047)'}, 'withinDistance': '10 mi', 'distanceAttributeName': 'dist', 'maxFeatures': '5', 'inputPointAttributeName': 'inputPoint', 'targetPointAttributeName': 'targetPoint', 'bearingAttributeName': 'bearing'}
 
-Example with address:
-{
-  'tableName': '/risks/flood_risk',
-  'location': {'format': 'ADDRESS', 'value': '123 Main St, San Francisco, CA'},
-  'withinDistance': '1 km',
-  'attributes': ['*'],
-  'maxFeatures': 10
-}
-
-Common table names:
-- /risks/flood_risk - Flood risk zones
-- /risks/earthquake - Earthquake risk data
-- /risks/wildfire - Wildfire risk zones
-
-Returns: GeoJSON FeatureCollection with nearest features and their distances.""",
+Example 2 Request (Address):
+{'tableName': '/risks/wildfire_risk_fire_perimeter', 'attributes': ['incremental_s_no', 'state', 'wr_id'], 'location': {'format': 'address', 'value': 'POINT REYES STATION CA', 'country': 'United States'}, 'withinDistance': '10 mi', 'distanceAttributeName': 'dist', 'maxFeatures': '5', 'inputPointAttributeName': 'inputPoint', 'targetPointAttributeName': 'targetPoint', 'bearingAttributeName': 'bearing'}""",
         inputSchema={
             "type": "object",
             "properties": {
                 "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/risks/flood_risk')"},
-                "location": {
-                    "type": "object",
-                    "description": "Input geometry or address. Use {'format': 'WKT', 'value': 'POINT(lon lat)'} for coordinates or {'format': 'ADDRESS', 'value': 'address string'} for address"
-                },
-                "withinDistance": {"type": "string", "description": "Search distance with unit (e.g., '100 m', '1 km', '500 ft')"},
-                "attributes": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "List of column names to include in response. Use ['*'] for all columns."
-                },
-                "maxFeatures": {"type": "integer", "default": 10, "description": "Maximum features to return per geometry (default: 10, min: 1)"},
-                "distanceAttributeName": {"type": "string", "default": "distance", "description": "Custom name for distance attribute in response"},
-                "uomAttributeName": {"type": "string", "default": "uom", "description": "Custom name for unit of measurement attribute"},
-                "inputPointAttributeName": {"type": "string", "default": "inputPoint", "description": "Custom name for input point attribute"},
-                "targetPointAttributeName": {"type": "string", "default": "targetPoint", "description": "Custom name for target point attribute"},
-                "bearingAttributeName": {"type": "string", "default": "bearing", "description": "Custom name for bearing attribute"},
-                "sortBy": {"type": "string", "description": "Attribute to sort results by"},
-                "sortOrder": {"type": "string", "enum": ["ASC", "DESC"], "default": "ASC", "description": "Sort order"},
-                "limit": {"type": "integer", "default": 10, "description": "Maximum results to return"},
-                "offset": {"type": "integer", "default": 0, "description": "Number of records to skip"}
+                "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns, will only include scalar columns."},
+                "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
+                "withinDistance": {"type": "string", "description": "Distance within which nearest features will be searched (e.g., '10 mi', '5 km')"},
+                "distanceAttributeName": {"type": "string", "description": "Custom name of distance parameter."},
+                "maxFeatures": {"type": "integer", "description": "Maximum number of features returned against each geometry. Default value is 10 and minimum value is 1.", "default": 10, "minimum": 1},
+                "uomAttributeName": {"type": "string", "description": "Custom name of unit of measurement parameter."},
+                "inputPointAttributeName": {"type": "string", "description": "Custom name of point on input from which distance is calculated."},
+                "targetPointAttributeName": {"type": "string", "description": "Custom name of point on target from which distance is calculated."},
+                "bearingAttributeName": {"type": "string", "description": "Custom name of bearing angle between input and target point."},
+                "sortBy": {"type": "string", "description": "Column name to sort by."},
+                "sortOrder": {"type": "string", "description": "Sort order: 'ASC' or 'DESC'."},
+                "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
+                "offset": {"type": "integer", "description": "Specifies the number of records to skip."}
             },
             "required": ["tableName", "location", "withinDistance", "attributes"]
         }
     ),
     Tool(
         name="search_at_location",
-        description="""Search for spatial features at a location (Search At Location).
+        description="""Searches for locations or points of interest within or intersecting a defined geographic area(geometry or address) or a buffer around a specified location.
 
-Searches for locations or points of interest within or intersecting a defined
-geographic area (geometry or address) or a buffer around a specified location.
+Returns: GeoJSON FeatureCollection with matching features, response parameters (recordsMatched, recordsReturned), and metadata.
 
-Example request:
-{
-  'tableName': '/risks/flood_risk',
-  'location': {'format': 'WKT', 'value': 'POINT(-122.399306 37.712211)'},
-  'attributes': ['statecode', 'type', 'mapname'],
-  'spatialOperation': 'INTERSECTS'
-}
+Example 1 Request (Geometry):
+{'spatialOperation': 'WITHIN', 'tableName': '/risks/flood_risk', 'attributes': ['statecode', 'type', 'mapname', 'incremental_s_no'], 'location': {'format': 'wkt', 'value': 'MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))'}, 'bufferDistance': '10 mi'}
 
-Example with buffer:
-{
-  'tableName': '/risks/flood_risk',
-  'location': {'format': 'WKT', 'value': 'POINT(-118.2504 34.0553)'},
-  'attributes': ['*'],
-  'spatialOperation': 'INTERSECTS',
-  'bufferDistance': '500 m'
-}
-
-Spatial Operations:
-- INTERSECTS: Features that intersect with the input geometry (default)
-- WITHIN: Features completely within the input geometry
-- CONTAINS: Features that contain the input geometry
-
-Common table names:
-- /risks/flood_risk - Flood risk zones
-- /risks/earthquake - Earthquake risk data
-- /risks/wildfire - Wildfire risk zones
-
-Returns: GeoJSON FeatureCollection with matching features.""",
+Example 2 Request (Address):
+{'spatialOperation': 'WITHIN', 'tableName': '/properties/parcels', 'attributes': ['prclid'], 'location': {'format': 'address', 'value': '1 GLOBAL VW, TROY NY 12180-8371, UNITED STATES OF AMERICA', 'country': 'USA'}, 'bufferDistance': '1 km'}""",
         inputSchema={
             "type": "object",
             "properties": {
                 "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/risks/flood_risk')"},
-                "location": {
-                    "type": "object",
-                    "description": "Input geometry or address. Use {'format': 'WKT', 'value': 'POINT(lon lat)'} for coordinates"
-                },
-                "attributes": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "List of column names to include in response. Use ['*'] for all columns."
-                },
-                "spatialOperation": {
-                    "type": "string",
-                    "enum": ["INTERSECTS", "WITHIN", "CONTAINS"],
-                    "default": "INTERSECTS",
-                    "description": "Type of spatial query: INTERSECTS, WITHIN, or CONTAINS"
-                },
-                "bufferDistance": {"type": "string", "description": "Distance to buffer the input geometry (e.g., '100 m', '1 km', '500 ft')"},
-                "sortBy": {"type": "string", "description": "Attribute to sort results by"},
-                "sortOrder": {"type": "string", "enum": ["ASC", "DESC"], "default": "ASC", "description": "Sort order"},
-                "limit": {"type": "integer", "default": 10, "description": "Maximum results to return"},
-                "offset": {"type": "integer", "default": 0, "description": "Number of records to skip"}
+                "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns, will only include scalar columns."},
+                "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
+                "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within, contains. Default is 'intersects'."},
+                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
+                "sortBy": {"type": "string", "description": "Column name to sort by."},
+                "sortOrder": {"type": "string", "description": "Sort order: 'ASC' or 'DESC'."},
+                "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
+                "offset": {"type": "integer", "description": "Specifies the number of records to skip."}
             },
-            "required": ["tableName", "location", "attributes"]
+            "required": ["tableName", "attributes", "location"]
         }
     ),
     Tool(
         name="overlap",
-        description="""Identify spatial overlaps between a geometry/address and a spatial table (Overlap).
+        description="""Identifies spatial intersections between a specified geometry or address in a chosen Enrich spatial table returning the overlap geometry with the percentage and area of overlap.
 
-Identifies spatial intersections between a specified geometry or address in a chosen Enrich spatial table returning the overlap geometry with the percentage and area of overlap.
+Returns: GeoJSON FeatureCollection with overlap geometry, intersection area/length, and percentage of overlap with both target and input geometries.
 
-Example request:
-{
-  "tableName": "/properties/buildings",
-  "location": {"format": "WKT", "value": "POLYGON ((-74.01316 40.700479, -74.012028 40.700479, -74.012028 40.701403, -74.01316 40.701403, -74.01316 40.700479))"},
-  "attributes": ["fips"],
-  "uom": "m",
-  "areaAttributeName": "overlappedArea",
-  "lengthAttributeName": "overlappedLength",
-  "percentTargetAttributeName": "targetOverlapPercentage",
-  "percentInputAttributeName": "inputOverlapPercentage",
-  "uomAttributeName": "measurementUnit",
-  "bufferDistance": "2 km"
-}
+Example 1 Request (Geometry):
+{'tableName': '/risks/historical_weather_hurricanelines_world', 'uom': 'mi', 'attributes': ['stormname', 'windspeed'], 'location': {'format': 'wkt', 'value': 'POLYGON ((-74.286804 40.515887, -74.292297 40.478292, -73.66333 40.560765, -73.737488 40.839788, -74.002533 40.909361, -74.286804 40.515887))'}, 'totalAttributeName': 'tc'}
 
-Note: "*" can be used to specify all columns; will only include scalar columns.
-
-Returns: GeoJSON FeatureCollection with overlap geometry, intersection area/length, and percentage of overlap with both target and input geometries.""",
+Example 2 Request (Address):
+{'tableName': '/risks/wildfire_risk_fire_perimeter', 'uom': 'mi', 'attributes': ['state', 'riskdesc'], 'location': {'format': 'address', 'value': '1 Global View Troy NY', 'country': 'USA'}, 'bufferDistance': '5 km'}""",
         inputSchema={
             "type": "object",
             "properties": {
                 "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/properties/buildings', '/risks/flood_risk')"},
-                "location": {
-                    "type": "object",
-                    "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."
-                },
-                "attributes": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns, will only include scalar columns."
-                },
+                "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns; will only include scalar columns."},
+                "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "uom": {"type": "string", "description": "Unit of measurement used to return intersection length/area (e.g., 'm')"},
                 "areaAttributeName": {"type": "string", "default": "intersectionArea", "description": "Custom name of intersection area parameter when intersection area is polygon. Default: 'intersectionArea'."},
                 "lengthAttributeName": {"type": "string", "default": "intersectionLength", "description": "Custom name of intersection length parameter when intersection area is linestring. Default: 'intersectionLength'."},
@@ -875,22 +794,19 @@ Returns: GeoJSON FeatureCollection with overlap geometry, intersection area/leng
                 "percentInputAttributeName": {"type": "string", "default": "percentageOfInput", "description": "Custom name of parameter indicating percentage of overlap with input geometry. Default: 'percentageOfInput'."},
                 "uomAttributeName": {"type": "string", "default": "uom", "description": "Custom name of unit of measurement parameter. Default: 'uom'."},
                 "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
-                "limit": {"type": "integer", "default": 10, "minimum": 1, "maximum": 1000, "description": "Specifies the maximum number of results to return. Default: 10."},
-                "offset": {"type": "integer", "default": 0, "minimum": 0, "description": "Specifies the number of records to skip. Default: 0."}
+                "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
+                "offset": {"type": "integer", "description": "Specifies the number of records to skip."}
             },
-            "required": ["tableName", "location", "attributes", "uom"]
+            "required": ["tableName", "attributes", "location", "uom"]
         }
     ),
     Tool(
         name="get_spatial_products",
-        description="""Get metadata about Enrich Data products available via Spatial APIs (Get Product Metadata).
+        description="""Get a list of available Enrich Data products along with their metadata such as product family, applicable geographic area, vintage, available layers, appropriate zoom levels for display and styles to use.
 
-Returns metadata about the Enrich Data products available via Spatial APIs. Information in the response includes product family, applicable geographic area, vintage, available layers, appropriate zoom levels for display and styles to use in visualization application or API calls. A "layerId" value can be specified in Tiles API for getting tiles. A "featureTable" value can be used in Analysis API to invoke spatial operations on that layer.
+Returns: List of product metadata objects with productId, productName, productFamily, vintage, geography, and layers (including layerId, displayName, featureTable, recommendedStyle).
 
-Example request:
-No parameters required - simple GET request.
-
-Returns: Array of product metadata objects with productId, productName, productFamily, vintage, geography, and layers array.""",
+Example Request: https://api.cloud.precisely.com/v1/spatial/products""",
         inputSchema={
             "type": "object",
             "properties": {},
@@ -899,14 +815,11 @@ Returns: Array of product metadata objects with productId, productName, productF
     ),
     Tool(
         name="list_spatial_tables",
-        description="""Get a list of available spatial tables from the database (List Tables).
+        description="""This endpoint retrieves a list of spatial tables from database.
 
-Returns a list of available spatial tables from the database. Each table entry includes the table name (path) and a friendly display name. The tableName values can be used in spatial analysis APIs like find_nearest_candidates, search_at_location, and overlap.
+Returns: List of spatial table names available in the database.
 
-Example request:
-No parameters required - simple GET request.
-
-Returns: Array of table objects with tableName and tableFriendlyName.""",
+Example Request: https://api.cloud.precisely.com/v1/spatial/tables""",
         inputSchema={
             "type": "object",
             "properties": {},
@@ -915,16 +828,11 @@ Returns: Array of table objects with tableName and tableFriendlyName.""",
     ),
     Tool(
         name="get_table_metadata",
-        description="""Get metadata for a table present in database (Get Table Metadata).
+        description="""This endpoint retrieves a metadata information of a specific/given table from database.
 
-Returns metadata for a table present in database. Information in the response includes table name, schema, columns and their description and type, bounding box in case of spatial table and row count.
+Returns: Object with table name, columns and their description and type, bounding box in case of spatial table, and row count.
 
-Example request:
-{
-  "tableName": "properties/buildings"
-}
-
-Returns: Table metadata object with tableName, schemaName, geometryType, numberOfRows, columns array, and bounding box coordinates (xMin, xMax, yMin, yMax).""",
+Example Request: https://api.cloud.precisely.com/v1/spatial/tables/properties/buildings/metadata""",
         inputSchema={
             "type": "object",
             "properties": {
@@ -935,83 +843,49 @@ Returns: Table metadata object with tableName, schemaName, geometryType, numberO
     ),
     Tool(
         name="summarize",
-        description="""Aggregate spatial data within a defined area (Spatial Summary API).
+        description="""Generates detailed data summaries within a user defined region(geometry or address), including total, average, minimum and maximum values for data such as population.
 
-The Spatial Summary API method aggregates spatial data within a defined area, offering detailed statistics such as population density, area size, and other location-specific attributes. It supports multiple distance metrics and provides comprehensive statistical analysis.
+Returns: Summary statistics with aggregate values (min, max, avg, sum, median) for specified columns within the defined region.
 
-Example request (Geometry with INTERSECTS):
-{
-    "spatialOperation": "INTERSECTS",
-    "tableName": "/precisely/riskdata/hwr_usa_windgrid",
-    "aggregateColumns": {
-        "w9": ["min", "max", "avg", "sum"]
-    },
-    "location": {
-        "format": "wkt",
-        "value": "GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))"
-    },
-    "proportionalCalculation": true
-}
+Example 1 Request (Geometry, Intersects):
+{'spatialOperation': 'INTERSECTS', 'tableName': '/risks/historical_weather_windgrid', 'aggregateColumns': {'w9': ['min', 'max', 'avg', 'sum']}, 'location': {'format': 'wkt', 'value': 'GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))'}, 'proportionalCalculation': true}
 
-Example request (Address with INTERSECTS):
-{
-    "spatialOperation": "INTERSECTS",
-    "tableName": "/precisely/riskdata/flr_usa_comm",
-    "location": {
-        "format": "address",
-        "value": "1 Global View Troy NY",
-        "country": "USA"
-    },
-    "aggregateColumns": {
-        "id": ["min", "max", "avg", "sum"]
-    },
-    "proportionalCalculation": true,
-    "bufferDistance": "10 km"
-}
+Example 2 Request (Address, Intersects):
+{'spatialOperation': 'INTERSECTS', 'tableName': '/risks/flood_risk', 'location': {'format': 'address', 'value': '1 Global View Troy NY', 'country': 'USA'}, 'aggregateColumns': {'id': ['min', 'max', 'avg', 'sum']}, 'proportionalCalculation': true, 'bufferDistance': '10 km'}
 
-Example request (Geometry with WITHIN):
-{
-    "tableName": "/precisely/riskdata/wfr_usa_fireriskpro",
-    "location": {
-        "format": "WKT",
-        "value": "POLYGON ((-122.766919 38.031512, -122.766919 38.051864, -122.741314 38.051864, -122.741314 38.031512, -122.766919 38.031512))"
-    },
-    "spatialOperation": "within",
-    "proportionalCalculation": false,
-    "aggregateColumns": {
-        "INTENSITY": ["min", "MAX", "avg", "sum", "MEDIAN"],
-        "DAMAGE": ["min", "max", "SUM", "avg", "MEDIAN"]
-    }
-}
+Example 3 Request (Geometry, Within):
+{'tableName': '/risks/wildfire_risk_fire_perimeter', 'location': {'format': 'WKT', 'value': 'POLYGON ((-122.766919 38.031512, -122.766919 38.051864, -122.741314 38.051864, -122.741314 38.031512, -122.766919 38.031512))'}, 'spatialOperation': 'within', 'proportionalCalculation': false, 'aggregateColumns': {'INTENSITY': ['min', 'MAX', 'avg', 'sum', 'MEDIAN'], 'DAMAGE': ['min', 'max', 'SUM', 'avg', 'MEDIAN']}}
 
-Returns: GeoJSON FeatureCollection with aggregated statistics.""",
+Example 4 Request (Address, Within):
+{'tableName': '/risks/wildfire_risk_fire_perimeter', 'location': {'format': 'address', 'value': '1 Global View Troy NY', 'country': 'USA'}, 'spatialOperation': 'within', 'proportionalCalculation': false, 'bufferDistance': '10 km', 'aggregateColumns': {'INTENSITY': ['min', 'MAX', 'avg', 'sum', 'MEDIAN'], 'DAMAGE': ['min', 'max', 'SUM', 'avg', 'MEDIAN']}}""",
         inputSchema={
             "type": "object",
             "properties": {
-                "tableName": {"type": "string", "description": "Name of the table containing the spatial data"},
-                "location": {"type": "object", "description": "Input geometry or address. Format: {format: 'WKT'|'GEOJSON'|'LonLat'|'address', value: '...', country: 'USA'}"},
-                "aggregateColumns": {"type": "object", "description": "Columns to aggregate. Format: {column_name: ['min', 'max', 'avg', 'sum', 'MEDIAN']}"},
-                "spatialOperation": {"type": "string", "description": "Spatial query type: 'INTERSECTS' (default) or 'WITHIN'", "default": "INTERSECTS"},
-                "proportionalCalculation": {"type": "boolean", "description": "Apply proportional calculations (only for INTERSECTS)", "default": False},
-                "bufferDistance": {"type": "string", "description": "Buffer distance (e.g., '10 km', '100 m')"}
+                "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/risks/historical_weather_windgrid')"},
+                "aggregateColumns": {"type": "object", "description": "Dictionary of column names mapped to lists of aggregate functions. Supported functions: min, max, avg, sum, median."},
+                "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
+                "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within. Default value is 'intersects'."},
+                "proportionalCalculation": {"type": "boolean", "description": "Whether to use proportional calculation. Only applicable when the spatialOperation parameter is 'intersects'"},
+                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."}
             },
             "required": ["tableName", "location", "aggregateColumns"]
         }
     ),
-    # OGC API Features (10 tools)
+    # ========================================
+    # OGC Features APIs (10 tools)
+    # ========================================
     Tool(
         name="ogc_landing_page",
-        description="""Get OGC API Features landing page with links to essential API resources.
+        description="""The landing page provides links to essential API resources, including:
+- **API Definition:** A machine-readable specification of the API.
+- **Conformance Declaration:** A list of standards that the API conforms to.
+- **Feature Collections:** Information and links to the available feature collections in the dataset.
 
-The landing page provides links to essential API resources, including:
-- API Definition: A machine-readable specification of the API.
-- Conformance Declaration: A list of standards that the API conforms to.
-- Feature Collections: Information and links to the available feature collections.
+Use this endpoint to quickly navigate and explore the API's capabilities.
 
-Example request:
-No parameters required.
+Returns: Object with links array.
 
-Returns: Landing page object with title, description, and links array.""",
+Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/""",
         inputSchema={
             "type": "object",
             "properties": {},
@@ -1020,18 +894,13 @@ Returns: Landing page object with title, description, and links array.""",
     ),
     Tool(
         name="ogc_api_definition",
-        description="""Get the complete OpenAPI definition for the OGC API.
+        description="""This endpoint retrieves the complete OpenAPI definition for the API. The response is a machine-readable specification that describes all available endpoints, request/response schemas, and security configurations.
 
-The API endpoint retrieves the complete OpenAPI definition for the API.
-The response is a machine-readable specification that describes all available
-endpoints, security configurations, and request and response schemas.
+- **Format:** The API definition conforms to the OpenAPI 3.0.1 standard.
 
-The API definition conforms to the OpenAPI 3.0.1 standard.
+Returns: OpenAPI 3.0.1 specification document describing all available endpoints.
 
-Example request:
-No parameters required.
-
-Returns: OpenAPI specification object.""",
+Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/api""",
         inputSchema={
             "type": "object",
             "properties": {},
@@ -1040,16 +909,13 @@ Returns: OpenAPI specification object.""",
     ),
     Tool(
         name="ogc_functions",
-        description="""Get list of available spatial functions within the OGC API.
+        description="""This endpoint returns a list of available spatial functions within the API.
+- **Purpose:** Provides supported spatial functions that can be used for querying features.
+- **Function Metadata:** Includes function names, argument types, and return types.
 
-This endpoint returns a list of available spatial functions within the API.
-Provides supported spatial functions that can be used for querying features.
-Function metadata includes function names, argument types, and return types.
+Returns: List of available spatial functions with function names, argument types, and return types.
 
-Example request:
-No parameters required.
-
-Returns: Object with functions array containing name, arguments, and returns.""",
+Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/functions""",
         inputSchema={
             "type": "object",
             "properties": {},
@@ -1058,16 +924,14 @@ Returns: Object with functions array containing name, arguments, and returns."""
     ),
     Tool(
         name="ogc_conformance",
-        description="""Get OGC API conformance declaration.
+        description="""This endpoint returns the conformance declaration for the API. The conformance declaration is a list of all conformance classes specified in a standard that the server adheres to. It helps clients determine whether the API meets the required standards and their own requirements.
 
-This endpoint returns the conformance declaration for the API. The conformance
-declaration is a list of all conformance classes specified in a standard that
-the server adheres to.
+- **Purpose:** Provides a comprehensive list of conformance classes to verify the API's compliance with OGC API standards and additional specifications.
+- **Standards:** Includes OGC API conformance classes and any extra specifications the API supports.
 
-Example request:
-No parameters required.
+Returns: Conformance declaration listing all conformance classes the server adheres to.
 
-Returns: Object with conformsTo array listing OGC API conformance classes.""",
+Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/conformance""",
         inputSchema={
             "type": "object",
             "properties": {},
@@ -1076,16 +940,19 @@ Returns: Object with conformsTo array listing OGC API conformance classes.""",
     ),
     Tool(
         name="ogc_collections",
-        description="""Get list of feature collections available on the server.
+        description="""This endpoint returns the list of feature collections available on the server. Each collection represents a spatial dataset that can be queried and provides essential metadata, including:
 
-This endpoint returns the list of feature collections available on the server.
-Each collection represents a spatial dataset that can be queried and provides
-essential metadata including Collection ID, Title, Description, and Links.
+- **Collection ID:** A unique identifier for the spatial dataset.
+- **Title and Description:** Optional details that describe the collection.
+- **Spatial and Temporal Extents:** Indicators of the geographical and time-based coverage of the data.
+- **Coordinate Reference Systems (CRS):** A list of supported CRS, with the first being the default (typically WGS 84).
+- **Links:** Navigational links to access the collection’s items (e.g., `/collections/{collectionId}/items`).
 
-Example request:
-No parameters required.
+This resource is designed to help clients discover available geospatial datasets and understand the structure of each collection before making queries.
 
-Returns: Object with links array and collections array.""",
+Returns: List of feature collections with metadata including collection IDs, titles, descriptions, and links.
+
+Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections""",
         inputSchema={
             "type": "object",
             "properties": {},
@@ -1094,105 +961,130 @@ Returns: Object with links array and collections array.""",
     ),
     Tool(
         name="ogc_collection",
-        description="""Get information about a specific feature collection.
+        description="""This resource describes the feature collection identified in the path.
 
-This resource describes the feature collection identified by collectionId.
-The response contains Collection ID, Title, Description, itemType, and Links.
+Information about the feature collection with id `{collectionId}` is provided. The response contains:
 
-Example request:
-{"collectionId": "pbb_usa"}
+- A link to the items in the collection (path `/collections/{collectionId}/items`, relation: items).
+- A unique local identifier for the collection.
+- A list of coordinate reference systems (CRS) in which geometries may be returned; the first CRS is the default (typically WGS 84 with axis order longitude/latitude).
+- An optional title and description for the collection.
+- An optional spatial and temporal extent derived from the data.
+- An optional indicator of the item type (default is 'feature').
 
-Returns: Collection object with id, title, description, itemType, and links.""",
+Returns: Collection metadata including id, title, description, and links to items/schema.
+
+Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings""",
         inputSchema={
             "type": "object",
             "properties": {
-                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'pbb_usa')"}
+                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'properties/buildings')"}
             },
             "required": ["collectionId"]
         }
     ),
     Tool(
         name="ogc_collection_schema",
-        description="""Get the schema for a specified feature collection.
+        description="""This resource provides the schema for a specified feature collection. The schema defines the structure of the collection and includes details such as field names, data types, formats, and descriptions.
 
-This resource provides the schema for a specified feature collection.
-The schema defines the structure including field names, data types,
-formats, descriptions, and geospatial data types.
+The **collection id** is a unique identifier used to reference a specific dataset. When you provide a collection id, the response includes:
 
-Example request:
-{"collectionId": "pas_usa"}
+- **Field Names:** Names of each attribute in the collection.
+- **Data Types & Formats:** The expected data type (e.g., string, integer, double) and format for each field.
+- **Descriptions:** Explanatory details for each attribute to clarify its purpose.
+- **Geospatial Data Types:** Specific spatial types for any geospatial attributes, along with the default coordinate reference system.
 
-Returns: JSON Schema object with properties definitions.""",
+This information is essential for validating client queries and constructing dynamic interfaces.
+
+Returns: JSON describing the collection structure with field names, data types, formats, and descriptions.
+
+Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/schema""",
         inputSchema={
             "type": "object",
             "properties": {
-                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'pas_usa')"}
+                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'properties/buildings')"}
             },
             "required": ["collectionId"]
         }
     ),
     Tool(
         name="ogc_collection_queryables",
-        description="""Get queryable attributes for a specific collection.
+        description="""This resource returns the queryable properties for a specific collection identified by its unique id. Queryable properties provide detailed metadata for each attribute available in the collection that can be used to filter queries. The response includes information such as:
 
-This resource returns the queryable attributes for a specific collection.
-These attributes are a subset of the collection's full set of attributes
-and are indexed for performance in filter queries.
+- **Field Names:** The names of the attributes in the collection.
+- **Descriptions:** A description of each attribute to clarify its purpose and usage.
+- **Formats:** The data types or formats (e.g., string, number, geospatial) of each attribute.
+- **Geospatial Data Types:** Specific spatial types for attributes that support geospatial queries.
 
-Example request:
-{"collectionId": "pas_usa"}
+This metadata is essential for clients to build dynamic query interfaces and validate their requests against the collection's schema.
 
-Returns: Queryable schema object with properties definitions.""",
+Returns: Queryable properties with metadata for each filterable attribute in the collection.
+
+Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/queryables""",
         inputSchema={
             "type": "object",
             "properties": {
-                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'pas_usa')"}
+                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'properties/buildings')"}
             },
             "required": ["collectionId"]
         }
     ),
     Tool(
         name="ogc_collection_items",
-        description="""Get data records (items) associated with a collection.
+        description="""Fetch features of the feature collection with id `{collectionId}`.
 
-The Items operation retrieves data records associated with a collection ID.
-The response is returned as GeoJSON. Supports filtering with limit, offset,
-bbox, and CQL2 filter expressions.
+Every feature in a dataset belongs to a collection. A dataset may consist of multiple feature collections, each representing a group of features that share a common schema and type.
 
-Example requests:
-{"collectionId": "pbb_usa", "limit": 50}
-{"collectionId": "pbb_usa", "bbox": [-3.545148, 50.727083, -3.538470, 50.728095]}
-{"collectionId": "pbb_usa", "filter": "bldgid='B000CTOWD2PJ'"}
+The **collection id** is a unique identifier for the spatial dataset and is used to reference a specific collection within the API.
 
-Returns: GeoJSON FeatureCollection with features.""",
+Additional capabilities include:
+- **Filtering:** Supports attribute-based filtering using CQL (Common Query Language).
+- **Pagination:** Use `limit` and `offset` parameters to paginate results.
+- **Spatial Queries:**
+  - **Bounding Box (bbox):** Retrieve features within a rectangular spatial extent (`minX, minY, maxX, maxY`).
+  - **Spatial Filters:** Support for `contains`, `intersects`, and `within` (OGC Filter Encoding).
+
+Returns: GeoJSON FeatureCollection with features matching the query, and pagination links.
+
+Example 1 Request (Items without additional parameters): https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items
+
+Example 2 Request (Items with limit): https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items?limit=5
+
+Example 3 Request (Items with offset): https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items?limit=5&offset=10
+
+Example 4 Request (Items with bbox): https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items?bbox=-74.013219,40.702976,-74.01162,40.70357&limit=100
+
+Example 5 Request (Items with filter and s_contains): https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items?filter=s_contains(GEOM,POINT (-74.011728 40.701114))&limit=100
+
+Example 6 Request (Items with filter and s_within): https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items?filter=s_within(GEOM,POLYGON ((-74.009523 40.703347, -74.010445 40.704257, -74.011078 40.704062, -74.011127 40.703363, -74.010526 40.702822, -74.009523 40.703347)))&limit=100
+
+Example 7 Request (Items with filter and s_intersects): https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items?filter=s_intersects(GEOM,POLYGON ((-74.009523 40.703347, -74.010445 40.704257, -74.011078 40.704062, -74.011127 40.703363, -74.010526 40.702822, -74.009523 40.703347)))&limit=100
+
+Example 8 Request (Items with filter and = operator): https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items?filter=bldgid%3D'B000CTPA4MY1'""",
         inputSchema={
             "type": "object",
             "properties": {
-                "collectionId": {"type": "string", "description": "Unique identifier of the collection"},
-                "limit": {"type": "integer", "description": "Maximum number of records to return (max: 10000)"},
-                "offset": {"type": "integer", "description": "Number of records to skip (for pagination)"},
-                "bbox": {"type": "array", "items": {"type": "number"}, "description": "Bounding box [minX, minY, maxX, maxY]"},
-                "filter": {"type": "string", "description": "CQL2 filter expression"}
+                "collectionId": {"type": "string", "description": "The unique identifier for the feature collection (e.g., 'properties/buildings')"},
+                "limit": {"type": "string", "description": "Number of features to return. Default: 10."},
+                "offset": {"type": "string", "description": "Number of features to skip. Default: 0."},
+                "bbox": {"type": "string", "description": "Bounding box for spatial filtering (minX, minY, maxX, maxY) (e.g., '-74.2,40.8,-73.9,40.9')"},
+                "filter": {"type": "string", "description": "Filter query in CQL format. (e.g., type = 'residential'"}
             },
             "required": ["collectionId"]
         }
     ),
     Tool(
         name="ogc_feature_by_id",
-        description="""Get a specific feature by its ID from a collection.
+        description="""Retrieves a single feature in GeoJSON format,
 
-Returns records from the enrich dataset which match the input feature ID.
-All enrich datasets have a unique feature ID (sequential number).
+Returns: GeoJSON FeatureCollection with geometry and properties of the feature(s).
 
-Example request:
-{"collectionId": "pbb_usa", "featureId": "1234"}
-
-Returns: GeoJSON FeatureCollection with the matching feature.""",
+Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items/1""",
         inputSchema={
             "type": "object",
             "properties": {
-                "collectionId": {"type": "string", "description": "Unique identifier of the collection (e.g., 'pbb_usa')"},
-                "featureId": {"type": "string", "description": "The sequential feature ID (e.g., '1234')"}
+                "collectionId": {"type": "string", "description": "The unique identifier for the feature collection (e.g., 'properties/buildings')"},
+                "featureId": {"type": "string", "description": "The unique identifier for the feature within the collection (e.g., '1')"}
             },
             "required": ["collectionId", "featureId"]
         }

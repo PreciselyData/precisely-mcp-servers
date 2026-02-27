@@ -2232,8 +2232,6 @@ Every feature in a dataset belongs to a collection. A dataset may consist of mul
 
 The **collection id** is a unique identifier for the spatial dataset and is used to reference a specific collection within the API.
 
-This endpoint supports content negotiation, allowing clients to request the response in HTML or GeoJSON format.
-
 Additional capabilities include:
 - **Filtering:** Supports attribute-based filtering using CQL (Common Query Language).
 - **Pagination:** Use `limit` and `offset` parameters to paginate results.
@@ -2259,7 +2257,6 @@ Additional capabilities include:
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/items"
-            
             params = {}
             for k in ["limit", "offset", "bbox", "filter"]:
                 if k in kwargs:
