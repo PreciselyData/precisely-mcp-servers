@@ -2,7 +2,7 @@
 Unified Test Suite for Precisely MCP Server
 Combines 3-tier testing: Layer 1 (API Core) → Layer 2 (MCP Server) → Layer 3 (Functional)
 
-Tests all 49 Precisely API tools with comprehensive validation and detailed logging
+Tests all 66 Precisely API tools with comprehensive validation and detailed logging
 """
 
 import os
@@ -122,10 +122,10 @@ class PreciselyMCPTestSuite:
         methods = [m for m in dir(self.api) if not m.startswith('_') and callable(getattr(self.api, m))]
         logger.info(f"  Found {len(methods)} API methods")
         
-        if len(methods) != 49:
-            logger.warning(f"  [WARN] Expected 49 methods, found {len(methods)}")
+        if len(methods) != 66:
+            logger.warning(f"  [WARN] Expected 66 methods, found {len(methods)}")
         else:
-            logger.info("  [PASS] All 49 API methods present")
+            logger.info("  [PASS] All 66 API methods present")
         
         # Test 3: Quick smoke tests
         logger.info("\n[3/3] Running Quick Smoke Tests...")
@@ -186,10 +186,10 @@ class PreciselyMCPTestSuite:
                 logger.error(f"  [FAIL] Duplicate tools found: {set(duplicates)}")
                 return False
             
-            if len(tools) != 49:
-                logger.warning(f"  [WARN] Expected 49 tools, found {len(tools)}")
+            if len(tools) != 66:
+                logger.warning(f"  [WARN] Expected 66 tools, found {len(tools)}")
             else:
-                logger.info("  [PASS] All 49 MCP tools defined")
+                logger.info("  [PASS] All 66 MCP tools defined")
             
         except Exception as e:
             logger.error(f"  [FAIL] Failed to load MCP server: {e}")
@@ -534,6 +534,59 @@ class PreciselyMCPTestSuite:
             
             ("Get Places by Address", "get_places_by_address", "What places and points of interest are near 123 Main St, Boston, MA 02101?",
              {"data": {"query": "query GetPlacesByAddress($address: String!, $country: String) { getByAddress(address: $address, country: $country) { places(pageNumber: 1, pageSize: 20) { metadata { pageNumber pageCount totalPages count vintage } data { PBID pointOfInterestID preciselyID businessName brandName city admin1ShortName postalCode formattedAddress longitude latitude phone email web lineOfBusiness sic8Description } } } }", "variables": {"address": "123 Main St, Boston, MA 02101", "country": "US"}}}),
+            
+            # Spatial Analysis APIs
+            ("Find Nearest Candidates", "find_nearest_candidates", "Find nearest flood risk features to a polygon",
+             {"tableName": "/risks/flood_risk", "attributes": ["statecode", "type", "mapname"], "location": {"format": "WKT", "value": "MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))"}, "withinDistance": "10 mi", "attributeFilter": "id > 100", "distanceAttributeName": "dist", "maxFeatures": 2, "uomAttributeName": "unit", "inputPointAttributeName": "ip", "targetPointAttributeName": "tp", "bearingAttributeName": "bearingAngle"}),
+            
+            ("Search at Location", "search_at_location", "Search for flood risk features intersecting a polygon",
+             {"tableName": "/risks/flood_risk", "attributes": ["statecode", "type", "mapname"], "location": {"format": "WKT", "value": "MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))"}, "spatialOperation": "INTERSECTS", "attributeFilter": "id > 100", "bufferDistance": "10 mi"}),
+            
+            ("Overlap", "overlap", "Find spatial overlaps between a polygon and buildings",
+             {"tableName": "/properties/buildings", "attributes": ["fips"], "location": {"format": "WKT", "value": "POLYGON ((-74.01316 40.700479, -74.012028 40.700479, -74.012028 40.701403, -74.01316 40.701403, -74.01316 40.700479))"}, "uom": "m", "attributeFilter": "elevation > 0", "areaAttributeName": "overlappedArea", "lengthAttributeName": "overlappedLength", "percentTargetAttributeName": "targetOverlapPercentage", "percentInputAttributeName": "inputOverlapPercentage", "uomAttributeName": "measurementUnit", "bufferDistance": "2 km"}),
+            
+            ("Get Spatial Products", "get_spatial_products", "Get list of available spatial data products",
+             {}),
+            
+            ("List Spatial Tables", "list_spatial_tables", "List all available spatial tables",
+             {}),
+            
+            ("Get Table Metadata", "get_table_metadata", "Get metadata for flood risk table",
+             {"tableName": "risks/flood_risk"}),
+            
+            ("Summarize", "summarize", "Summarize wind data within a geometry",
+             {"tableName": "/risks/historical_weather_windgrid", "aggregateColumns": {"w11": ["min", "max", "avg", "sum"], "w10": ["min", "max", "sum", "avg", "median"]}, "location": {"format": "WKT", "value": "GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))"}, "spatialOperation": "intersects", "attributeFilter": "grid_id > 0", "proportionalCalculation": True, "bufferDistance": "10 mi"}),
+            
+            # OGC Features APIs
+            ("OGC Landing Page", "ogc_landing_page", "Get OGC API landing page",
+             {}),
+            
+            ("OGC API Definition", "ogc_api_definition", "Get OGC API definition",
+             {}),
+            
+            ("OGC Functions", "ogc_functions", "Get OGC spatial functions",
+             {}),
+            
+            ("OGC Conformance", "ogc_conformance", "Get OGC conformance declaration",
+             {}),
+            
+            ("OGC Collections", "ogc_collections", "List OGC feature collections",
+             {}),
+            
+            ("OGC Collection", "ogc_collection", "Get details of properties/buildings collection",
+             {"collectionId": "properties/buildings"}),
+            
+            ("OGC Collection Schema", "ogc_collection_schema", "Get schema of properties/buildings collection",
+             {"collectionId": "properties/buildings"}),
+            
+            ("OGC Collection Queryables", "ogc_collection_queryables", "Get queryable properties of properties/buildings collection",
+             {"collectionId": "properties/buildings"}),
+            
+            ("OGC Collection Items", "ogc_collection_items", "Get items from properties/buildings collection with bbox",
+             {"collectionId": "properties/buildings", "limit": "100"}),
+            
+            ("OGC Feature by ID", "ogc_feature_by_id", "Get feature 1 from properties/buildings collection",
+             {"collectionId": "properties/buildings", "featureId": "1"}),
         ]
     
     # ========================================

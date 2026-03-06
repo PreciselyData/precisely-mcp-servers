@@ -735,6 +735,7 @@ Example 2 Request (Address):
                 "inputPointAttributeName": {"type": "string", "description": "Custom name of point on input from which distance is calculated."},
                 "targetPointAttributeName": {"type": "string", "description": "Custom name of point on target from which distance is calculated."},
                 "bearingAttributeName": {"type": "string", "description": "Custom name of bearing angle between input and target point."},
+                "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
                 "sortBy": {"type": "string", "description": "Column name to sort by."},
                 "sortOrder": {"type": "string", "description": "Sort order: 'ASC' or 'DESC'."},
                 "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
@@ -762,6 +763,7 @@ Example 2 Request (Address):
                 "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within, contains. Default is 'intersects'."},
                 "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
+                "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
                 "sortBy": {"type": "string", "description": "Column name to sort by."},
                 "sortOrder": {"type": "string", "description": "Sort order: 'ASC' or 'DESC'."},
                 "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
@@ -794,6 +796,7 @@ Example 2 Request (Address):
                 "percentInputAttributeName": {"type": "string", "default": "percentageOfInput", "description": "Custom name of parameter indicating percentage of overlap with input geometry. Default: 'percentageOfInput'."},
                 "uomAttributeName": {"type": "string", "default": "uom", "description": "Custom name of unit of measurement parameter. Default: 'uom'."},
                 "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
+                "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
                 "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
                 "offset": {"type": "integer", "description": "Specifies the number of records to skip."}
             },
@@ -866,7 +869,8 @@ Example 4 Request (Address, Within):
                 "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within. Default value is 'intersects'."},
                 "proportionalCalculation": {"type": "boolean", "description": "Whether to use proportional calculation. Only applicable when the spatialOperation parameter is 'intersects'"},
-                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."}
+                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
+                "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"}
             },
             "required": ["tableName", "location", "aggregateColumns"]
         }

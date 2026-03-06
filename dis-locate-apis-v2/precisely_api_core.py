@@ -1,4 +1,4 @@
-﻿"""
+"""
 Precisely API Core Module for MCP Server
 Production-ready module containing the PreciselyAPI class for MCP server use.
 Pure API functionality with minimal dependencies.
@@ -1698,6 +1698,7 @@ class PreciselyAPI:
             location (dict): input for which spatial analysis is to be done. Can be a geometry or address
             withinDistance (str): The distance to search around the geometry.
             **kwargs: Additional keyword arguments passed to the API.
+                attributeFilter (str): specifies filter on scalar attributes
                 distanceAttributeName (str): The name of the distance attribute between input geometry and target geometry. Default value is "distance".
                 maxFeatures (int): Maximum number of features returned against each geometry. Default value is 10 and minimum value is 1.
                 uomAttributeName (str): Custom name of parameter showing unit of measurement for distance between input and target geometry. Default value is "uom".
@@ -1720,6 +1721,7 @@ class PreciselyAPI:
                 attributes=["statecode", "type", "mapname"],
                 location={"format": "WKT", "value": "MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))"},
                 withinDistance="10 mi",
+                attributeFilter="id > 100",
                 distanceAttributeName="dist",
                 maxFeatures=2,
                 uomAttributeName="unit",
@@ -1735,7 +1737,7 @@ class PreciselyAPI:
                 if p in kwargs:
                     params[p] = kwargs[p]
             json_data = {"tableName": tableName, "attributes": attributes, "location": location, "withinDistance": withinDistance}
-            for k in ["distanceAttributeName", "maxFeatures", "uomAttributeName", "inputPointAttributeName", "targetPointAttributeName", "bearingAttributeName"]:
+            for k in ["attributeFilter", "distanceAttributeName", "maxFeatures", "uomAttributeName", "inputPointAttributeName", "targetPointAttributeName", "bearingAttributeName"]:
                 if k in kwargs:
                     json_data[k] = kwargs[k]
             headers = {"Accept": "application/geo+json"}
@@ -1758,6 +1760,7 @@ class PreciselyAPI:
             attributes (list): Comma separated list of column names of enrich table to be included in the response. "*" can be used to specify all columns.
             location (dict): input for which spatial analysis is to be done. Can be a geometry or address
             **kwargs: Additional keyword arguments passed to the API.
+                attributeFilter (str): specifies filter on scalar attributes
                 spatialOperation (str): The type of spatial query. Possible values are: intersects, within, contains. Default value is "intersects".
                 bufferDistance (str): Distance by which the input geometry will be extrapolated.
                 sortBy (str): Defines the attribute by which the results should be sorted.
@@ -1776,6 +1779,7 @@ class PreciselyAPI:
                 attributes=["statecode", "type", "mapname"],
                 location={"format": "WKT", "value": "MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))"},
                 spatialOperation="INTERSECTS",
+                attributeFilter="id > 100",
                 bufferDistance="10 mi"
             )
         """
@@ -1786,7 +1790,7 @@ class PreciselyAPI:
                 if p in kwargs:
                     params[p] = kwargs[p]
             json_data = {"tableName": tableName, "attributes": attributes, "location": location}
-            for k in ["spatialOperation", "bufferDistance"]:
+            for k in ["attributeFilter", "spatialOperation", "bufferDistance"]:
                 if k in kwargs:
                     json_data[k] = kwargs[k]
             headers = {"Accept": "application/geo+json"}
@@ -1810,6 +1814,7 @@ class PreciselyAPI:
             location (dict): input for which spatial analysis is to be done. Can be a geometry or address
             uom (str): Unit of measurement used to return intersection length/area
             **kwargs: Additional keyword arguments passed to the API.
+                attributeFilter (str): specifies filter on scalar attributes
                 areaAttributeName (str): Custom name of intersection area parameter when intersection area is polygon. Default value is "intersectionArea".
                 lengthAttributeName (str): Custom name of intersection length parameter when intersection area is linestring. Default value is "intersectionLength".
                 percentTargetAttributeName (str): Custom name of parameter indicating percentage of overlap with target geometry. Default value is "percentageOfTarget".
@@ -1830,6 +1835,7 @@ class PreciselyAPI:
                 location={"format": "WKT", "value": "POLYGON ((-74.01316 40.700479, -74.012028 40.700479, -74.012028 40.701403, -74.01316 40.701403, -74.01316 40.700479))"},
                 attributes=["fips"],
                 uom="m",
+                attributeFilter="elevation > 0",
                 areaAttributeName="overlappedArea",
                 lengthAttributeName="overlappedLength",
                 percentTargetAttributeName="targetOverlapPercentage",
@@ -1845,7 +1851,7 @@ class PreciselyAPI:
                 if p in kwargs:
                     params[p] = kwargs[p]
             json_data = {"tableName": tableName, "attributes": attributes, "location": location, "uom": uom}
-            for k in ["areaAttributeName", "lengthAttributeName", "percentTargetAttributeName", "percentInputAttributeName", "uomAttributeName", "bufferDistance"]:
+            for k in ["attributeFilter", "areaAttributeName", "lengthAttributeName", "percentTargetAttributeName", "percentInputAttributeName", "uomAttributeName", "bufferDistance"]:
                 if k in kwargs:
                     json_data[k] = kwargs[k]
             headers = {"Accept": "application/geo+json"}
@@ -1944,6 +1950,7 @@ class PreciselyAPI:
             location (dict): Input for which spatial analysis is to be done. Can be a geometry or address.
             aggregateColumns (dict): Columns to be aggregated and corresponding aggregation operations to be performed. Possible values are: min, max, avg, sum, median.
             **kwargs: Additional keyword arguments passed to the API.
+                attributeFilter (str): specifies filter on scalar attributes
                 spatialOperation (str): The type of spatial operation. Possible values are: intersects, within. Default value is "intersects".
                 proportionalCalculation (bool): Determines if proportional calculations should be applied. Only applicable where the spatialOperation parameter is "intersects".
                 bufferDistance (str): Distance by which the input geometry will be extrapolated.
@@ -1959,6 +1966,7 @@ class PreciselyAPI:
                 aggregateColumns={"w11": ["min", "max", "avg", "sum"], "w10": ["min", "max", "sum", "avg", "median"]},
                 location={"format": "WKT", "value": "GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))"},
                 spatialOperation="intersects",
+                attributeFilter="grid_id > 0",
                 proportionalCalculation=True,
                 bufferDistance="10 mi"
             )
@@ -1966,10 +1974,10 @@ class PreciselyAPI:
         try:
             url = f"{self.base_url}/v1/spatial/summarize"
             json_data = {"tableName": tableName, "location": location, "aggregateColumns": aggregateColumns}
-            for k in ["spatialOperation", "proportionalCalculation", "bufferDistance"]:
+            for k in ["attributeFilter", "spatialOperation", "proportionalCalculation", "bufferDistance"]:
                 if k in kwargs:
                     json_data[k] = kwargs[k]
-            headers = {"Accept": "application/geo+json"}
+            headers = {"Accept": "application/json"}
             logger.debug(f"[summarize] POST {url}")
             logger.debug(f"[summarize] Request payload: {json.dumps(json_data, indent=2)}")
             response = self.session.post(url, json=json_data, headers=headers)
@@ -2030,8 +2038,10 @@ Use this endpoint to quickly navigate and explore the API's capabilities.
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/api"
+            # Required header per "Landing Page" endpoint response
+            headers = {"Accept": "application/vnd.oai.openapi+json;version=3.0"}
             logger.debug(f"[ogc_api_definition] GET {url}")
-            response = self.session.get(url)
+            response = self.session.get(url, headers=headers)
             logger.debug(f"[ogc_api_definition] Raw response: {response.text}")
             response.raise_for_status()
             return response.json()
@@ -2144,7 +2154,7 @@ Information about the feature collection with id `{collectionId}` is provided. T
                 'itemType' (str), and 'links' (list of Link objects with href, rel, type, title).
 
         Example:
-            ogc_collection(collectionId="pbb_usa")
+            ogc_collection(collectionId="properties/buildings")
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}"
@@ -2179,7 +2189,7 @@ This information is essential for validating client queries and constructing dyn
                 to SchemaProperties with title, description, format).
 
         Example:
-            ogc_collection_schema(collectionId="pbb_usa")
+            ogc_collection_schema(collectionId="properties/buildings")
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/schema"
@@ -2212,7 +2222,7 @@ This metadata is essential for clients to build dynamic query interfaces and val
                 field name to PropertyInfo with title, description, format), and 'additionalProperties' (bool).
 
         Example:
-            ogc_collection_queryables(collectionId="pbb_usa")
+            ogc_collection_queryables(collectionId="properties/buildings")
         """
         try:
             url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/queryables"
