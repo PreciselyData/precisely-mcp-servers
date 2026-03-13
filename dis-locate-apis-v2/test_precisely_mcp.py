@@ -587,6 +587,16 @@ class PreciselyMCPTestSuite:
             
             ("OGC Feature by ID", "ogc_feature_by_id", "Get feature 1 from properties/buildings collection",
              {"collectionId": "properties/buildings", "featureId": "1"}),
+            
+            # WMTS APIs
+            ("WMTS GetCapabilities", "wmts_request", "Get WMTS capabilities",
+             {"Service": "WMTS", "Request": "GetCapabilities"}),
+            
+            ("WMTS Get Standard Tile", "wmts_get_standard_tile", "Get a standard map tile",
+             {"Version": "1.0.0", "Layer": "parcels", "Style": "default", "TileMatrixSet": "WorldWebMercatorQuad_0_to_19", "TileMatrix": "17", "TileCol": 31118, "TileRow": 50069, "Format": "png"}),
+            
+            ("WMTS Get Simple Tile", "wmts_get_simple_tile", "Get a simple map tile",
+             {"Version": "1.0.0", "Layer": "parcels", "TileMatrix": "17", "TileCol": 31118, "TileRow": 50069, "Format": "png"}),
         ]
     
     # ========================================

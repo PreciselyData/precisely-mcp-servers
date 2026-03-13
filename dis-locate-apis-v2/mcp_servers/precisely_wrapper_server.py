@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 from collections.abc import AsyncIterator
 from mcp.server import Server
-from mcp.types import Tool, TextContent
+from mcp.types import Tool, TextContent, ImageContent
 from mcp.server.stdio import stdio_server
 import logging
 from dotenv import load_dotenv
@@ -1093,6 +1093,80 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
             "required": ["collectionId", "featureId"]
         }
     ),
+    # ========================================
+    # WMTS (Web Map Tile Service) APIs (3 tools)
+    # ========================================
+    Tool(
+        name="wmts_request",
+        description="""Use the appropriate parameters based on the request type.
+
+This tool handles WMTS operations via the KVP (Key-Value Pair) query parameter interface. Use Request=GetCapabilities to retrieve the service XML document listing all available layers, tile matrix sets, zoom levels, and supported formats. Use Request=GetTile to retrieve a map tile image by specifying Layer, Style, TileMatrixSet, TileMatrix, TileRow, TileCol, and Format.
+
+Returns: For GetCapabilities: Dict with 'xml' (str) containing the capabilities XML document and 'content_type' (str). For GetTile: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
+
+Example 1 GetCapabilities Request:
+https://api.cloud.precisely.com/v1/spatial/wmts?SERVICE=WMTS&REQUEST=GetCapabilities&ACCEPTVERSIONS={version}""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "Service": {"type": "string", "description": "Service type. Always 'WMTS'."},
+                "Request": {"type": "string", "description": "The WMTS request type: GetCapabilities or GetTile."},
+                "Version": {"type": "string", "description": "WMTS version (e.g., '1.0.0')."},
+                "Layer": {"type": "string", "description": "Layer name for GetTile request."},
+                "Style": {"type": "string", "description": "Style name for GetTile request."},
+                "TileMatrixSet": {"type": "string", "description": "Tile matrix set identifier for GetTile request."},
+                "TileMatrix": {"type": "string", "description": "Tile matrix (zoom level) for GetTile request."},
+                "TileRow": {"type": "integer", "description": "Tile row for GetTile request."},
+                "TileCol": {"type": "integer", "description": "Tile column for GetTile request."},
+                "Format": {"type": "string", "description": "Output format for GetTile. 'image/png' or 'application/vnd.mapbox-vector-tile'"}
+            },
+            "required": ["Service", "Request"]
+        }
+    ),
+    Tool(
+        name="wmts_get_standard_tile",
+        description="""Returns a map tile based on the RESTful encoding for the WMTS service.
+
+Returns: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int) containing the requested map tile.
+
+Example Request: https://api.cloud.precisely.com/v1/spatial/wmts/1.0.0/default/tiles/wildfire_risk/default/WorldWebMercatorQuad_0_to_19/12/1190/1550.png""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "Version": {"type": "string", "description": "WMTS version (e.g., '1.0.0')."},
+                "Layer": {"type": "string", "description": "Layer name (e.g., 'parcels', 'wildfire_risk')."},
+                "Style": {"type": "string", "description": "Style name. Comma-separated list of one rendering style per requested layer (e.g., 'default')."},
+                "TileMatrixSet": {"type": "string", "description": "Tile matrix set identifier (e.g., 'WorldWebMercatorQuad_0_to_19')."},
+                "TileMatrix": {"type": "string", "description": "Tile matrix (zoom level)."},
+                "TileCol": {"type": "integer", "description": "Tile column number."},
+                "TileRow": {"type": "integer", "description": "Tile row number."},
+                "Format": {"type": "string", "description": "Output format. 'png' or 'mvt'"}
+            },
+            "required": ["Version", "Layer", "Style", "TileMatrixSet", "TileMatrix", "TileCol", "TileRow", "Format"]
+        }
+    ),
+    Tool(
+        name="wmts_get_simple_tile",
+        description="""Returns a map tile based on the RESTful encoding for the WMTS service.
+
+Use this tool when you do NOT need to specify Style or TileMatrixSet.
+
+Returns: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int) containing the requested map tile.
+
+Example Request: https://api.cloud.precisely.com/v1/spatial/wmts/1.0.0/simpleProfileTile/tiles/wildfire_risk/12/1190/1550.png""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "Version": {"type": "string", "description": "WMTS version (e.g., '1.0.0')."},
+                "Layer": {"type": "string", "description": "Layer name (e.g., 'parcels', 'wildfire_risk')."},
+                "TileMatrix": {"type": "string", "description": "Tile matrix (zoom level)."},
+                "TileCol": {"type": "integer", "description": "Tile column number."},
+                "TileRow": {"type": "integer", "description": "Tile row number."},
+                "Format": {"type": "string", "description": "Output format. 'png' or 'mvt'"}
+            },
+            "required": ["Version", "Layer", "TileMatrix", "TileCol", "TileRow", "Format"]
+        }
+    ),
 ]
 
 @app.list_tools()
@@ -1101,7 +1175,7 @@ async def list_tools() -> list[Tool]:
     return TOOLS
 
 @app.call_tool()
-async def call_tool(name: str, arguments: Any) -> list[TextContent]:
+async def call_tool(name: str, arguments: Any) -> list[TextContent | ImageContent]:
     """
     Execute Precisely API tool by calling the corresponding method from the core module
     """
@@ -1116,6 +1190,14 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
         # The core API methods are synchronous, so we run them in executor
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(None, lambda: method(**arguments))
+        
+        # Handle image/binary responses (Maps & Tiling APIs)
+        if isinstance(result, dict) and result.get("image_base64"):
+            return [ImageContent(
+                type="image",
+                data=result["image_base64"],
+                mimeType=result.get("content_type", "image/png")
+            )]
         
         # Return result as JSON string
         import json

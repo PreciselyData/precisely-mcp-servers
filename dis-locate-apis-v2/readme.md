@@ -425,6 +425,12 @@ Pass Rate: 100.0%
 65. ogc_collection_items - Data records from a collection
 66. ogc_feature_by_id - Get a specific feature by ID
 
+### WMTS - Web Map Tile Service (3 tools)
+
+69. wmts_request - WMTS KVP handler (GetCapabilities/GetTile)
+70. wmts_get_standard_tile - WMTS tile via RESTful standard profile
+71. wmts_get_simple_tile - WMTS tile via RESTful simple profile
+
 ## Project Structure
 
 ```

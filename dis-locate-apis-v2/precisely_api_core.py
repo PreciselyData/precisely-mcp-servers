@@ -5,6 +5,7 @@ Pure API functionality with minimal dependencies.
 """
 
 import json
+import base64
 import requests
 from typing import Dict, List, Any
 import os
@@ -2308,4 +2309,258 @@ Additional capabilities include:
             return response.json()
         except Exception as e:
             logger.error(f"OGC feature by ID error: {e}")
+            return {"error": str(e)}
+
+    # ========================================
+    # WMTS (Web Map Tile Service) APIs
+    # ========================================
+
+    def wmts_request(self, **kwargs) -> Dict[str, Any]:
+        """Use the appropriate parameters based on the request type.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+                Service (str): Specifies the service type (must be `WMTS`).
+                Request (str): Defines the request type. Available values : GetCapabilities, GetTile
+                Version (str): WMTS version.
+                Layer (str): Available layer name via Data or Repository (required for `GetTile`).
+                Style (str): Comma-separated list of one rendering style per requested layer(required for `GetTile`).
+                TileMatrixSet (str): Tile matrix set to generate tiles for(required for `GetTile`).
+                TileMatrix (str): An integer value which will be number of levels or zoom level(required for `GetTile`).
+                TileRow (int): An integer value that specifies the row number of the tile you want (required for `GetTile`).
+                TileCol (int): An integer value that specifies the column number of the tile you want (required for `GetTile`).
+                Format (str): The format in which the map image is to be returned(required for `GetTile`).
+
+        Returns:
+            Dict[str, Any]: For GetTile: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
+                For GetCapabilities: Dict with keys 'xml' (str), 'content_type' (str).
+
+        Example:
+            wmts_request(Service="WMTS", Request="GetCapabilities")
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/wmts"
+            params = {}
+            for k in ["Service", "Request", "Version", "Layer", "Style", "TileMatrixSet", "TileMatrix", "TileRow", "TileCol", "Format"]:
+                if k in kwargs:
+                    params[k] = kwargs[k]
+            logger.debug(f"[wmts_request] GET {url}")
+            logger.debug(f"[wmts_request] Request params: {params}")
+
+            response = self.session.get(url, params=params)
+            content_type = response.headers.get("Content-Type", "")
+
+            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
+                logger.debug(f"[wmts_request] Raw response: binary {len(response.content)} bytes, {content_type}")
+            else:
+                logger.debug(f"[wmts_request] Raw response: {response.text}")
+
+            response.raise_for_status()
+
+            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
+                return {
+                    "image_base64": base64.b64encode(response.content).decode(),
+                    "content_type": content_type,
+                    "size_bytes": len(response.content)
+                }
+
+            if "xml" in content_type.lower() or kwargs.get("Request", "").upper() == "GETCAPABILITIES":
+                return {
+                    "xml": response.text,
+                    "content_type": content_type or "application/xml"
+                }
+
+            # return response.json()
+            return {"error": f"Unexpected content type: {content_type}"}
+        # except requests.HTTPError as e:
+        #     logger.error(f"WMTS request error: {e}")
+        #     error_response = e.response
+        #     if error_response is not None:
+        #         content_type = error_response.headers.get("Content-Type", "")
+        #         if "xml" in content_type.lower():
+        #             return {
+        #                 "xml": error_response.text,
+        #                 "content_type": content_type or "text/xml"
+        #             }
+        #         if "json" in content_type.lower():
+        #             try:
+        #                 return error_response.json()
+        #             except Exception:
+        #                 return {"error": error_response.text}
+        #     return {"error": str(e)}
+        except Exception as e:
+            logger.error(f"WMTS request error: {e}")
+            return {"error": str(e)}
+
+    def wmts_get_standard_tile(self, Version: str, Layer: str, Style: str, TileMatrixSet: str, TileMatrix: str, TileCol: int, TileRow: int, Format: str, **kwargs) -> Dict[str, Any]:
+        """Returns a map tile based on the RESTful encoding for the WMTS service.
+
+
+        Args:
+            Version (str): WMTS version (default is `1.0.0`).
+            Layer (str): Available layer name via Data or Repository.
+            Style (str): Comma-separated list of one rendering style per requested layer.
+            TileMatrixSet (str): Tile matrix set to generate tiles for.
+            TileMatrix (str): Level of detail (zoom level).
+            TileCol (int): An integer value that specifies the column number of the tile you want.
+            TileRow (int): An integer value that specifies the row number of the tile you want.
+            Format (str): Image format extension.
+            **kwargs: Additional keyword arguments passed to the API.
+
+        Returns:
+            Dict[str, Any]: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
+
+        Example:
+            wmts_get_standard_tile(
+                Version="1.0.0",
+                Layer="parcels",
+                Style="default",
+                TileMatrixSet="WorldWebMercatorQuad_0_to_19",
+                TileMatrix="17",
+                TileCol=31118,
+                TileRow=50069,
+                Format="png"
+            )
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/wmts/{Version}/default/tiles/{Layer}/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}"
+            logger.debug(f"[wmts_get_standard_tile] GET {url}")
+            params = {
+                "Version": Version,
+                "Layer": Layer,
+                "Style": Style,
+                "TileMatrixSet": TileMatrixSet,
+                "TileMatrix": TileMatrix,
+                "TileCol": TileCol,
+                "TileRow": TileRow,
+                "Format": Format,
+            }
+            logger.debug(f"[wmts_get_standard_tile] Request params: {params}")
+
+            response = self.session.get(url)
+            content_type = response.headers.get("Content-Type", "")
+
+            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
+                logger.debug(f"[wmts_get_standard_tile] Raw response: binary {len(response.content)} bytes, {content_type}")
+            else:
+                logger.debug(f"[wmts_get_standard_tile] Raw response: {response.text}")
+
+            response.raise_for_status()
+
+            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
+                return {
+                    "image_base64": base64.b64encode(response.content).decode(),
+                    "content_type": content_type,
+                    "size_bytes": len(response.content)
+                }
+
+        #     if "xml" in content_type.lower():
+        #         return {
+        #             "xml": response.text,
+        #             "content_type": content_type or "text/xml"
+        #         }
+
+            # return response.json()
+            return {"error": f"Unexpected non-image response: content_type={content_type}"}
+        # except requests.HTTPError as e:
+        #     logger.error(f"WMTS get standard tile error: {e}")
+        #     error_response = e.response
+        #     if error_response is not None:
+        #         content_type = error_response.headers.get("Content-Type", "")
+        #         if "xml" in content_type.lower():
+        #             return {
+        #                 "xml": error_response.text,
+        #                 "content_type": content_type or "text/xml"
+        #             }
+        #         if "json" in content_type.lower():
+        #             try:
+        #                 return error_response.json()
+        #             except Exception:
+        #                 return {"error": error_response.text}
+        #     return {"error": str(e)}
+        except Exception as e:
+            logger.error(f"WMTS get standard tile error: {e}")
+            return {"error": str(e)}
+
+    def wmts_get_simple_tile(self, Version: str, Layer: str, TileMatrix: str, TileCol: int, TileRow: int, Format: str, **kwargs) -> Dict[str, Any]:
+        """Returns a map tile based on the RESTful encoding for the WMTS service.
+
+        Args:
+            Version (str): WMTS version (default is `1.0.0`).
+            Layer (str): Available layer name via Data or Repository.
+            TileMatrix (str): Level of detail (zoom level).
+            TileCol (int): An integer value that specifies the column number of the tile you want.
+            TileRow (int): An integer value that specifies the row number of the tile you want.
+            Format (str): Image format extension.
+            **kwargs: Additional keyword arguments passed to the API.
+
+        Returns:
+            Dict[str, Any]: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
+
+        Example:
+            wmts_get_simple_tile(
+                Version="1.0.0",
+                Layer="parcels",
+                TileMatrix="17",
+                TileCol=31118,
+                TileRow=50069,
+                Format="png"
+            )
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/wmts/{Version}/simpleProfileTile/tiles/{Layer}/{TileMatrix}/{TileCol}/{TileRow}.{Format}"
+            logger.debug(f"[wmts_get_simple_tile] GET {url}")
+            params = {
+                "Version": Version,
+                "Layer": Layer,
+                "TileMatrix": TileMatrix,
+                "TileCol": TileCol,
+                "TileRow": TileRow,
+                "Format": Format,
+            }
+            logger.debug(f"[wmts_get_simple_tile] Request params: {params}")
+
+            response = self.session.get(url)
+            content_type = response.headers.get("Content-Type", "")
+
+            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
+                logger.debug(f"[wmts_get_simple_tile] Raw response: binary {len(response.content)} bytes, {content_type}")
+            else:
+                logger.debug(f"[wmts_get_simple_tile] Raw response: {response.text}")
+
+            response.raise_for_status()
+
+            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
+                return {
+                    "image_base64": base64.b64encode(response.content).decode(),
+                    "content_type": content_type,
+                    "size_bytes": len(response.content)
+                }
+
+        #     if "xml" in content_type.lower():
+        #         return {
+        #             "xml": response.text,
+        #             "content_type": content_type or "text/xml"
+        #         }
+
+        #     return response.json()
+            return {"error": f"Unexpected non-image response: content_type={content_type}"}
+        # except requests.HTTPError as e:
+        #     logger.error(f"WMTS get simple tile error: {e}")
+        #     error_response = e.response
+        #     if error_response is not None:
+        #         content_type = error_response.headers.get("Content-Type", "")
+        #         if "xml" in content_type.lower():
+        #             return {
+        #                 "xml": error_response.text,
+        #                 "content_type": content_type or "text/xml"
+        #             }
+        #         if "json" in content_type.lower():
+        #             try:
+        #                 return error_response.json()
+        #             except Exception:
+        #                 return {"error": error_response.text}
+        #     return {"error": str(e)}
+        except Exception as e:
+            logger.error(f"WMTS get simple tile error: {e}")
             return {"error": str(e)}
