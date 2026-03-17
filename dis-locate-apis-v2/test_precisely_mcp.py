@@ -122,10 +122,10 @@ class PreciselyMCPTestSuite:
         methods = [m for m in dir(self.api) if not m.startswith('_') and callable(getattr(self.api, m))]
         logger.info(f"  Found {len(methods)} API methods")
         
-        if len(methods) != 66:
-            logger.warning(f"  [WARN] Expected 66 methods, found {len(methods)}")
+        if len(methods) != 71:
+            logger.warning(f"  [WARN] Expected 71 methods, found {len(methods)}")
         else:
-            logger.info("  [PASS] All 66 API methods present")
+            logger.info("  [PASS] All 71 API methods present")
         
         # Test 3: Quick smoke tests
         logger.info("\n[3/3] Running Quick Smoke Tests...")
@@ -186,10 +186,10 @@ class PreciselyMCPTestSuite:
                 logger.error(f"  [FAIL] Duplicate tools found: {set(duplicates)}")
                 return False
             
-            if len(tools) != 66:
-                logger.warning(f"  [WARN] Expected 66 tools, found {len(tools)}")
+            if len(tools) != 71:
+                logger.warning(f"  [WARN] Expected 71 tools, found {len(tools)}")
             else:
-                logger.info("  [PASS] All 66 MCP tools defined")
+                logger.info("  [PASS] All 71 MCP tools defined")
             
         except Exception as e:
             logger.error(f"  [FAIL] Failed to load MCP server: {e}")
@@ -587,6 +587,10 @@ class PreciselyMCPTestSuite:
             
             ("OGC Feature by ID", "ogc_feature_by_id", "Get feature 1 from properties/buildings collection",
              {"collectionId": "properties/buildings", "featureId": "1"}),
+            
+            # WMS APIs
+            ("WMS GetCapabilities", "wms_get_request", "Get WMS capabilities",
+             {"REQUEST": "GetCapabilities", "SERVICE": "WMS", "VERSION": "1.3.0"}),
             
             # WMTS APIs
             ("WMTS GetCapabilities", "wmts_request", "Get WMTS capabilities",

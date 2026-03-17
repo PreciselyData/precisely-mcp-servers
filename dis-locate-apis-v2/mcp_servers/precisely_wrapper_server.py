@@ -52,7 +52,7 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 # Create MCP server
 app = Server("precisely-complete-mcp")
 
-# Tool definitions (66 tools covering all Precisely APIs)
+# Tool definitions (71 tools covering all Precisely APIs)
 TOOLS = [
     # Geocoding & Address (9 tools)
     Tool(
@@ -1094,6 +1094,93 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
         }
     ),
     # ========================================
+    # WMS (Web Map Service) APIs (2 tools)
+    # ========================================
+    Tool(
+        name="wms_get_request",
+        description="""Processes WMS requests: GetCapabilities, GetMap, GetFeatureInfo.
+
+Returns: For GetMap success: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int). For GetCapabilities success: Dict with 'xml' (str), 'content_type' (str). For GetFeatureInfo success: JSON dict. On any error (auth, invalid params, or WMS ServiceException): Dict with 'error' (str) containing the error or ServiceExceptionReport XML.
+
+Example 1 GetCapabilities Request:
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetCapabilities
+
+Example 2 GetMap Request (WMS version 1.1.1, SRS parameter for EPSG:4326, Axis order lon-lat for BBOX):
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetMap&SRS=EPSG:4326&BBOX=-30,20,50,80&WIDTH=400&HEIGHT=300&Layers=World&STYLES=AreaStyleGreen&FORMAT=image/png
+
+Example 3 GetMap Request (WMS version 1.3.0, CRS parameter for CRS:84, Axis order lon-lat for BBOX):
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=CRS:84&BBOX=-30,20,50,80&WIDTH=400&HEIGHT=300&Layers=World&STYLES=AreaStyleGreen&FORMAT=image/png
+
+Example 4 GetMap Request (WMS version 1.3.0, CRS parameter for EPSG:4326, Axis order lat-lon for BBOX):
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=EPSG:4326&BBOX=20,-30,80,50&WIDTH=400&HEIGHT=300&Layers=World&STYLES=AreaStyleGreen&FORMAT=image/png
+
+Example 5 GetFeatureInfo Request:
+https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetFeatureInfo&CRS=EPSG:4326&BBOX=29.19367847889249035,-98.56156199862394374,29.35037762857998089,-98.33146912069426548&WIDTH=400&HEIGHT=300&LAYERS=wildfire_risk&INFO_FORMAT=application/json&QUERY_LAYERS=wildfire_risk&I=1&J=1&PIXELSEARCHRADIUS=10""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "REQUEST": {"type": "string", "description": "The WMS request type: GetCapabilities, GetMap, or GetFeatureInfo"},
+                "SERVICE": {"type": "string", "description": "Service type. Always 'WMS'."},
+                "VERSION": {"type": "string", "description": "WMS version. Supported: '1.1.1', '1.3.0'."},
+                "crs": {"type": "string", "description": "Coordinate reference system (WMS 1.3.0). 'EPSG:3857', 'EPSG:4326' or 'CRS:84'"},
+                "srs": {"type": "string", "description": "Spatial reference system (WMS 1.1.1) 'EPSG:3857', 'EPSG:4326' or 'CRS:84'"},
+                "BBOX": {"type": "string", "description": "The area to be mapped, specified as four comma-separated numbers: 'min_x,min_y,max_x,max_y'. Order's dependent on SRS or CRS (e.g., '-30,20,50,80')."},
+                "width": {"type": "string", "description": "Width of the map image in pixels."},
+                "height": {"type": "string", "description": "Height of the map image in pixels."},
+                "layers": {"type": "string", "description": "Comma-separated list of layer names to display."},
+                "STYLES": {"type": "string", "description": "Comma-separated list of one rendering style per requested layer. A style is required for each layer requested. STYLES=Style1,,Style3"},
+                "FORMAT": {"type": "string", "description": "Output format of map image (e.g., 'image/png')."},
+                "TRANSPARENT": {"type": "string", "description": "Whether the map background is transparent, 'TRUE' or 'FALSE'. Default is FALSE."},
+                "Info_Format": {"type": "string", "description": "Format for GetFeatureInfo response (e.g., 'application/json')."},
+                "QUERY_LAYERS": {"type": "string", "description": "Comma-separated list of layers to query for GetFeatureInfo."},
+                "I": {"type": "string", "description": "X pixel coordinate for GetFeatureInfo (WMS 1.3.0)."},
+                "J": {"type": "string", "description": "Y pixel coordinate for GetFeatureInfo (WMS 1.3.0)."},
+                "X": {"type": "string", "description": "X pixel coordinate for GetFeatureInfo (WMS 1.1.1)."},
+                "Y": {"type": "string", "description": "Y pixel coordinate for GetFeatureInfo (WMS 1.1.1)."},
+                "Feature_Count": {"type": "string", "description": "Maximum number of features returned for GetFeatureInfo."},
+                "PIXELSEARCHRADIUS": {"type": "string", "description": "Pixel search radius for GetFeatureInfo."},
+                "BGCOLOR": {"type": "string", "description": "Background color for the map image."},
+                "RESOLUTION": {"type": "string", "description": "Resolution of the map image."},
+                "EXCEPTIONS": {"type": "string", "description": "Format for exception reporting."}
+            },
+            "required": ["REQUEST", "SERVICE", "VERSION"]
+        }
+    ),
+    Tool(
+        name="wms_post_get_map",
+        description="""Processes WMS GetMap requests using a POST method. Accepts SLD_BODY as a form parameter (URL-encoded JSON).
+
+Returns: On success: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int). On any error (auth, invalid params, or WMS ServiceException): Dict with 'error' (str) containing the error or ServiceExceptionReport XML.
+
+Example 1 Post Request for one layer:
+POST https://api.cloud.precisely.com/v1/spatial/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX=37.78662956646336823%2C-122.2745967175037549%2C37.81410536165775227%2C-122.2403683391127061&CRS=EPSG%3A4326&WIDTH=1062&HEIGHT=853&LAYERS=buildings&STYLES=&FORMAT=image%2Fpng&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi%3A96&TRANSPARENT=TRUE
+Content-Type: application/x-www-form-urlencoded
+BODY: SLD_BODY=<URL-encoded JSON style definition>
+
+Example 2 Post Request for two layers:
+POST https://api.cloud.precisely.com/v1/spatial/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX=37.78662956646336823%2C-122.2745967175037549%2C37.81410536165775227%2C-122.2403683391127061&CRS=EPSG%3A4326&WIDTH=1062&HEIGHT=853&LAYERS=buildings,address_fabric&STYLES=&FORMAT=image%2Fpng&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi%3A96&TRANSPARENT=TRUE
+Content-Type: application/x-www-form-urlencoded
+BODY: SLD_BODY=<URL-encoded JSON style definition for multiple layers>""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "REQUEST": {"type": "string", "description": "The WMS request type. Always 'GetMap' for this endpoint."},
+                "SERVICE": {"type": "string", "description": "Service type. Always 'WMS'."},
+                "VERSION": {"type": "string", "description": "WMS version (e.g., '1.3.0')."},
+                "crs": {"type": "string", "description": "Coordinate reference system (e.g., 'EPSG:4326', 'CRS:84')."},
+                "BBOX": {"type": "string", "description": "Bounding box coordinates."},
+                "width": {"type": "string", "description": "Width of the map image in pixels."},
+                "height": {"type": "string", "description": "Height of the map image in pixels."},
+                "layers": {"type": "string", "description": "Comma-separated list of layer names."},
+                "STYLES": {"type": "string", "description": "Comma-separated list of style names."},
+                "FORMAT": {"type": "string", "description": "Output format (e.g., 'image/png')."},
+                "TRANSPARENT": {"type": "string", "description": "Whether the map background is transparent ('TRUE' or 'FALSE')."},
+                "SLD_BODY": {"type": "string", "description": "Proprietary Precisely JSON style definition for customizing layer appearance. URL-encoded when sent."},
+            },
+            "required": ["REQUEST", "SERVICE", "VERSION", "crs", "BBOX", "width", "height", "layers", "FORMAT"]
+        }
+    ),
+    # ========================================
     # WMTS (Web Map Tile Service) APIs (3 tools)
     # ========================================
     Tool(
@@ -1171,7 +1258,7 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/wmts/1.0.0/simplePro
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 66 Precisely API tools"""
+    """List all 71 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -1213,7 +1300,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent | ImageConten
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"66 tools available")
+    logger.info(f"71 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
@@ -1277,7 +1364,7 @@ def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
     logger.info(f"Endpoint: http://{host}:{port}/mcp")
-    logger.info(f"66 tools available")
+    logger.info(f"71 tools available")
     
     starlette_app = create_http_app(
         json_response=True,  # Simpler client integration

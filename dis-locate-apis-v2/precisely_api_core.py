@@ -2312,6 +2312,163 @@ Additional capabilities include:
             return {"error": str(e)}
 
     # ========================================
+    # WMS (Web Map Service) APIs
+    # ========================================
+
+    def wms_get_request(self, **kwargs) -> Dict[str, Any]:
+        """Processes WMS requests: GetCapabilities, GetMap, GetFeatureInfo. WMS service errors (ServiceExceptionReport) with HTTP 2xx are raised as exceptions and returned as {"error": <xml>}.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+                REQUEST (str): WMS request type
+                SERVICE (str): Service type
+                VERSION (str): WMS version
+                crs (str): crs
+                srs (str): srs
+                BBOX (str): BBOX
+                width (str): width
+                height (str): height
+                layers (str): layers
+                Info_Format (str): Info_Format
+                QUERY_LAYERS (str): QUERY_LAYERS
+                I (str): I
+                J (str): J
+                X (str): X
+                Y (str): Y
+                Feature_Count (str): Feature_Count
+                PIXELSEARCHRADIUS (str): PIXELSEARCHRADIUS
+                STYLES (str): STYLES
+                FORMAT (str): FORMAT
+                TRANSPARENT (str): TRANSPARENT
+                BGCOLOR (str): BGCOLOR
+                RESOLUTION (str): RESOLUTION
+                EXCEPTIONS (str): EXCEPTIONS
+
+        Returns:
+            Dict[str, Any]: For GetMap success: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
+                For GetCapabilities success: Dict with keys 'xml' (str), 'content_type' (str).
+                For GetFeatureInfo success: JSON response dict, or Dict with keys 'xml' (str), 'content_type' (str) for XML info_format.
+                On any error (HTTP 4xx/5xx or WMS ServiceException): Dict with key 'error' (str) containing the error detail or ServiceExceptionReport XML.
+
+        Example:
+            wms_get_request(REQUEST="GetCapabilities", SERVICE="WMS", VERSION="1.3.0")
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/wms"
+            params = {}
+            for k in ["REQUEST", "SERVICE", "VERSION", "crs", "srs", "BBOX", "width", "height", "layers", "Info_Format", "QUERY_LAYERS", "I", "J", "X", "Y", "Feature_Count", "PIXELSEARCHRADIUS", "STYLES", "FORMAT", "TRANSPARENT", "BGCOLOR", "RESOLUTION", "EXCEPTIONS"]:
+                if k in kwargs:
+                    params[k] = kwargs[k]
+            request_type = kwargs.get("REQUEST", "").upper()
+            logger.debug(f"[wms_get_request] GET {url}")
+            logger.debug(f"[wms_get_request] Request params: {params}")
+            # Override Accept header: Various Accept headers will be needed based on "REQUEST" and params
+            response = self.session.get(url, params=params, headers={"Accept": "*/*"})
+            content_type = response.headers.get("Content-Type", "")
+            if "image" in content_type:
+                logger.debug(f"[wms_get_request] Raw response: binary {len(response.content)} bytes, {content_type}")
+            else:
+                logger.debug(f"[wms_get_request] Raw response: {response.text}")
+            response.raise_for_status()
+            # WMS returns HTTP 200 for service errors; raise for consistent error handling
+            if "image" not in content_type and "<ServiceException" in response.text:
+                raise ValueError(response.text)
+            if request_type == "GETMAP":
+                if "image" in content_type:
+                    return {
+                        "image_base64": base64.b64encode(response.content).decode(),
+                        "content_type": content_type,
+                        "size_bytes": len(response.content)
+                    }
+                return {"xml": response.text, "content_type": content_type}
+            if request_type == "GETCAPABILITIES":
+                return {"xml": response.text, "content_type": content_type}
+            if request_type == "GETFEATUREINFO":
+                if "json" in content_type:
+                    return response.json()
+                return {"xml": response.text, "content_type": content_type}
+            return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
+        except Exception as e:
+            logger.error(f"WMS get request error: {e}")
+            return {"error": str(e)}
+
+    def wms_post_get_map(self, **kwargs) -> Dict[str, Any]:
+        """Processes WMS GetMap requests using a POST method. Accepts SLD_BODY as a form parameter (URL-encoded JSON). WMS service errors (ServiceExceptionReport) with HTTP 2xx are raised as exceptions and returned as {"error": <xml>}.
+
+        Args:
+            **kwargs: Additional keyword arguments passed to the API.
+                REQUEST (str): WMS request type
+                SERVICE (str): Service type
+                VERSION (str): WMS version
+                crs (str): crs
+                BBOX (str): BBOX
+                width (str): width
+                height (str): height
+                layers (str): layers
+                STYLES (str): STYLES
+                FORMAT (str): FORMAT
+                TRANSPARENT (str): TRANSPARENT
+                DPI (str): DPI hint (accepted by server but silently ignored — has no effect on output).
+                MAP_RESOLUTION (str): Map resolution hint (accepted by server but silently ignored — has no effect on output).
+                FORMAT_OPTIONS (str): Additional format options e.g. 'dpi:96' (accepted by server but silently ignored — has no effect on output).
+                SLD_BODY (str): URL-encoded JSON style definition.
+
+        Returns:
+            Dict[str, Any]: On success: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
+                On any error (HTTP 4xx/5xx or WMS ServiceException): Dict with key 'error' (str) containing the error detail or ServiceExceptionReport XML.
+
+        Example:
+            wms_post_get_map(
+                REQUEST="GetMap",
+                SERVICE="WMS",
+                VERSION="1.3.0",
+                crs="crs:84",
+                BBOX="-122.712622,38.035008,-122.692382,38.045271",
+                width="640",
+                height="480",
+                layers="/risks/wildfire_risk",
+                FORMAT="image/png",
+                SLD_BODY="{}"
+            )
+        """
+        try:
+            url = f"{self.base_url}/v1/spatial/wms"
+            params = {}
+            for k in ["REQUEST", "SERVICE", "VERSION", "crs", "BBOX", "width", "height", "layers", "STYLES", "FORMAT", "TRANSPARENT"]:
+                if k in kwargs:
+                    params[k] = kwargs[k]
+            form_data = {}
+            if "SLD_BODY" in kwargs:
+                form_data["SLD_BODY"] = kwargs["SLD_BODY"]
+            # Build per-request headers to avoid mutating shared session headers (thread safety)
+            headers = dict(self.session.headers)
+            headers.pop("Content-Type", None)
+            headers["Accept"] = "image/png"
+            headers["Content-Type"] = "application/x-www-form-urlencoded"
+            logger.debug(f"[wms_post_get_map] POST {url}")
+            logger.debug(f"[wms_post_get_map] Request params: {params}")
+            response = self.session.post(url, params=params, data=form_data, headers=headers)
+            content_type = response.headers.get("Content-Type", "")
+            if "image" in content_type:
+                logger.debug(f"[wms_post_get_map] Raw response: binary {len(response.content)} bytes, {content_type}")
+            else:
+                logger.debug(f"[wms_post_get_map] Raw response: {response.text}")
+            response.raise_for_status()
+            # WMS returns HTTP 200 for service errors; raise for consistent error handling
+            if "image" not in content_type and "<ServiceException" in response.text:
+                raise ValueError(response.text)
+            if "image" in content_type:
+                return {
+                    "image_base64": base64.b64encode(response.content).decode(),
+                    "content_type": content_type,
+                    "size_bytes": len(response.content)
+                }
+            return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
+        except Exception as e:
+            logger.error(f"WMS POST GetMap error: {e}")
+            return {"error": str(e)}
+
+    # ========================================
     # WMTS (Web Map Tile Service) APIs
     # ========================================
 
@@ -2370,24 +2527,7 @@ Additional capabilities include:
                     "content_type": content_type or "application/xml"
                 }
 
-            # return response.json()
-            return {"error": f"Unexpected content type: {content_type}"}
-        # except requests.HTTPError as e:
-        #     logger.error(f"WMTS request error: {e}")
-        #     error_response = e.response
-        #     if error_response is not None:
-        #         content_type = error_response.headers.get("Content-Type", "")
-        #         if "xml" in content_type.lower():
-        #             return {
-        #                 "xml": error_response.text,
-        #                 "content_type": content_type or "text/xml"
-        #             }
-        #         if "json" in content_type.lower():
-        #             try:
-        #                 return error_response.json()
-        #             except Exception:
-        #                 return {"error": error_response.text}
-        #     return {"error": str(e)}
+            return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
             logger.error(f"WMTS request error: {e}")
             return {"error": str(e)}
@@ -2454,30 +2594,7 @@ Additional capabilities include:
                     "size_bytes": len(response.content)
                 }
 
-        #     if "xml" in content_type.lower():
-        #         return {
-        #             "xml": response.text,
-        #             "content_type": content_type or "text/xml"
-        #         }
-
-            # return response.json()
-            return {"error": f"Unexpected non-image response: content_type={content_type}"}
-        # except requests.HTTPError as e:
-        #     logger.error(f"WMTS get standard tile error: {e}")
-        #     error_response = e.response
-        #     if error_response is not None:
-        #         content_type = error_response.headers.get("Content-Type", "")
-        #         if "xml" in content_type.lower():
-        #             return {
-        #                 "xml": error_response.text,
-        #                 "content_type": content_type or "text/xml"
-        #             }
-        #         if "json" in content_type.lower():
-        #             try:
-        #                 return error_response.json()
-        #             except Exception:
-        #                 return {"error": error_response.text}
-        #     return {"error": str(e)}
+            return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
             logger.error(f"WMTS get standard tile error: {e}")
             return {"error": str(e)}
@@ -2537,30 +2654,7 @@ Additional capabilities include:
                     "size_bytes": len(response.content)
                 }
 
-        #     if "xml" in content_type.lower():
-        #         return {
-        #             "xml": response.text,
-        #             "content_type": content_type or "text/xml"
-        #         }
-
-        #     return response.json()
-            return {"error": f"Unexpected non-image response: content_type={content_type}"}
-        # except requests.HTTPError as e:
-        #     logger.error(f"WMTS get simple tile error: {e}")
-        #     error_response = e.response
-        #     if error_response is not None:
-        #         content_type = error_response.headers.get("Content-Type", "")
-        #         if "xml" in content_type.lower():
-        #             return {
-        #                 "xml": error_response.text,
-        #                 "content_type": content_type or "text/xml"
-        #             }
-        #         if "json" in content_type.lower():
-        #             try:
-        #                 return error_response.json()
-        #             except Exception:
-        #                 return {"error": error_response.text}
-        #     return {"error": str(e)}
+            return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
             logger.error(f"WMTS get simple tile error: {e}")
             return {"error": str(e)}
