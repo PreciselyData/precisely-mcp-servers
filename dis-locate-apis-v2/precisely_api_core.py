@@ -1978,7 +1978,7 @@ class PreciselyAPI:
             for k in ["attributeFilter", "spatialOperation", "proportionalCalculation", "bufferDistance"]:
                 if k in kwargs:
                     json_data[k] = kwargs[k]
-            headers = {"Accept": "application/json"}
+            headers = {"Accept": "application/geo+json"}
             logger.debug(f"[summarize] POST {url}")
             logger.debug(f"[summarize] Request payload: {json.dumps(json_data, indent=2)}")
             response = self.session.post(url, json=json_data, headers=headers)

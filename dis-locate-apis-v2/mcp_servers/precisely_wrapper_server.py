@@ -713,9 +713,9 @@ Available fields in places data section:
     # ========================================
     Tool(
         name="find_nearest_candidates",
-        description="""Identifies the nearest locations or points of interest to a specified geometry or address based on distance or defined criteria, returning the spatial features in distance order with the distance value.
+        description="""Returns nearest locations or points of interest within specified distance from input geometry/address, by default ordered closest first.
 
-Returns: GeoJSON FeatureCollection with features sorted by distance, including distance values, response parameters (recordsMatched, recordsReturned), and metadata.
+Returns: GeoJSON FeatureCollection with features. Includes distance values, recordsMatched, recordsReturned, and metadata.
 
 Example 1 Request (Geometry):
 {'tableName': '/risks/wildfire_risk_fire_perimeter', 'attributes': ['incremental_s_no', 'state', 'wr_id'], 'location': {'format': 'wkt', 'value': 'LINESTRING (-122.769499 38.005947, -122.773625 37.999047)'}, 'withinDistance': '10 mi', 'distanceAttributeName': 'dist', 'maxFeatures': '5', 'inputPointAttributeName': 'inputPoint', 'targetPointAttributeName': 'targetPoint', 'bearingAttributeName': 'bearing'}
@@ -725,9 +725,9 @@ Example 2 Request (Address):
         inputSchema={
             "type": "object",
             "properties": {
-                "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/risks/flood_risk')"},
+                "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/risks/flood_risk')"},
                 "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns, will only include scalar columns."},
-                "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
+                "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "withinDistance": {"type": "string", "description": "Distance within which nearest features will be searched (e.g., '10 mi', '5 km')"},
                 "distanceAttributeName": {"type": "string", "description": "Custom name of distance parameter."},
                 "maxFeatures": {"type": "integer", "description": "Maximum number of features returned against each geometry. Default value is 10 and minimum value is 1.", "default": 10, "minimum": 1},
@@ -746,9 +746,9 @@ Example 2 Request (Address):
     ),
     Tool(
         name="search_at_location",
-        description="""Searches for locations or points of interest within or intersecting a defined geographic area(geometry or address) or a buffer around a specified location.
+        description="""Searches for and returns detailed info about locations or points of interest when they're within the input geometry, or when they contain the input geometry, or when they intersect with the input geometry. Input can also be an address.
 
-Returns: GeoJSON FeatureCollection with matching features, response parameters (recordsMatched, recordsReturned), and metadata.
+Returns: GeoJSON FeatureCollection with matching features, recordsMatched, recordsReturned, and metadata.
 
 Example 1 Request (Geometry):
 {'spatialOperation': 'WITHIN', 'tableName': '/risks/flood_risk', 'attributes': ['statecode', 'type', 'mapname', 'incremental_s_no'], 'location': {'format': 'wkt', 'value': 'MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))'}, 'bufferDistance': '10 mi'}
@@ -758,9 +758,9 @@ Example 2 Request (Address):
         inputSchema={
             "type": "object",
             "properties": {
-                "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/risks/flood_risk')"},
+                "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/risks/flood_risk')"},
                 "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns, will only include scalar columns."},
-                "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
+                "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within, contains. Default is 'intersects'."},
                 "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
@@ -774,9 +774,9 @@ Example 2 Request (Address):
     ),
     Tool(
         name="overlap",
-        description="""Identifies spatial intersections between a specified geometry or address in a chosen Enrich spatial table returning the overlap geometry with the percentage and area of overlap.
+        description="""Returns geometries that represent the overlap of the input geometry/address with the geometries in the target table, along with the percentage and area/length of overlap/intersection. If input geometry is an address, bufferDistance is required.
 
-Returns: GeoJSON FeatureCollection with overlap geometry, intersection area/length, and percentage of overlap with both target and input geometries.
+Returns: GeoJSON FeatureCollection with overlapping geometries, intersection area/length, and percentage of overlap with both target and input geometries.
 
 Example 1 Request (Geometry):
 {'tableName': '/risks/historical_weather_hurricanelines_world', 'uom': 'mi', 'attributes': ['stormname', 'windspeed'], 'location': {'format': 'wkt', 'value': 'POLYGON ((-74.286804 40.515887, -74.292297 40.478292, -73.66333 40.560765, -73.737488 40.839788, -74.002533 40.909361, -74.286804 40.515887))'}, 'totalAttributeName': 'tc'}
@@ -786,9 +786,9 @@ Example 2 Request (Address):
         inputSchema={
             "type": "object",
             "properties": {
-                "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/properties/buildings', '/risks/flood_risk')"},
+                "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/properties/buildings', '/risks/flood_risk')"},
                 "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns; will only include scalar columns."},
-                "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
+                "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "uom": {"type": "string", "description": "Unit of measurement used to return intersection length/area (e.g., 'm')"},
                 "areaAttributeName": {"type": "string", "default": "intersectionArea", "description": "Custom name of intersection area parameter when intersection area is polygon. Default: 'intersectionArea'."},
                 "lengthAttributeName": {"type": "string", "default": "intersectionLength", "description": "Custom name of intersection length parameter when intersection area is linestring. Default: 'intersectionLength'."},
@@ -818,7 +818,7 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/products""",
     ),
     Tool(
         name="list_spatial_tables",
-        description="""This endpoint retrieves a list of spatial tables from database.
+        description="""Retrieves list of available spatial tables.
 
 Returns: List of spatial table names available in the database.
 
@@ -831,7 +831,7 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/tables""",
     ),
     Tool(
         name="get_table_metadata",
-        description="""This endpoint retrieves a metadata information of a specific/given table from database.
+        description="""Retrieves metadata for a specific spatial table.
 
 Returns: Object with table name, columns and their description and type, bounding box in case of spatial table, and row count.
 
@@ -839,16 +839,16 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/tables/properties/bu
         inputSchema={
             "type": "object",
             "properties": {
-                "tableName": {"type": "string", "description": "Name of the table for which the metadata needs to be described (e.g., 'properties/buildings', 'risks/flood_risk')"}
+                "tableName": {"type": "string", "description": "Name of the spatial table for which the metadata needs to be described (e.g., 'properties/buildings', 'risks/flood_risk')"}
             },
             "required": ["tableName"]
         }
     ),
     Tool(
         name="summarize",
-        description="""Generates detailed data summaries within a user defined region(geometry or address), including total, average, minimum and maximum values for data such as population.
+        description="""Generates min, max, avg, sum, or median statistics for given columns of geometries within the input geometry, or intersecting the input geometry. Input can also be an address.
 
-Returns: Summary statistics with aggregate values (min, max, avg, sum, median) for specified columns within the defined region.
+Returns: Aggregate statistics for specified columns.
 
 Example 1 Request (Geometry, Intersects):
 {'spatialOperation': 'INTERSECTS', 'tableName': '/risks/historical_weather_windgrid', 'aggregateColumns': {'w9': ['min', 'max', 'avg', 'sum']}, 'location': {'format': 'wkt', 'value': 'GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))'}, 'proportionalCalculation': true}
@@ -864,9 +864,9 @@ Example 4 Request (Address, Within):
         inputSchema={
             "type": "object",
             "properties": {
-                "tableName": {"type": "string", "description": "Name of the table containing spatial data (e.g., '/risks/historical_weather_windgrid')"},
+                "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/risks/historical_weather_windgrid')"},
                 "aggregateColumns": {"type": "object", "description": "Dictionary of column names mapped to lists of aggregate functions. Supported functions: min, max, avg, sum, median."},
-                "location": {"type": "object", "description": "Input geometry or address for spatial analysis. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
+                "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within. Default value is 'intersects'."},
                 "proportionalCalculation": {"type": "boolean", "description": "Whether to use proportional calculation. Only applicable when the spatialOperation parameter is 'intersects'"},
                 "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
