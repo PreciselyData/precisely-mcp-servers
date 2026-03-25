@@ -713,7 +713,7 @@ Available fields in places data section:
     # ========================================
     Tool(
         name="find_nearest_candidates",
-        description="""Returns nearest locations or points of interest within specified distance from input geometry/address, by default ordered closest first.
+        description="""Returns nearest locations or points of interest within specified distance from input geometry/address, by default ordered closest first. Input can also be an address, no need to geocode it. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
 Returns: GeoJSON FeatureCollection with features. Includes distance values, recordsMatched, recordsReturned, and metadata.
 
@@ -746,7 +746,7 @@ Example 2 Request (Address):
     ),
     Tool(
         name="search_at_location",
-        description="""Searches for and returns detailed info about locations or points of interest when they're within the input geometry, or when they contain the input geometry, or when they intersect with the input geometry. Input can also be an address.
+        description="""Searches for and returns detailed info about locations or points of interest when they're within the input geometry, or when they contain the input geometry, or when they intersect with the input geometry. Input can also be an address, no need to geocode it. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
 Returns: GeoJSON FeatureCollection with matching features, recordsMatched, recordsReturned, and metadata.
 
@@ -774,7 +774,7 @@ Example 2 Request (Address):
     ),
     Tool(
         name="overlap",
-        description="""Returns geometries that represent the overlap of the input geometry/address with the geometries in the target table, along with the percentage and area/length of overlap/intersection. If input geometry is an address, bufferDistance is required.
+        description="""Returns geometries that represent the overlap of the input geometry/address with the geometries in the target table, along with the percentage and area/length of overlap/intersection. Input can also be an address, no need to geocode it. If input is an address, bufferDistance is required. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
 Returns: GeoJSON FeatureCollection with overlapping geometries, intersection area/length, and percentage of overlap with both target and input geometries.
 
@@ -805,7 +805,7 @@ Example 2 Request (Address):
     ),
     Tool(
         name="get_spatial_products",
-        description="""Get a list of available Enrich Data products along with their metadata such as product family, applicable geographic area, vintage, available layers, appropriate zoom levels for display and styles to use.
+        description="""Get a list of available Enrich Data products along with their metadata such as product family, geography, data vintage, availablity, recommended zoom levels, styles, summary attributes, label columns, layer extents, and other metadata.
 
 Returns: List of product metadata objects with productId, productName, productFamily, vintage, geography, and layers (including layerId, displayName, featureTable, recommendedStyle).
 
@@ -846,7 +846,7 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/tables/properties/bu
     ),
     Tool(
         name="summarize",
-        description="""Generates min, max, avg, sum, or median statistics for given columns of geometries within the input geometry, or intersecting the input geometry. Input can also be an address.
+        description="""Generates min, max, avg, sum, or median statistics for given columns of geometries within the input geometry, or intersecting the input geometry. Input can also be an address, no need to geocode it. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
 Returns: Aggregate statistics for specified columns.
 
@@ -1035,7 +1035,7 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
     ),
     Tool(
         name="ogc_collection_items",
-        description="""Fetch features of the feature collection with id `{collectionId}`.
+        description="""Fetch features of the feature collection with id `{collectionId}` subject to parameters. Use ogc_collections tool to list all available collections and their ids, ogc_collection_queryables tool to get properties that can be used for filtering, and get_spatial_products tool to discover layer extents for bbox, data vintage, recommended label columns, and other metadata.
 
 Every feature in a dataset belongs to a collection. A dataset may consist of multiple feature collections, each representing a group of features that share a common schema and type.
 
@@ -1098,7 +1098,7 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
     # ========================================
     Tool(
         name="wms_get_request",
-        description="""Processes WMS requests: GetCapabilities, GetMap, GetFeatureInfo.
+        description="""Processes WMS requests using GET: GetCapabilities, GetMap, or GetFeatureInfo. Use GetCapabilities to retrieve all available layers, their styles, CRS, and geographic bounding box. Use get_spatial_products tool to discover recommended styles, summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
 Returns: For GetMap success: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int). For GetCapabilities success: Dict with 'xml' (str), 'content_type' (str). For GetFeatureInfo success: JSON dict. On any error (auth, invalid params, or WMS ServiceException): Dict with 'error' (str) containing the error or ServiceExceptionReport XML.
 
@@ -1148,19 +1148,21 @@ https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST
     ),
     Tool(
         name="wms_post_get_map",
-        description="""Processes WMS GetMap requests using a POST method. Accepts SLD_BODY as a form parameter (URL-encoded JSON).
+        description="""Processes WMS GetMap requests using POST. Accepts SLD_BODY as a form parameter (URL-encoded JSON). Use wms_get_request GetCapabilities to retrieve all available layers, their styles, CRS, and geographic bounding box. Use get_spatial_products tool to discover recommended styles, and data vintage, layer extents, and other metadata.
 
 Returns: On success: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int). On any error (auth, invalid params, or WMS ServiceException): Dict with 'error' (str) containing the error or ServiceExceptionReport XML.
 
-Example 1 Post Request for one layer:
+Example 1 Post Request for one layer (solid brown fill with darker brown outline for buildings):
 POST https://api.cloud.precisely.com/v1/spatial/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX=37.78662956646336823%2C-122.2745967175037549%2C37.81410536165775227%2C-122.2403683391127061&CRS=EPSG%3A4326&WIDTH=1062&HEIGHT=853&LAYERS=buildings&STYLES=&FORMAT=image%2Fpng&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi%3A96&TRANSPARENT=TRUE
 Content-Type: application/x-www-form-urlencoded
-BODY: SLD_BODY=<URL-encoded JSON style definition>
+BODY: SLD_BODY={"styleDetails": [{"themeList": {"theme": [{"type": "OverrideTheme","style": {"type": "MapBasicCompositeStyle","AreaStyle": {"type": "MapBasicAreaStyle","MapBasicPen": {"width": 1,"pattern": 2,"color": "#964B00","unit": "PIXEL"},"MapBasicBrush": {"pattern": 2,"foregroundColor": "#E0AB8B","backgroundColor": "#C0C0C0"}}}}]}}]}
+(SLD_BODY must be URL-encoded when sent as form data)
 
-Example 2 Post Request for two layers:
+Example 2 Post Request for two layers (solid brown fill for buildings, blue star icon for address_fabric points). Note: styleDetails is an array with one entry per layer, each entry containing the layer name and its themeList:
 POST https://api.cloud.precisely.com/v1/spatial/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX=37.78662956646336823%2C-122.2745967175037549%2C37.81410536165775227%2C-122.2403683391127061&CRS=EPSG%3A4326&WIDTH=1062&HEIGHT=853&LAYERS=buildings,address_fabric&STYLES=&FORMAT=image%2Fpng&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi%3A96&TRANSPARENT=TRUE
 Content-Type: application/x-www-form-urlencoded
-BODY: SLD_BODY=<URL-encoded JSON style definition for multiple layers>""",
+BODY: SLD_BODY={"styleDetails": [{"layer": {"name": "address_fabric","type": "NamedLayer"},"themeList": {"theme": [{"type": "OverrideTheme","style": {"type": "MapBasicCompositeStyle","PointStyle": {"type": "MapBasicPointStyle","MapBasicSymbol": {"type": "MapBasicFontSymbol","shape": 36,"size": 12,"color": "255","fontName": "MapInfo Symbols","rotation": 0,"bold": false,"dropShadow": false,"border": "NONE"}}}}]}},{"layer": {"name": "buildings","type": "NamedLayer"},"themeList": {"theme": [{"type": "OverrideTheme","style": {"type": "MapBasicCompositeStyle","AreaStyle": {"type": "MapBasicAreaStyle","MapBasicPen": {"width": 1,"pattern": 2,"color": "#964B00","unit": "PIXEL"},"MapBasicBrush": {"pattern": 2,"foregroundColor": "#E0AB8B","backgroundColor": "#C0C0C0"}}}}]}}]}
+(SLD_BODY must be URL-encoded when sent as form data)""",
         inputSchema={
             "type": "object",
             "properties": {
@@ -1185,9 +1187,7 @@ BODY: SLD_BODY=<URL-encoded JSON style definition for multiple layers>""",
     # ========================================
     Tool(
         name="wmts_request",
-        description="""Use the appropriate parameters based on the request type.
-
-This tool handles WMTS operations via the KVP (Key-Value Pair) query parameter interface. Use Request=GetCapabilities to retrieve the service XML document listing all available layers, tile matrix sets, zoom levels, and supported formats. Use Request=GetTile to retrieve a map tile image by specifying Layer, Style, TileMatrixSet, TileMatrix, TileRow, TileCol, and Format.
+        description="""Handles WMTS operations via the KVP (Key-Value Pair) query parameter interface. Use Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use Request=GetTile to retrieve a map tile image by specifying Layer, Style, TileMatrixSet, TileMatrix, TileRow, TileCol, and Format. Use get_spatial_products tool to discover recommended styles, zoom levels, and data vintage, layer extents, and other metadata.
 
 Returns: For GetCapabilities: Dict with 'xml' (str) containing the capabilities XML document and 'content_type' (str). For GetTile: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
 
@@ -1212,7 +1212,7 @@ https://api.cloud.precisely.com/v1/spatial/wmts?SERVICE=WMTS&REQUEST=GetCapabili
     ),
     Tool(
         name="wmts_get_standard_tile",
-        description="""Returns a map tile based on the RESTful encoding for the WMTS service.
+        description="""Returns a map tile, using standard parameters/approach. RESTful encoding of WMTS service. Use wmts_request with Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use get_spatial_products tool to discover recommended styles, zoom levels, and data vintage, layer extents, and other metadata.
 
 Returns: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int) containing the requested map tile.
 
@@ -1234,9 +1234,7 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/wmts/1.0.0/default/t
     ),
     Tool(
         name="wmts_get_simple_tile",
-        description="""Returns a map tile based on the RESTful encoding for the WMTS service.
-
-Use this tool when you do NOT need to specify Style or TileMatrixSet.
+        description="""Returns a map tile, using less parameters/simple approach. Use this tool when you do NOT need to specify Style or TileMatrixSet. RESTful encoding of WMTS service. Use wmts_request with Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use get_spatial_products tool to discover recommended styles, zoom levels, and data vintage, layer extents, and other metadata.
 
 Returns: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int) containing the requested map tile.
 
