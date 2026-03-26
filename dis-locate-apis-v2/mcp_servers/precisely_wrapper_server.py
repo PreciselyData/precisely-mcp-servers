@@ -730,7 +730,7 @@ Example 2 Request (Address):
                 "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "withinDistance": {"type": "string", "description": "Distance within which nearest features will be searched (e.g., '10 mi', '5 km')"},
                 "distanceAttributeName": {"type": "string", "description": "Custom name of distance parameter."},
-                "maxFeatures": {"type": "integer", "description": "Maximum number of features returned against each geometry. Default value is 10 and minimum value is 1.", "default": 10, "minimum": 1},
+                "maxFeatures": {"type": "integer", "description": "Maximum number of features returned. Default value is 10 and minimum value is 1.", "default": 10, "minimum": 1},
                 "uomAttributeName": {"type": "string", "description": "Custom name of unit of measurement parameter."},
                 "inputPointAttributeName": {"type": "string", "description": "Custom name of point on input from which distance is calculated."},
                 "targetPointAttributeName": {"type": "string", "description": "Custom name of point on target from which distance is calculated."},
@@ -748,20 +748,28 @@ Example 2 Request (Address):
         name="search_at_location",
         description="""Searches for and returns detailed info about locations or points of interest when they're within the input geometry, or when they contain the input geometry, or when they intersect with the input geometry. Input can also be an address, no need to geocode it. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
+Spatial operation semantics — choose carefully based on the query intent:
+- Use 'contains' when the query asks for table features that ENCLOSE or SURROUND the input point/geometry. Natural language cues: "containing", "enclosing", "surrounding", "which X contains this address", "find the building/parcel/zone that contains this location". Example: "find the building containing this address" → the building (table feature) contains the address point → use 'contains'.
+- Use 'within' when the query asks for table features that are INSIDE the input geometry. Natural language cues: "within", "inside", "that fall within this area". Example: "find all parcels within this polygon" → parcels are within the polygon → use 'within'.
+- Use 'intersects' when the query asks for table features that INTERSECT, CROSS, TOUCH, OVERLAP or share any portion of the input geometry. Natural language cues: "intersecting", "crossing", "overlapping".
+
 Returns: GeoJSON FeatureCollection with matching features, recordsMatched, recordsReturned, and metadata.
 
-Example 1 Request (Geometry):
+Example 1 Request (Geometry, WITHIN):
 {'spatialOperation': 'WITHIN', 'tableName': '/risks/flood_risk', 'attributes': ['statecode', 'type', 'mapname', 'incremental_s_no'], 'location': {'format': 'wkt', 'value': 'MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))'}, 'bufferDistance': '10 mi'}
 
-Example 2 Request (Address):
-{'spatialOperation': 'WITHIN', 'tableName': '/properties/parcels', 'attributes': ['prclid'], 'location': {'format': 'address', 'value': '1 GLOBAL VW, TROY NY 12180-8371, UNITED STATES OF AMERICA', 'country': 'USA'}, 'bufferDistance': '1 km'}""",
+Example 2 Request (Address, WITHIN):
+{'spatialOperation': 'WITHIN', 'tableName': '/properties/parcels', 'attributes': ['prclid'], 'location': {'format': 'address', 'value': '1 GLOBAL VW, TROY NY 12180-8371, UNITED STATES OF AMERICA', 'country': 'USA'}, 'bufferDistance': '1 km'}
+
+Example 3 Request (Address, CONTAINS — find the building enclosing an address):
+{'spatialOperation': 'contains', 'tableName': '/properties/buildings', 'attributes': ['*'], 'location': {'format': 'address', 'value': '2286 JACKSON ST, SAN FRANCISCO CA 94115-1321, UNITED STATES OF AMERICA', 'country': 'USA'}}""",
         inputSchema={
             "type": "object",
             "properties": {
                 "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/risks/flood_risk')"},
                 "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns, will only include scalar columns."},
                 "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
-                "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within, contains. Default is 'intersects'."},
+                "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within, contains. Choose based on query intent: use 'contains' when a table feature should enclose/surround the input (e.g., 'find the building containing this address'); use 'within' when table features should be inside the input area; use 'intersects' when any intersection/overlap is acceptable."},
                 "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
                 "sortBy": {"type": "string", "description": "Column name to sort by."},
@@ -846,7 +854,7 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/tables/properties/bu
     ),
     Tool(
         name="summarize",
-        description="""Generates min, max, avg, sum, or median statistics for given columns of geometries within the input geometry, or intersecting the input geometry. Input can also be an address, no need to geocode it. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
+        description="""Generates min, max, avg, sum, or median statistics for given columns of geometries fully within the input geometry, or intersecting the input geometry. Input can also be an address, no need to geocode it. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
 Returns: Aggregate statistics for specified columns.
 
@@ -867,7 +875,7 @@ Example 4 Request (Address, Within):
                 "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/risks/historical_weather_windgrid')"},
                 "aggregateColumns": {"type": "object", "description": "Dictionary of column names mapped to lists of aggregate functions. Supported functions: min, max, avg, sum, median."},
                 "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
-                "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within. Default value is 'intersects'."},
+                "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within."},
                 "proportionalCalculation": {"type": "boolean", "description": "Whether to use proportional calculation. Only applicable when the spatialOperation parameter is 'intersects'"},
                 "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"}
@@ -1130,7 +1138,7 @@ https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST
                 "layers": {"type": "string", "description": "Comma-separated list of layer names to display."},
                 "STYLES": {"type": "string", "description": "Comma-separated list of one rendering style per requested layer. A style is required for each layer requested. STYLES=Style1,,Style3"},
                 "FORMAT": {"type": "string", "description": "Output format of map image (e.g., 'image/png')."},
-                "TRANSPARENT": {"type": "string", "description": "Whether the map background is transparent, 'TRUE' or 'FALSE'. Default is FALSE."},
+                "TRANSPARENT": {"type": "string", "description": "Whether the map background is transparent, 'TRUE' or 'FALSE'."},
                 "Info_Format": {"type": "string", "description": "Format for GetFeatureInfo response (e.g., 'application/json')."},
                 "QUERY_LAYERS": {"type": "string", "description": "Comma-separated list of layers to query for GetFeatureInfo."},
                 "I": {"type": "string", "description": "X pixel coordinate for GetFeatureInfo (WMS 1.3.0)."},
