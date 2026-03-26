@@ -865,10 +865,10 @@ Example 2 Request (Address, Intersects):
 {'spatialOperation': 'INTERSECTS', 'tableName': '/risks/flood_risk', 'location': {'format': 'address', 'value': '1 Global View Troy NY', 'country': 'USA'}, 'aggregateColumns': {'id': ['min', 'max', 'avg', 'sum']}, 'proportionalCalculation': true, 'bufferDistance': '10 km'}
 
 Example 3 Request (Geometry, Within):
-{'tableName': '/risks/wildfire_risk_fire_perimeter', 'location': {'format': 'WKT', 'value': 'POLYGON ((-122.766919 38.031512, -122.766919 38.051864, -122.741314 38.051864, -122.741314 38.031512, -122.766919 38.031512))'}, 'spatialOperation': 'within', 'proportionalCalculation': false, 'aggregateColumns': {'INTENSITY': ['min', 'MAX', 'avg', 'sum', 'MEDIAN'], 'DAMAGE': ['min', 'max', 'SUM', 'avg', 'MEDIAN']}}
+{'tableName': '/risks/wildfire_risk_fire_perimeter', 'location': {'format': 'WKT', 'value': 'POLYGON ((-122.766919 38.031512, -122.766919 38.051864, -122.741314 38.051864, -122.741314 38.031512, -122.766919 38.031512))'}, 'spatialOperation': 'within', 'proportionalCalculation': false, 'aggregateColumns': {'acres': ['min', 'MAX', 'avg', 'sum', 'MEDIAN']}}
 
 Example 4 Request (Address, Within):
-{'tableName': '/risks/wildfire_risk_fire_perimeter', 'location': {'format': 'address', 'value': '1 Global View Troy NY', 'country': 'USA'}, 'spatialOperation': 'within', 'proportionalCalculation': false, 'bufferDistance': '10 km', 'aggregateColumns': {'INTENSITY': ['min', 'MAX', 'avg', 'sum', 'MEDIAN'], 'DAMAGE': ['min', 'max', 'SUM', 'avg', 'MEDIAN']}}""",
+{'tableName': '/risks/wildfire_risk_fire_perimeter', 'location': {'format': 'address', 'value': '1 Global View Troy NY', 'country': 'USA'}, 'spatialOperation': 'within', 'proportionalCalculation': false, 'bufferDistance': '10 km', 'aggregateColumns': {'acres': ['min', 'MAX', 'avg', 'sum', 'MEDIAN']}}""",
         inputSchema={
             "type": "object",
             "properties": {
@@ -1105,13 +1105,13 @@ Example 1 GetCapabilities Request:
 https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetCapabilities
 
 Example 2 GetMap Request (WMS version 1.1.1, SRS parameter for EPSG:4326, Axis order lon-lat for BBOX):
-https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetMap&SRS=EPSG:4326&BBOX=-30,20,50,80&WIDTH=400&HEIGHT=300&Layers=World&STYLES=AreaStyleGreen&FORMAT=image/png
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetMap&SRS=EPSG:4326&BBOX=-125,24,-66,50&WIDTH=400&HEIGHT=300&Layers=census_state&STYLES=census_state&FORMAT=image/png
 
 Example 3 GetMap Request (WMS version 1.3.0, CRS parameter for CRS:84, Axis order lon-lat for BBOX):
-https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=CRS:84&BBOX=-30,20,50,80&WIDTH=400&HEIGHT=300&Layers=World&STYLES=AreaStyleGreen&FORMAT=image/png
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=CRS:84&BBOX=-125,24,-66,50&WIDTH=400&HEIGHT=300&Layers=census_state&STYLES=census_state&FORMAT=image/png
 
 Example 4 GetMap Request (WMS version 1.3.0, CRS parameter for EPSG:4326, Axis order lat-lon for BBOX):
-https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=EPSG:4326&BBOX=20,-30,80,50&WIDTH=400&HEIGHT=300&Layers=World&STYLES=AreaStyleGreen&FORMAT=image/png
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=EPSG:4326&BBOX=24,-125,50,-66&WIDTH=400&HEIGHT=300&Layers=census_state&STYLES=census_state&FORMAT=image/png
 
 Example 5 GetFeatureInfo Request:
 https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetFeatureInfo&CRS=EPSG:4326&BBOX=29.19367847889249035,-98.56156199862394374,29.35037762857998089,-98.33146912069426548&WIDTH=400&HEIGHT=300&LAYERS=wildfire_risk&INFO_FORMAT=application/json&QUERY_LAYERS=wildfire_risk&I=1&J=1&PIXELSEARCHRADIUS=10""",
@@ -1147,7 +1147,7 @@ https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST
     ),
     Tool(
         name="wms_post_get_map",
-        description="""Processes WMS GetMap requests using POST. Accepts SLD_BODY as a form parameter (URL-encoded JSON). Use wms_get_request GetCapabilities to retrieve all available layers, their styles, CRS, and geographic bounding box. Use get_spatial_products tool to discover recommended styles, and data vintage, layer extents, and other metadata.
+        description="""Processes WMS GetMap requests using POST. Supports both WMS 1.3.0 (use 'crs' param) and WMS 1.1.1 (use 'srs' param). Accepts SLD_BODY as a form parameter (URL-encoded JSON). Use wms_get_request GetCapabilities to retrieve all available layers, their styles, CRS, and geographic bounding box. Use get_spatial_products tool to discover recommended styles, and data vintage, layer extents, and other metadata.
 
 Returns: On success: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int). On any error (auth, invalid params, or WMS ServiceException): Dict with 'error' (str) containing the error or ServiceExceptionReport XML.
 
@@ -1167,8 +1167,9 @@ BODY: SLD_BODY={"styleDetails": [{"layer": {"name": "address_fabric","type": "Na
             "properties": {
                 "REQUEST": {"type": "string", "description": "The WMS request type. Always 'GetMap' for this endpoint."},
                 "SERVICE": {"type": "string", "description": "Service type. Always 'WMS'."},
-                "VERSION": {"type": "string", "description": "WMS version (e.g., '1.3.0')."},
-                "crs": {"type": "string", "description": "Coordinate reference system (e.g., 'EPSG:4326', 'CRS:84')."},
+                "VERSION": {"type": "string", "description": "WMS version ('1.3.0' uses crs param; '1.1.1' uses srs param)."},
+                "crs": {"type": "string", "description": "Coordinate reference system for WMS 1.3.0 (e.g., 'EPSG:4326', 'CRS:84', 'EPSG:3857')."},
+                "srs": {"type": "string", "description": "Spatial reference system for WMS 1.1.1 (e.g., 'EPSG:4326', 'EPSG:3857')."},
                 "BBOX": {"type": "string", "description": "Bounding box coordinates."},
                 "width": {"type": "string", "description": "Width of the map image in pixels."},
                 "height": {"type": "string", "description": "Height of the map image in pixels."},
@@ -1176,9 +1177,9 @@ BODY: SLD_BODY={"styleDetails": [{"layer": {"name": "address_fabric","type": "Na
                 "STYLES": {"type": "string", "description": "Comma-separated list of style names."},
                 "FORMAT": {"type": "string", "description": "Output format (e.g., 'image/png')."},
                 "TRANSPARENT": {"type": "string", "description": "Whether the map background is transparent ('TRUE' or 'FALSE')."},
-                "SLD_BODY": {"type": "string", "description": "Proprietary Precisely JSON style definition for customizing layer appearance. URL-encoded when sent."},
+                "SLD_BODY": {"type": "string", "description": "Proprietary Precisely JSON style definition for customizing layer appearance."},
             },
-            "required": ["REQUEST", "SERVICE", "VERSION", "crs", "BBOX", "width", "height", "layers", "FORMAT"]
+            "required": ["REQUEST", "SERVICE", "VERSION", "BBOX", "width", "height", "layers", "FORMAT"]
         }
     ),
     # ========================================

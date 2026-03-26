@@ -2399,8 +2399,9 @@ Additional capabilities include:
             **kwargs: Additional keyword arguments passed to the API.
                 REQUEST (str): WMS request type
                 SERVICE (str): Service type
-                VERSION (str): WMS version
-                crs (str): crs
+                VERSION (str): WMS version ('1.3.0' uses crs; '1.1.1' uses srs)
+                crs (str): Coordinate reference system for WMS 1.3.0 (e.g. 'CRS:84', 'EPSG:4326', 'EPSG:3857')
+                srs (str): Spatial reference system for WMS 1.1.1 (e.g. 'EPSG:4326', 'EPSG:3857')
                 BBOX (str): BBOX
                 width (str): width
                 height (str): height
@@ -2411,7 +2412,7 @@ Additional capabilities include:
                 DPI (str): DPI hint (accepted by server but silently ignored — has no effect on output).
                 MAP_RESOLUTION (str): Map resolution hint (accepted by server but silently ignored — has no effect on output).
                 FORMAT_OPTIONS (str): Additional format options e.g. 'dpi:96' (accepted by server but silently ignored — has no effect on output).
-                SLD_BODY (str): URL-encoded JSON style definition.
+                SLD_BODY (str): URL-encoded JSON style definition. Use empty string ('') or omit entirely to use default server styles. NOTE: passing SLD_BODY='{}' (JSON empty object string) causes a server-side InvalidStyleDetails error — always use SLD_BODY='' or omit.
 
         Returns:
             Dict[str, Any]: On success: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
@@ -2422,19 +2423,18 @@ Additional capabilities include:
                 REQUEST="GetMap",
                 SERVICE="WMS",
                 VERSION="1.3.0",
-                crs="crs:84",
+                crs="CRS:84",
                 BBOX="-122.712622,38.035008,-122.692382,38.045271",
                 width="640",
                 height="480",
-                layers="/risks/wildfire_risk",
-                FORMAT="image/png",
-                SLD_BODY="{}"
+                layers="wildfire_risk",
+                FORMAT="image/png"
             )
         """
         try:
             url = f"{self.base_url}/v1/spatial/wms"
             params = {}
-            for k in ["REQUEST", "SERVICE", "VERSION", "crs", "BBOX", "width", "height", "layers", "STYLES", "FORMAT", "TRANSPARENT"]:
+            for k in ["REQUEST", "SERVICE", "VERSION", "crs", "srs", "BBOX", "width", "height", "layers", "STYLES", "FORMAT", "TRANSPARENT"]:
                 if k in kwargs:
                     params[k] = kwargs[k]
             form_data = {}
