@@ -954,10 +954,9 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/conformance"""
         name="ogc_collections",
         description="""This endpoint returns the list of feature collections available on the server. Each collection represents a spatial dataset that can be queried and provides essential metadata, including:
 
-- **Collection ID:** A unique identifier for the spatial dataset.
-- **Title and Description:** Optional details that describe the collection.
-- **Spatial and Temporal Extents:** Indicators of the geographical and time-based coverage of the data.
-- **Coordinate Reference Systems (CRS):** A list of supported CRS, with the first being the default (typically WGS 84).
+- **Collection ID:** spatial dataset's unique identifier.
+- **Title and Description**
+- **Collection Item Type**
 - **Links:** Navigational links to access the collection’s items (e.g., `/collections/{collectionId}/items`).
 
 This resource is designed to help clients discover available geospatial datasets and understand the structure of each collection before making queries.
@@ -973,15 +972,11 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections"""
     ),
     Tool(
         name="ogc_collection",
-        description="""This resource describes the feature collection identified in the path.
-
-Information about the feature collection with id `{collectionId}` is provided. The response contains:
+        description="""Gives information about the feature collection with id `{collectionId}`. The response contains:
 
 - A link to the items in the collection (path `/collections/{collectionId}/items`, relation: items).
 - A unique local identifier for the collection.
-- A list of coordinate reference systems (CRS) in which geometries may be returned; the first CRS is the default (typically WGS 84 with axis order longitude/latitude).
-- An optional title and description for the collection.
-- An optional spatial and temporal extent derived from the data.
+- Title and description for the collection.
 - An optional indicator of the item type (default is 'feature').
 
 Returns: Collection metadata including id, title, description, and links to items/schema.
@@ -997,18 +992,15 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
     ),
     Tool(
         name="ogc_collection_schema",
-        description="""This resource provides the schema for a specified feature collection. The schema defines the structure of the collection and includes details such as field names, data types, formats, and descriptions.
+        description="""Provides the schema for collection with id `{collectionId}`. The schema defines the structure of the collection. The response includes:
 
-The **collection id** is a unique identifier used to reference a specific dataset. When you provide a collection id, the response includes:
-
-- **Field Names:** Names of each attribute in the collection.
-- **Data Types & Formats:** The expected data type (e.g., string, integer, double) and format for each field.
+- **Field Names:** Names of each field/attribute/property/column in the collection.
+- **Data Types/Formats:** The expected data type (e.g., string, integer, double) for each field.
 - **Descriptions:** Explanatory details for each attribute to clarify its purpose.
-- **Geospatial Data Types:** Specific spatial types for any geospatial attributes, along with the default coordinate reference system.
 
 This information is essential for validating client queries and constructing dynamic interfaces.
 
-Returns: JSON describing the collection structure with field names, data types, formats, and descriptions.
+Returns: JSON describing the collection structure with properties/field names, data types/formats, and descriptions.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/schema""",
         inputSchema={
@@ -1021,12 +1013,11 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
     ),
     Tool(
         name="ogc_collection_queryables",
-        description="""This resource returns the queryable properties for a specific collection identified by its unique id. Queryable properties provide detailed metadata for each attribute available in the collection that can be used to filter queries. The response includes information such as:
+        description="""This resource returns the queryable properties for a specific collection identified by its unique id. It provides detailed metadata for each attribute in the collection that can be used to filter queries. The response includes:
 
-- **Field Names:** The names of the attributes in the collection.
+- **Field Names:** The names of queryable fields/attributes/properties/columns in the collection.
 - **Descriptions:** A description of each attribute to clarify its purpose and usage.
-- **Formats:** The data types or formats (e.g., string, number, geospatial) of each attribute.
-- **Geospatial Data Types:** Specific spatial types for attributes that support geospatial queries.
+- **Formats:** The data types i.e. formats (e.g., string, number, geospatial) of each attribute.
 
 This metadata is essential for clients to build dynamic query interfaces and validate their requests against the collection's schema.
 
@@ -1087,7 +1078,7 @@ Example 8 Request (Items with filter and = operator): https://api.cloud.precisel
     ),
     Tool(
         name="ogc_feature_by_id",
-        description="""Retrieves a single feature in GeoJSON format,
+        description="""Retrieves a single feature having unique id `{featureId}` from collection with id `{collectionId}`.
 
 Returns: GeoJSON FeatureCollection with geometry and properties of the feature(s).
 
