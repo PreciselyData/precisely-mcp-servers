@@ -728,7 +728,7 @@ Example 2 Request (Address):
                 "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/risks/flood_risk')"},
                 "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns, will only include scalar columns."},
                 "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
-                "withinDistance": {"type": "string", "description": "Distance within which nearest features will be searched (e.g., '10 mi', '5 km')"},
+                "withinDistance": {"type": "string", "description": "Distance within which nearest features will be searched. Must be positive, zero or negative values are not allowed (e.g., '10 mi', '5 km')"},
                 "distanceAttributeName": {"type": "string", "description": "Custom name of distance parameter."},
                 "maxFeatures": {"type": "integer", "description": "Maximum number of features returned. Default value is 10 and minimum value is 1.", "default": 10, "minimum": 1},
                 "uomAttributeName": {"type": "string", "description": "Custom name of unit of measurement parameter."},
@@ -1174,12 +1174,12 @@ BODY: SLD_BODY={"styleDetails": [{"layer": {"name": "address_fabric","type": "Na
                 "width": {"type": "string", "description": "Width of the map image in pixels."},
                 "height": {"type": "string", "description": "Height of the map image in pixels."},
                 "layers": {"type": "string", "description": "Comma-separated list of layer names."},
-                "STYLES": {"type": "string", "description": "Comma-separated list of style names."},
+                "STYLES": {"type": "string", "description": "Comma-separated list of style names, one per requested layer."},
                 "FORMAT": {"type": "string", "description": "Output format (e.g., 'image/png')."},
                 "TRANSPARENT": {"type": "string", "description": "Whether the map background is transparent ('TRUE' or 'FALSE')."},
                 "SLD_BODY": {"type": "string", "description": "Proprietary Precisely JSON style definition for customizing layer appearance."},
             },
-            "required": ["REQUEST", "SERVICE", "VERSION", "BBOX", "width", "height", "layers", "FORMAT"]
+            "required": ["REQUEST", "SERVICE", "VERSION", "BBOX", "width", "height", "layers", "STYLES", "FORMAT"]
         }
     ),
     # ========================================

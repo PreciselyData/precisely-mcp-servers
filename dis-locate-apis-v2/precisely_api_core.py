@@ -2406,7 +2406,7 @@ Additional capabilities include:
                 width (str): width
                 height (str): height
                 layers (str): layers
-                STYLES (str): STYLES
+                STYLES (str): Comma-separated list of style names, one per requested layer. MUST always be supplied. Omitting STYLES entirely causes a server-side StyleNotDefined error.
                 FORMAT (str): FORMAT
                 TRANSPARENT (str): TRANSPARENT
                 DPI (str): DPI hint (accepted by server but silently ignored — has no effect on output).
@@ -2428,7 +2428,8 @@ Additional capabilities include:
                 width="640",
                 height="480",
                 layers="wildfire_risk",
-                FORMAT="image/png"
+                FORMAT="image/png",
+                STYLES=""
             )
         """
         try:
