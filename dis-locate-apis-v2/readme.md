@@ -7,7 +7,7 @@ A Model Context Protocol (MCP) server that exposes 71 Precisely location intelli
 - **71 Production-Ready API Tools**: Complete location intelligence suite
 - **Dual Transport Support**: stdio (default) and Streamable HTTP transports
 - **MCP Protocol**: Standard interface for AI assistants  
-- **100% Test Coverage**: Comprehensive unified test suite with 71/71 tests passing
+- **100% Test Coverage**: Comprehensive unified test suite with 72/72 tests passing
 - **Enhanced Documentation**: GraphQL tools with complete query examples
 - **Clean Architecture**: Zero duplicate code, optimized implementation
 - **Detailed Logging**: Full request/response logging for debugging
@@ -425,9 +425,9 @@ Pass Rate: 100.0%
 65. ogc_collection_items - Data records from a collection
 66. ogc_feature_by_id - Get a specific feature by ID
 
-### WMS - Web Map Service (2 tools)
+### WMS - Web Map Service (2 tools, 3 tests)
 
-67. wms_get_request - WMS GET handler (GetCapabilities/GetMap/GetFeatureInfo)
+67. wms_get_request - WMS GET handler (GetCapabilities/GetMap/GetFeatureInfo) — tested with both GetCapabilities and GetFeatureInfo (2 tests)
 68. wms_post_get_map - WMS POST GetMap with custom SLD styling
 
 ### WMTS - Web Map Tile Service (3 tools)
@@ -439,13 +439,13 @@ Pass Rate: 100.0%
 ## Project Structure
 
 ```
- precisely_api_core.py              # Core API implementation (2,400+ lines, 71 methods)
- test_precisely_mcp.py              # Unified 3-tier test suite (650+ lines, 71 tests)
+ precisely_api_core.py              # Core API implementation (2,500+ lines, 71 methods)
+ test_precisely_mcp.py              # Unified 3-tier test suite (680+ lines, 72 tests)
  requirements.txt                   # Python dependencies (core + HTTP transport)
  .env.template                      # Credential configuration template
  readme.md                          # This file
  mcp_servers/
-    precisely_wrapper_server.py   # MCP server wrapper (1,400+ lines, 71 tools, dual transport)
+    precisely_wrapper_server.py   # MCP server wrapper (1,300+ lines, 71 tools, dual transport)
     setup_claude_desktop.ps1      # Windows setup script (UTF-8 no-BOM)
  logs/                              # Application logs (automatically generated)
  test_logs/                         # Test results and reports (automatically generated)
@@ -542,7 +542,7 @@ Solution:
 
 ## Production-Ready Checklist
 
-- 100% test coverage (71/71 tests passing)
+- 100% test coverage (72/72 tests passing)
 - Dual transport support (stdio + HTTP)
 - Comprehensive error handling
 - Detailed logging (application + tests)
@@ -555,8 +555,8 @@ Solution:
 
 ---
 
-**Version**: 9.0 Production  
-**Last Updated**: December 19, 2025  
+**Version**: 9.1 Production  
+**Last Updated**: March 30, 2026  
 **Tool Count**: 71 APIs  
 **Transports**: stdio (default), Streamable HTTP  
-**Test Coverage**: 100% (71/71 passing)
+**Test Coverage**: 100% (72/72 passing)

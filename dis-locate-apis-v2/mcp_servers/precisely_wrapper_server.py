@@ -46,8 +46,27 @@ API_KEY = os.getenv("PRECISELY_API_KEY")
 API_SECRET = os.getenv("PRECISELY_API_SECRET")
 BASE_URL = "https://api.cloud.precisely.com"
 
+# Validate credentials are present before proceeding
+if not API_KEY or not API_SECRET:
+    logger.critical(
+        "PRECISELY_API_KEY and PRECISELY_API_SECRET must be set. "
+        "Copy .env.template to .env and fill in your credentials."
+    )
+    sys.exit(1)
+
 # Initialize the PreciselyAPI core module
 precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
+
+# Lightweight health check: verify credentials work before serving tools
+try:
+    _health = precisely_api.geocode("1600 Pennsylvania Ave, Washington DC", country="USA")
+    if isinstance(_health, dict) and _health.get("error"):
+        logger.critical(f"Credential validation failed: {_health['error']}")
+        sys.exit(1)
+    logger.info("Credential validation passed")
+except Exception as e:
+    logger.critical(f"Credential validation failed: {e}")
+    sys.exit(1)
 
 # Create MCP server
 app = Server("precisely-complete-mcp")
@@ -1253,6 +1272,13 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/wmts/1.0.0/simplePro
         }
     ),
 ]
+
+# Startup validation: ensure every tool name maps to a real PreciselyAPI method
+_missing = [t.name for t in TOOLS if not hasattr(precisely_api, t.name)]
+if _missing:
+    logger.critical(f"Tool-method mismatch: these tools have no matching PreciselyAPI method: {_missing}")
+    sys.exit(1)
+logger.info(f"Tool-method cross-validation passed ({len(TOOLS)} tools verified)")
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:

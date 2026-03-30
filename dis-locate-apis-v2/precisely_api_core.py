@@ -59,6 +59,20 @@ class PreciselyAPI:
             "Content-Type": "application/json",
             "Accept": "application/json"
         })
+
+    def _validate_graphql_response(self, result: Dict[str, Any], method_name: str) -> Dict[str, Any]:
+        """Validate a GraphQL response for errors. GraphQL returns HTTP 200 even on errors."""
+        if "errors" in result:
+            errors = result["errors"]
+            error_messages = [e.get("message", str(e)) for e in errors]
+            logger.error(f"[{method_name}] GraphQL errors: {error_messages}")
+            if "data" in result and result["data"]:
+                # Partial success: return data with error info
+                result["graphql_errors"] = error_messages
+                result["completeness"] = "partial"
+                return result
+            return {"error": "; ".join(error_messages), "error_type": "permanent", "graphql_errors": errors}
+        return result
     
     def geocode(self, address: str, **kwargs) -> Dict[str, Any]:
         """Convert address to coordinates using correct payload structure"""
@@ -1546,7 +1560,7 @@ class PreciselyAPI:
             response = self.session.post(url, json=json_data)
             logger.debug(f"[get_addresses_detailed] Raw response: {response.text}")
             response.raise_for_status()
-            return response.json()
+            return self._validate_graphql_response(response.json(), "get_addresses_detailed")
         except Exception as e:
             logger.error(f"Detailed addresses error: {e}")
             return {"error": str(e)}
@@ -1561,7 +1575,7 @@ class PreciselyAPI:
             response = self.session.post(url, json=json_data)
             logger.debug(f"[get_parcel_by_owner_detailed] Raw response: {response.text}")
             response.raise_for_status()
-            return response.json()
+            return self._validate_graphql_response(response.json(), "get_parcel_by_owner_detailed")
         except Exception as e:
             logger.error(f"Parcel by owner detailed error: {e}")
             return {"error": str(e)}
@@ -1576,7 +1590,7 @@ class PreciselyAPI:
             response = self.session.post(url, json=json_data)
             logger.debug(f"[get_address_family] Raw response: {response.text}")
             response.raise_for_status()
-            return response.json()
+            return self._validate_graphql_response(response.json(), "get_address_family")
         except Exception as e:
             logger.error(f"Address family error: {e}")
             return {"error": str(e)}
@@ -1591,7 +1605,7 @@ class PreciselyAPI:
             response = self.session.post(url, json=json_data)
             logger.debug(f"[get_serviceability] Raw response: {response.text}")
             response.raise_for_status()
-            return response.json()
+            return self._validate_graphql_response(response.json(), "get_serviceability")
         except Exception as e:
             logger.error(f"Serviceability error: {e}")
             return {"error": str(e)}
@@ -1606,7 +1620,7 @@ class PreciselyAPI:
             response = self.session.post(url, json=json_data)
             logger.debug(f"[get_places_by_address] Raw response: {response.text}")
             response.raise_for_status()
-            return response.json()
+            return self._validate_graphql_response(response.json(), "get_places_by_address")
         except Exception as e:
             logger.error(f"Places by address error: {e}")
             return {"error": str(e)}
