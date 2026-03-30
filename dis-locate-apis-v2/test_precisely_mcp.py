@@ -2,7 +2,7 @@
 Unified Test Suite for Precisely MCP Server
 Combines 3-tier testing: Layer 1 (API Core) → Layer 2 (MCP Server) → Layer 3 (Functional)
 
-Tests all 66 Precisely API tools with comprehensive validation and detailed logging
+Tests all 71 Precisely API tools with comprehensive validation and detailed logging
 """
 
 import os
