@@ -259,6 +259,23 @@ class PreciselyMCPTestSuite:
             if response is None:
                 raise ValueError("API returned None")
             
+            # Handle image/binary responses (Maps & Tiling APIs)
+            if isinstance(response, dict) and response.get("image_base64"):
+                if len(response["image_base64"]) > 0:
+                    logger.info(f"[PASS] Image response ({response.get('size_bytes', 'unknown')} bytes) ({duration_ms:.0f}ms)")
+                    return TestResult(
+                        test_name=test_name,
+                        method_name=method_name,
+                        description=description,
+                        status="PASSED",
+                        duration_ms=duration_ms,
+                        query=description,
+                        payload=test_input,
+                        response={"image_base64": "<base64_data>", "size_bytes": response.get("size_bytes")}
+                    )
+                else:
+                    raise ValueError("Image response had empty base64 data")
+            
             if isinstance(response, dict) and response.get("error"):
                 error_msg = response["error"]
                 logger.info(f"[FAIL] {error_msg} ({duration_ms:.0f}ms)")
@@ -273,6 +290,59 @@ class PreciselyMCPTestSuite:
                     response=response,
                     error=error_msg
                 )
+            
+            # Detect WMTS-style error response (JSON with "errors" array)
+            if isinstance(response, dict) and response.get("errors"):
+                error_details = "; ".join(e.get("detail", e.get("code", str(e))) for e in response["errors"])
+                error_msg = f"API errors: {error_details}"
+                logger.info(f"[FAIL] {error_msg} ({duration_ms:.0f}ms)")
+                return TestResult(
+                    test_name=test_name,
+                    method_name=method_name,
+                    description=description,
+                    status="FAILED",
+                    duration_ms=duration_ms,
+                    query=description,
+                    payload=test_input,
+                    response=response,
+                    error=error_msg
+                )
+            
+            # XML response validation
+            if isinstance(response, dict) and "xml" in response:
+                xml_text = response["xml"]
+                if xml_text and len(xml_text) > 0:
+                    # Detect WMS ServiceExceptionReport within XML
+                    if "<ServiceException" in xml_text:
+                        import re
+                        match = re.search(r'<ServiceException[^>]*>(.*?)</ServiceException>', xml_text, re.DOTALL)
+                        error_detail = match.group(1).strip() if match else xml_text[:200]
+                        error_msg = f"WMS ServiceException: {error_detail}"
+                        logger.info(f"[FAIL] {error_msg} ({duration_ms:.0f}ms)")
+                        return TestResult(
+                            test_name=test_name,
+                            method_name=method_name,
+                            description=description,
+                            status="FAILED",
+                            duration_ms=duration_ms,
+                            query=description,
+                            payload=test_input,
+                            response=response,
+                            error=error_msg
+                        )
+                    logger.info(f"[PASS] XML response ({len(xml_text)} chars) ({duration_ms:.0f}ms)")
+                    return TestResult(
+                        test_name=test_name,
+                        method_name=method_name,
+                        description=description,
+                        status="PASSED",
+                        duration_ms=duration_ms,
+                        query=description,
+                        payload=test_input,
+                        response={"xml": f"<{len(xml_text)} chars>", "content_type": response.get("content_type")}
+                    )
+                else:
+                    raise ValueError("XML response is empty")
             
             # Success
             logger.info(f"[PASS] ({duration_ms:.0f}ms)")
@@ -591,6 +661,9 @@ class PreciselyMCPTestSuite:
             # WMS APIs
             ("WMS GetCapabilities", "wms_get_request", "Get WMS capabilities",
              {"REQUEST": "GetCapabilities", "SERVICE": "WMS", "VERSION": "1.3.0"}),
+            
+            ("WMS POST GetMap", "wms_post_get_map", "Get a styled map image via POST with custom SLD_BODY (brown fill buildings)",
+             {"REQUEST": "GetMap", "SERVICE": "WMS", "VERSION": "1.3.0", "crs": "EPSG:4326", "BBOX": "37.78662956646336823,-122.2745967175037549,37.81410536165775227,-122.2403683391127061", "width": "1062", "height": "853", "layers": "buildings", "STYLES": "", "FORMAT": "image/png", "TRANSPARENT": "TRUE", "SLD_BODY": '{"styleDetails": [{"themeList": {"theme": [{"type": "OverrideTheme","style": {"type": "MapBasicCompositeStyle","AreaStyle": {"type": "MapBasicAreaStyle","MapBasicPen": {"width": 1,"pattern": 2,"color": "#964B00","unit": "PIXEL"},"MapBasicBrush": {"pattern": 2,"foregroundColor": "#E0AB8B","backgroundColor": "#C0C0C0"}}}}]}}]}'  }),
             
             # WMTS APIs
             ("WMTS GetCapabilities", "wmts_request", "Get WMTS capabilities",
