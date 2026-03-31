@@ -2,7 +2,7 @@
 Unified Test Suite for Precisely MCP Server
 Combines 3-tier testing: Layer 1 (API Core) → Layer 2 (MCP Server) → Layer 3 (Functional)
 
-Tests all 49 Precisely API tools with comprehensive validation and detailed logging
+Tests all 71 Precisely API tools with comprehensive validation and detailed logging
 """
 
 import os
@@ -122,10 +122,10 @@ class PreciselyMCPTestSuite:
         methods = [m for m in dir(self.api) if not m.startswith('_') and callable(getattr(self.api, m))]
         logger.info(f"  Found {len(methods)} API methods")
         
-        if len(methods) != 49:
-            logger.warning(f"  [WARN] Expected 49 methods, found {len(methods)}")
+        if len(methods) != 71:
+            logger.warning(f"  [WARN] Expected 71 methods, found {len(methods)}")
         else:
-            logger.info("  [PASS] All 49 API methods present")
+            logger.info("  [PASS] All 71 API methods present")
         
         # Test 3: Quick smoke tests
         logger.info("\n[3/3] Running Quick Smoke Tests...")
@@ -186,10 +186,10 @@ class PreciselyMCPTestSuite:
                 logger.error(f"  [FAIL] Duplicate tools found: {set(duplicates)}")
                 return False
             
-            if len(tools) != 49:
-                logger.warning(f"  [WARN] Expected 49 tools, found {len(tools)}")
+            if len(tools) != 71:
+                logger.warning(f"  [WARN] Expected 71 tools, found {len(tools)}")
             else:
-                logger.info("  [PASS] All 49 MCP tools defined")
+                logger.info("  [PASS] All 71 MCP tools defined")
             
         except Exception as e:
             logger.error(f"  [FAIL] Failed to load MCP server: {e}")
@@ -259,6 +259,23 @@ class PreciselyMCPTestSuite:
             if response is None:
                 raise ValueError("API returned None")
             
+            # Handle image/binary responses (Maps & Tiling APIs)
+            # Blank/transparent images are valid per WMS 1.3.0 and WMTS 1.0.0 OGC standards
+            # (e.g. a tile with no features at that location is returned as a blank PNG, not an error)
+            # Any non-empty image_base64 string is accepted as PASS, and len(response["image_base64"]) > 0 not needed
+            if isinstance(response, dict) and response.get("image_base64"):
+                logger.info(f"[PASS] Image response ({response.get('size_bytes', 'unknown')} bytes) ({duration_ms:.0f}ms)")
+                return TestResult(
+                    test_name=test_name,
+                    method_name=method_name,
+                    description=description,
+                    status="PASSED",
+                    duration_ms=duration_ms,
+                    query=description,
+                    payload=test_input,
+                    response={"image_base64": "<base64_data>", "size_bytes": response.get("size_bytes")}
+                )
+
             if isinstance(response, dict) and response.get("error"):
                 error_msg = response["error"]
                 logger.info(f"[FAIL] {error_msg} ({duration_ms:.0f}ms)")
@@ -273,6 +290,24 @@ class PreciselyMCPTestSuite:
                     response=response,
                     error=error_msg
                 )
+
+            # XML response validation (GetCapabilities for WMS/WMTS, GetFeatureInfo with XML info_format)
+            if isinstance(response, dict) and "xml" in response:
+                xml_text = response["xml"]
+                if xml_text and len(xml_text) > 0:
+                    logger.info(f"[PASS] XML response ({len(xml_text)} chars) ({duration_ms:.0f}ms)")
+                    return TestResult(
+                        test_name=test_name,
+                        method_name=method_name,
+                        description=description,
+                        status="PASSED",
+                        duration_ms=duration_ms,
+                        query=description,
+                        payload=test_input,
+                        response={"xml": f"<{len(xml_text)} chars>", "content_type": response.get("content_type")}
+                    )
+                else:
+                    raise ValueError("XML response is empty")
             
             # Success
             logger.info(f"[PASS] ({duration_ms:.0f}ms)")
@@ -534,6 +569,82 @@ class PreciselyMCPTestSuite:
             
             ("Get Places by Address", "get_places_by_address", "What places and points of interest are near 123 Main St, Boston, MA 02101?",
              {"data": {"query": "query GetPlacesByAddress($address: String!, $country: String) { getByAddress(address: $address, country: $country) { places(pageNumber: 1, pageSize: 20) { metadata { pageNumber pageCount totalPages count vintage } data { PBID pointOfInterestID preciselyID businessName brandName city admin1ShortName postalCode formattedAddress longitude latitude phone email web lineOfBusiness sic8Description } } } }", "variables": {"address": "123 Main St, Boston, MA 02101", "country": "US"}}}),
+            
+            # Spatial Analysis APIs
+            ("Find Nearest Candidates", "find_nearest_candidates", "Find nearest flood risk features to a polygon",
+             {"tableName": "/risks/flood_risk", "attributes": ["statecode", "type", "mapname"], "location": {"format": "WKT", "value": "MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))"}, "withinDistance": "10 mi", "attributeFilter": "id > 100", "distanceAttributeName": "dist", "maxFeatures": 2, "uomAttributeName": "unit", "inputPointAttributeName": "ip", "targetPointAttributeName": "tp", "bearingAttributeName": "bearingAngle"}),
+            
+            ("Search at Location", "search_at_location", "Search for flood risk features intersecting a polygon",
+             {"tableName": "/risks/flood_risk", "attributes": ["statecode", "type", "mapname"], "location": {"format": "WKT", "value": "MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))"}, "spatialOperation": "INTERSECTS", "attributeFilter": "id > 100", "bufferDistance": "10 mi"}),
+            
+            ("Overlap", "overlap", "Find spatial overlaps between a polygon and buildings",
+             {"tableName": "/properties/buildings", "attributes": ["fips"], "location": {"format": "WKT", "value": "POLYGON ((-74.01316 40.700479, -74.012028 40.700479, -74.012028 40.701403, -74.01316 40.701403, -74.01316 40.700479))"}, "uom": "m", "attributeFilter": "elevation > 0", "areaAttributeName": "overlappedArea", "lengthAttributeName": "overlappedLength", "percentTargetAttributeName": "targetOverlapPercentage", "percentInputAttributeName": "inputOverlapPercentage", "uomAttributeName": "measurementUnit", "bufferDistance": "2 km"}),
+            
+            ("Get Spatial Products", "get_spatial_products", "Get list of available spatial data products",
+             {}),
+            
+            ("List Spatial Tables", "list_spatial_tables", "List all available spatial tables",
+             {}),
+            
+            ("Get Table Metadata", "get_table_metadata", "Get metadata for flood risk table",
+             {"tableName": "risks/flood_risk"}),
+            
+            ("Summarize", "summarize", "Summarize wind data within a geometry",
+             {"tableName": "/risks/historical_weather_windgrid", "aggregateColumns": {"w11": ["min", "max", "avg", "sum"], "w10": ["min", "max", "sum", "avg", "median"]}, "location": {"format": "WKT", "value": "GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))"}, "spatialOperation": "intersects", "attributeFilter": "grid_id > 0", "proportionalCalculation": True, "bufferDistance": "10 mi"}),
+            
+            # OGC Features APIs
+            ("OGC Landing Page", "ogc_landing_page", "Get OGC API landing page",
+             {}),
+            
+            ("OGC API Definition", "ogc_api_definition", "Get OGC API definition",
+             {}),
+            
+            ("OGC Functions", "ogc_functions", "Get OGC spatial functions",
+             {}),
+            
+            ("OGC Conformance", "ogc_conformance", "Get OGC conformance declaration",
+             {}),
+            
+            ("OGC Collections", "ogc_collections", "List OGC feature collections",
+             {}),
+            
+            ("OGC Collection", "ogc_collection", "Get details of properties/buildings collection",
+             {"collectionId": "properties/buildings"}),
+            
+            ("OGC Collection Schema", "ogc_collection_schema", "Get schema of properties/buildings collection",
+             {"collectionId": "properties/buildings"}),
+            
+            ("OGC Collection Queryables", "ogc_collection_queryables", "Get queryable properties of properties/buildings collection",
+             {"collectionId": "properties/buildings"}),
+            
+            ("OGC Collection Items", "ogc_collection_items", "Get items from properties/buildings collection with bbox",
+             {"collectionId": "properties/buildings", "limit": "100"}),
+            
+            ("OGC Feature by ID", "ogc_feature_by_id", "Get feature 1 from properties/buildings collection",
+             {"collectionId": "properties/buildings", "featureId": "1"}),
+            
+            # WMS APIs
+            ("WMS GetCapabilities", "wms_get_request", "Get WMS capabilities",
+             {"REQUEST": "GetCapabilities", "SERVICE": "WMS", "VERSION": "1.3.0"}),
+
+            # GetFeatureInfo with INFO_FORMAT=application/json returns a GeoJSON FeatureCollection dict
+            # This is handled by the generic Success path in run_functional_test (no image_base64/error/xml key)
+            # EPSG:4326 v1.3.0 BBOX axis order is minLat,minLon,maxLat,maxLon (Y-first per CRS definition)
+            ("WMS GetFeatureInfo JSON", "wms_get_request", "Get feature attributes at a pixel as GeoJSON",
+             {"REQUEST": "GetFeatureInfo", "SERVICE": "WMS", "VERSION": "1.3.0", "crs": "EPSG:4326", "BBOX": "29.0,-99.5,30.5,-98.0", "width": "400", "height": "300", "layers": "wildfire_risk", "STYLES": "", "QUERY_LAYERS": "wildfire_risk", "Info_Format": "application/json", "I": "200", "J": "150"}),
+
+            ("WMS POST GetMap", "wms_post_get_map", "Get a styled map image via POST with custom SLD_BODY (brown fill buildings)",
+             {"REQUEST": "GetMap", "SERVICE": "WMS", "VERSION": "1.3.0", "crs": "EPSG:4326", "BBOX": "37.78662956646336823,-122.2745967175037549,37.81410536165775227,-122.2403683391127061", "width": "1062", "height": "853", "layers": "buildings", "STYLES": "", "FORMAT": "image/png", "TRANSPARENT": "TRUE", "SLD_BODY": '{"styleDetails": [{"themeList": {"theme": [{"type": "OverrideTheme","style": {"type": "MapBasicCompositeStyle","AreaStyle": {"type": "MapBasicAreaStyle","MapBasicPen": {"width": 1,"pattern": 2,"color": "#964B00","unit": "PIXEL"},"MapBasicBrush": {"pattern": 2,"foregroundColor": "#E0AB8B","backgroundColor": "#C0C0C0"}}}}]}}]}'  }),
+            
+            # WMTS APIs
+            ("WMTS GetCapabilities", "wmts_request", "Get WMTS capabilities",
+             {"Service": "WMTS", "Request": "GetCapabilities"}),
+            
+            ("WMTS Get Standard Tile", "wmts_get_standard_tile", "Get a standard map tile",
+             {"Version": "1.0.0", "Layer": "parcels", "Style": "default", "TileMatrixSet": "WorldWebMercatorQuad_0_to_19", "TileMatrix": "17", "TileCol": 31118, "TileRow": 50069, "Format": "png"}),
+            
+            ("WMTS Get Simple Tile", "wmts_get_simple_tile", "Get a simple map tile",
+             {"Version": "1.0.0", "Layer": "parcels", "TileMatrix": "17", "TileCol": 31118, "TileRow": 50069, "Format": "png"}),
         ]
     
     # ========================================
