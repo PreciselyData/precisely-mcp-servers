@@ -57,7 +57,7 @@ logger = logging.getLogger("precisely-mcp-wrapper")
 load_dotenv(override=True)
 API_KEY = os.getenv("PRECISELY_API_KEY")
 API_SECRET = os.getenv("PRECISELY_API_SECRET")
-BASE_URL = "https://api.cloud.precisely.com"
+BASE_URL = os.getenv("PRECISELY_BASE_URL", "https://api.cloud.precisely.com")
 
 # Validate credentials are present before proceeding
 if not API_KEY or not API_SECRET:
