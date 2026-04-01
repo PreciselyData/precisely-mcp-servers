@@ -50,9 +50,6 @@ class PreciselyAPI:
         self.api_secret = api_secret
         # Use environment variable if base_url not provided
         self.base_url = base_url or os.getenv("PRECISELY_BASE_URL", "https://api.cloud.precisely.com")
-        logger.info(f"[core] PRECISELY_BASE_URL from environment: {repr(self.base_url)}")
-        logger.info(f"[core] PRECISELY_BASE_URL from environment: {repr(self.api_key)}")
-        logger.info(f"[core] PRECISELY_BASE_URL from environment: {repr(self.api_secret)}")
         self.session = requests.Session()
         # Use proper authentication format from SDK
         import base64

@@ -53,6 +53,14 @@ from mcp_servers.tools import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("precisely-mcp-wrapper")
 
+class HealthCheckFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        # Suppress logs for /health and /ready endpoints
+        return not any(endpoint in record.getMessage() for endpoint in ["/health", "/ready"])
+
+# Apply filter to uvicorn access logger
+logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
+
 # Load environment variables (override=True ensures fresh values)
 load_dotenv(override=True)
 API_KEY = os.getenv("PRECISELY_API_KEY")
@@ -72,9 +80,6 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 
 # Lightweight health check: verify credentials work before serving tools
 try:
-    logger.info(f"[startup] PRECISELY_BASE_URL from environment: {repr(BASE_URL)}")
-    logger.info(f"[startup] PRECISELY_BASE_URL from environment: {repr(API_KEY)}")
-    logger.info(f"[startup] PRECISELY_BASE_URL from environment: {repr(API_SECRET)}")
     _health = precisely_api.geocode("1600 Pennsylvania Ave, Washington DC", country="USA")
     if isinstance(_health, dict) and _health.get("error"):
         logger.critical(f"Credential validation failed: {_health['error']}")
