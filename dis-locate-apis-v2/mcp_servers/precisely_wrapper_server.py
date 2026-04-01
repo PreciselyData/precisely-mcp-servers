@@ -72,6 +72,9 @@ precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
 
 # Lightweight health check: verify credentials work before serving tools
 try:
+    logger.info(f"[startup] PRECISELY_BASE_URL from environment: {repr(BASE_URL)}")
+    logger.info(f"[startup] PRECISELY_BASE_URL from environment: {repr(API_KEY)}")
+    logger.info(f"[startup] PRECISELY_BASE_URL from environment: {repr(API_SECRET)}")
     _health = precisely_api.geocode("1600 Pennsylvania Ave, Washington DC", country="USA")
     if isinstance(_health, dict) and _health.get("error"):
         logger.critical(f"Credential validation failed: {_health['error']}")
