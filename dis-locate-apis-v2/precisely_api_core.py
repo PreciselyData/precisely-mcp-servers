@@ -45,10 +45,11 @@ logger.info("Precisely API Core module loaded for MCP Server")
 class PreciselyAPI:
     """Precisely API client for direct integration with correct payload structures"""
     
-    def __init__(self, api_key: str, api_secret: str, base_url: str = "https://api.cloud.precisely.com"):
+    def __init__(self, api_key: str, api_secret: str, base_url: str = None):
         self.api_key = api_key
         self.api_secret = api_secret
-        self.base_url = base_url
+        # Use environment variable if base_url not provided
+        self.base_url = base_url or os.getenv("PRECISELY_BASE_URL", "https://api.cloud.precisely.com")
         self.session = requests.Session()
         # Use proper authentication format from SDK
         import base64
