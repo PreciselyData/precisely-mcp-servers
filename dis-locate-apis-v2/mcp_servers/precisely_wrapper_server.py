@@ -22,8 +22,9 @@ HTTP_AVAILABLE = False
 try:
     from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
     from starlette.applications import Starlette
-    from starlette.routing import Mount
+    from starlette.routing import Mount, Route
     from starlette.types import Receive, Scope, Send
+    from starlette.responses import JSONResponse
     import uvicorn
     HTTP_AVAILABLE = True
 except ImportError:
@@ -154,6 +155,50 @@ async def run_stdio():
 # ============================================
 # TRANSPORT: STREAMABLE HTTP
 # ============================================
+
+# Kubernetes Health Endpoints
+async def health_check(request) -> "JSONResponse":
+    """
+    Liveness probe endpoint for Kubernetes.
+    Returns 200 if the process is alive and running.
+    """
+    return JSONResponse({
+        "status": "healthy",
+        "service": "precisely-mcp-server",
+        "transport": "http"
+    })
+
+
+async def readiness_check(request) -> "JSONResponse":
+    """
+    Readiness probe endpoint for Kubernetes.
+    Returns 200 if the service is ready to accept requests.
+    Checks if Precisely API credentials are valid and reachable.
+    """
+    try:
+        # Quick validation: check if we can get a token
+        # This verifies credentials and API connectivity
+        result = precisely_api.geocode("test", country="USA")
+        
+        # If we got any response (even an error), the API is reachable
+        return JSONResponse({
+            "status": "ready",
+            "service": "precisely-mcp-server",
+            "api_connectivity": "ok",
+            "tools_count": len(TOOLS)
+        })
+    except Exception as e:
+        logger.error(f"Readiness check failed: {e}")
+        return JSONResponse(
+            {
+                "status": "not_ready",
+                "service": "precisely-mcp-server",
+                "error": str(e)
+            },
+            status_code=503
+        )
+
+
 def create_http_app(json_response: bool = True, stateless: bool = True) -> "Starlette":
     """
     Create a Starlette app with Streamable HTTP transport.
@@ -197,6 +242,8 @@ def create_http_app(json_response: bool = True, stateless: bool = True) -> "Star
     starlette_app = Starlette(
         debug=False,
         routes=[
+            Route("/health", health_check, methods=["GET"]),
+            Route("/ready", readiness_check, methods=["GET"]),
             Mount("/mcp", app=handle_streamable_http),
         ],
         lifespan=lifespan,
@@ -208,7 +255,9 @@ def create_http_app(json_response: bool = True, stateless: bool = True) -> "Star
 def run_http(host: str = "127.0.0.1", port: int = 8000):
     """Run the server using Streamable HTTP transport."""
     logger.info(f"Starting Precisely MCP Server with HTTP transport")
-    logger.info(f"Endpoint: http://{host}:{port}/mcp")
+    logger.info(f"MCP Endpoint: http://{host}:{port}/mcp")
+    logger.info(f"Health Check: http://{host}:{port}/health")
+    logger.info(f"Readiness Check: http://{host}:{port}/ready")
     logger.info(f"71 tools available")
     
     starlette_app = create_http_app(
