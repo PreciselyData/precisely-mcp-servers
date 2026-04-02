@@ -3,7 +3,7 @@ GraphQL Services Tools Module
 Contains 22 tools for property, demographics, risk, and advanced GraphQL queries
 """
 from mcp.types import Tool
-from mcp_servers.tools.base_tool import handle_tool_call 
+from mcp_servers.tools.base_tool import handle_tool_call  # noqa: F401
 
 
 def get_tools() -> list[Tool]:
