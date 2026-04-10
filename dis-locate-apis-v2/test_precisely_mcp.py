@@ -2,7 +2,7 @@
 Unified Test Suite for Precisely MCP Server
 Combines 3-tier testing: Layer 1 (API Core) → Layer 2 (MCP Server) → Layer 3 (Functional)
 
-Tests all 71 Precisely API tools with comprehensive validation and detailed logging
+Tests all 72 Precisely API tools with comprehensive validation and detailed logging
 """
 
 import os
@@ -122,10 +122,10 @@ class PreciselyMCPTestSuite:
         methods = [m for m in dir(self.api) if not m.startswith('_') and callable(getattr(self.api, m))]
         logger.info(f"  Found {len(methods)} API methods")
         
-        if len(methods) != 71:
-            logger.warning(f"  [WARN] Expected 71 methods, found {len(methods)}")
+        if len(methods) != 72:
+            logger.warning(f"  [WARN] Expected 72 methods, found {len(methods)}")
         else:
-            logger.info("  [PASS] All 71 API methods present")
+            logger.info("  [PASS] All 72 API methods present")
         
         # Test 3: Quick smoke tests
         logger.info("\n[3/3] Running Quick Smoke Tests...")
@@ -186,10 +186,10 @@ class PreciselyMCPTestSuite:
                 logger.error(f"  [FAIL] Duplicate tools found: {set(duplicates)}")
                 return False
             
-            if len(tools) != 71:
-                logger.warning(f"  [WARN] Expected 71 tools, found {len(tools)}")
+            if len(tools) != 72:
+                logger.warning(f"  [WARN] Expected 72 tools, found {len(tools)}")
             else:
-                logger.info("  [PASS] All 71 MCP tools defined")
+                logger.info("  [PASS] All 72 MCP tools defined")
             
         except Exception as e:
             logger.error(f"  [FAIL] Failed to load MCP server: {e}")
@@ -566,6 +566,9 @@ class PreciselyMCPTestSuite:
             
             ("Get Serviceability", "get_serviceability", "What broadband services are available at 2755 Milwaukee St, Denver, 80238 CO?",
              {"data": {"query": "query GetServiceability($address: String!, $country: String) { getByAddress(address: $address, country: $country) { addresses(pageNumber: 1, pageSize: 1) { data { preciselyID serviceability { metadata { pageNumber pageCount totalPages count vintage } data { serviceabilityID preciselyID serviceableAddress } } } } } }", "variables": {"address": "2755 Milwaukee St, Denver, 80238 CO", "country": "US"}}}),
+
+            ("Get By Spatial", "get_by_spatial", "Find addresses near a spatial point using GraphQL getBySpatial",
+             {"data": {"query": "query GetBySpatial($spatial: SpatialInput!, $country: String) { getBySpatial(spatial: $spatial, country: $country) { addresses(pageNumber: 1, pageSize: 20) { metadata { pageNumber pageCount totalPages count vintage } data { preciselyID addressNumber streetName city admin1ShortName postalCode } } } }", "variables": {"spatial": {"format": "WKT", "value": "POINT (-104.9903 39.7392)"}, "country": "US"}}}),
             
             ("Get Places by Address", "get_places_by_address", "What places and points of interest are near 123 Main St, Boston, MA 02101?",
              {"data": {"query": "query GetPlacesByAddress($address: String!, $country: String) { getByAddress(address: $address, country: $country) { places(pageNumber: 1, pageSize: 20) { metadata { pageNumber pageCount totalPages count vintage } data { PBID pointOfInterestID preciselyID businessName brandName city admin1ShortName postalCode formattedAddress longitude latitude phone email web lineOfBusiness sic8Description } } } }", "variables": {"address": "123 Main St, Boston, MA 02101", "country": "US"}}}),
