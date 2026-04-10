@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 from collections.abc import AsyncIterator
 from mcp.server import Server
-from mcp.types import Tool, TextContent, ImageContent
+from mcp.types import Tool, TextContent, ImageContent, CallToolResult
 from mcp.server.stdio import stdio_server
 import logging
 from dotenv import load_dotenv
@@ -147,7 +147,10 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent | ImageConten
     try:
         # Find the module that handles this tool
         if name not in TOOL_MODULE_MAP:
-            return [TextContent(type="text", text=f'{{"error": "Unknown tool: {name}"}}')]
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"Unknown tool: {name}")],
+                isError=True,
+            )
 
         module = TOOL_MODULE_MAP[name]
 
@@ -166,7 +169,10 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent | ImageConten
 
     except Exception as e:
         logger.error(f"Error calling tool {name}: {e}", exc_info=True)
-        return [TextContent(type="text", text=f'{{"error": "{str(e)}"}}')]
+        return CallToolResult(
+            content=[TextContent(type="text", text=str(e))],
+            isError=True,
+        )
 
 # TRANSPORT: STDIO (default)
 # ============================================
