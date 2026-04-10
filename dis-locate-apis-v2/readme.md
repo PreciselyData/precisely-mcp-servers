@@ -1,13 +1,13 @@
 ﻿# Precisely MCP Server
 
-A Model Context Protocol (MCP) server that exposes 71 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
+A Model Context Protocol (MCP) server that exposes 72 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
 
 ## Features
 
-- **71 Production-Ready API Tools**: Complete location intelligence suite
+- **72 Production-Ready API Tools**: Complete location intelligence suite
 - **Dual Transport Support**: stdio (default) and Streamable HTTP transports
 - **MCP Protocol**: Standard interface for AI assistants  
-- **100% Test Coverage**: Comprehensive unified test suite with 72/72 tests passing
+- **100% Test Coverage**: Comprehensive unified test suite with 73/73 tests passing
 - **Enhanced Documentation**: GraphQL tools with complete query examples
 - **Clean Architecture**: Zero duplicate code, optimized implementation
 - **Detailed Logging**: Full request/response logging for debugging
@@ -165,7 +165,7 @@ async def test_http():
         async with ClientSession(read, write) as session:
             await session.initialize()
             
-            # List all 71 tools
+            # List all 72 tools
             tools = await session.list_tools()
             print(f"Available tools: {len(tools.tools)}")
             
@@ -190,7 +190,7 @@ async def test_http():
         async with ClientSession(read, write) as session:
             await session.initialize()
             
-            # List all 71 tools
+            # List all 72 tools
             tools = await session.list_tools()
             print(f"Available tools: {len(tools.tools)}")
             
@@ -221,7 +221,7 @@ async def use_with_langchain():
         }
     })
     
-    # Get all 71 tools as LangChain tools
+    # Get all 72 tools as LangChain tools
     tools = await client.get_tools()
     print(f"LangChain tools: {len(tools)} tools available")
     
@@ -297,13 +297,13 @@ python test_precisely_mcp.py
 Test Architecture:
 
 1. **Layer 1 - API Core**: Validates initialization and core functionality
-2. **Layer 2 - MCP Server**: Verifies all 71 tools are properly defined
-3. **Layer 3 - Functional**: Tests all 71 tools with real API calls
+2. **Layer 2 - MCP Server**: Verifies all 72 tools are properly defined
+3. **Layer 3 - Functional**: Tests all 72 tools with real API calls
 
 Test Features:
 
 - Single unified test file
-- 100% coverage (71/71 tools)
+- 100% coverage (72/72 tools)
 - Comprehensive logging (query, payload, response)
 - Detailed test reports in test_logs/
 - JSON results for CI/CD integration
@@ -313,15 +313,15 @@ Sample Output:
 ```
 Layer 1 (API Core):      [PASS]
 Layer 2 (MCP Server):    [PASS]
-Layer 3 (Functional):    [PASS] 71/71 tests
+Layer 3 (Functional):    [PASS] 73/73 tests
 
-Total:     71
-Passed:    71
+Total:     73
+Passed:    73
 Failed:    0
 Pass Rate: 100.0%
 ```
 
-## Available APIs (71 Tools)
+## Available APIs (72 Tools)
 
 ### Geocoding & Address (9 tools)
 
@@ -394,58 +394,93 @@ Pass Rate: 100.0%
 43. timezone_addresses - Get timezone for addresses
 44. timezone_locations - Get timezone for coordinates
 
-### GraphQL Advanced Queries (5 tools)
+### GraphQL Advanced Queries (6 tools)
 
 45. get_addresses_detailed - Comprehensive address details via GraphQL
 46. get_parcel_by_owner_detailed - Parcel ownership queries via GraphQL
 47. get_address_family - Related addresses via GraphQL
 48. get_serviceability - Broadband/utility serviceability via GraphQL
-49. get_places_by_address - Places/points of interest by address via GraphQL
+49. get_by_spatial - Spatial GraphQL queries using getBySpatial
+50. get_places_by_address - Places/points of interest by address via GraphQL
+
+Example request (get_by_spatial):
+
+```json
+{
+  "data": {
+    "query": "query GetBySpatial($spatial: SpatialInput!, $country: String) { getBySpatial(spatial: $spatial, country: $country) { addresses(pageNumber: 1, pageSize: 20) { metadata { pageNumber pageCount totalPages count vintage } data { preciselyID addressNumber streetName city admin1ShortName postalCode } } } }",
+    "variables": {
+      "spatial": {
+        "format": "WKT",
+        "value": "POINT (-104.9903 39.7392)"
+      },
+      "country": "US"
+    }
+  }
+}
+```
+
+Example request (get_by_spatial, polygon WKT):
+
+```json
+{
+  "data": {
+    "query": "query GetBySpatial($spatial: SpatialInput!, $country: String) { getBySpatial(spatial: $spatial, country: $country) { addresses(pageNumber: 1, pageSize: 20) { metadata { pageNumber pageCount totalPages count vintage } data { preciselyID addressNumber streetName city admin1ShortName postalCode } } } }",
+    "variables": {
+      "spatial": {
+        "format": "WKT",
+        "value": "POLYGON ((-104.999 39.744, -104.981 39.744, -104.981 39.732, -104.999 39.732, -104.999 39.744))"
+      },
+      "country": "US"
+    }
+  }
+}
+```
 
 ### Spatial Analysis (7 tools)
 
-50. find_nearest_candidates - Find nearest spatial features by distance
-51. search_at_location - Search for features at/near a location
-52. overlap - Identify spatial overlaps between geometries
-53. get_spatial_products - Get available spatial data product metadata
-54. list_spatial_tables - List available spatial tables
-55. get_table_metadata - Get metadata for a specific spatial table
-56. summarize - Aggregate spatial data within a defined area
+51. find_nearest_candidates - Find nearest spatial features by distance
+52. search_at_location - Search for features at/near a location
+53. overlap - Identify spatial overlaps between geometries
+54. get_spatial_products - Get available spatial data product metadata
+55. list_spatial_tables - List available spatial tables
+56. get_table_metadata - Get metadata for a specific spatial table
+57. summarize - Aggregate spatial data within a defined area
 
 ### OGC API Features (10 tools)
 
-57. ogc_landing_page - OGC API landing page with links
-58. ogc_api_definition - Complete OpenAPI definition
-59. ogc_functions - Available spatial functions
-60. ogc_conformance - OGC conformance declaration
-61. ogc_collections - List feature collections
-62. ogc_collection - Information about a specific collection
-63. ogc_collection_schema - Schema for a collection
-64. ogc_collection_queryables - Queryable attributes for a collection
-65. ogc_collection_items - Data records from a collection
-66. ogc_feature_by_id - Get a specific feature by ID
+58. ogc_landing_page - OGC API landing page with links
+59. ogc_api_definition - Complete OpenAPI definition
+60. ogc_functions - Available spatial functions
+61. ogc_conformance - OGC conformance declaration
+62. ogc_collections - List feature collections
+63. ogc_collection - Information about a specific collection
+64. ogc_collection_schema - Schema for a collection
+65. ogc_collection_queryables - Queryable attributes for a collection
+66. ogc_collection_items - Data records from a collection
+67. ogc_feature_by_id - Get a specific feature by ID
 
 ### WMS - Web Map Service (2 tools, 3 tests)
 
-67. wms_get_request - WMS GET handler (GetCapabilities/GetMap/GetFeatureInfo) — tested with both GetCapabilities and GetFeatureInfo (2 tests)
-68. wms_post_get_map - WMS POST GetMap with custom SLD styling
+68. wms_get_request - WMS GET handler (GetCapabilities/GetMap/GetFeatureInfo) — tested with both GetCapabilities and GetFeatureInfo (2 tests)
+69. wms_post_get_map - WMS POST GetMap with custom SLD styling
 
 ### WMTS - Web Map Tile Service (3 tools)
 
-69. wmts_request - WMTS KVP handler (GetCapabilities/GetTile)
-70. wmts_get_standard_tile - WMTS tile via RESTful standard profile
-71. wmts_get_simple_tile - WMTS tile via RESTful simple profile
+70. wmts_request - WMTS KVP handler (GetCapabilities/GetTile)
+71. wmts_get_standard_tile - WMTS tile via RESTful standard profile
+72. wmts_get_simple_tile - WMTS tile via RESTful simple profile
 
 ## Project Structure
 
 ```
- precisely_api_core.py              # Core API implementation (2,500+ lines, 71 methods)
- test_precisely_mcp.py              # Unified 3-tier test suite (680+ lines, 72 tests)
+ precisely_api_core.py              # Core API implementation (2,500+ lines, 72 methods)
+ test_precisely_mcp.py              # Unified 3-tier test suite (680+ lines, 73 tests)
  requirements.txt                   # Python dependencies (core + HTTP transport)
  .env.template                      # Credential configuration template
  readme.md                          # This file
  mcp_servers/
-    precisely_wrapper_server.py   # MCP server wrapper (1,300+ lines, 71 tools, dual transport)
+    precisely_wrapper_server.py   # MCP server wrapper (1,300+ lines, 72 tools, dual transport)
     setup_claude_desktop.ps1      # Windows setup script (UTF-8 no-BOM)
  logs/                              # Application logs (automatically generated)
  test_logs/                         # Test results and reports (automatically generated)
@@ -463,13 +498,13 @@ Pass Rate: 100.0%
 ### Code Quality Improvements
 
 - Removed 3 duplicate methods (145 lines saved)
-- Enhanced 4 GraphQL tools with complete query examples
+- Enhanced GraphQL tools with complete query examples
 - Fixed 4 parameter structure mismatches
 - Synchronized 20+ tool examples with test cases
 
 ### Architecture Changes
 
-- Perfect tool alignment: 71 methods = 71 tools = 71 tests
+- Perfect tool alignment: 72 methods = 72 tools = 73 tests
 - File size reductions: precisely_api_core.py 8% smaller
 - Removed redundant files
 
@@ -477,7 +512,7 @@ Pass Rate: 100.0%
 
 - Fixed UTF-8 BOM issue in setup_claude_desktop.ps1
 - Standardized credential naming
-- Updated test suite for 71 tools
+- Updated test suite for 72 tools
 
 ## Configuration
 
@@ -530,7 +565,7 @@ Solution: pip install -r requirements.txt --upgrade
 
 ### Issue: Tool not found errors
 
-Solution: Verify tool count matches 71
+Solution: Verify tool count matches 72
 
 ### Issue: Test failures
 
@@ -538,11 +573,11 @@ Solution:
 1. Check API credentials are valid
 2. Verify internet connectivity
 3. Review test logs in test_logs/
-4. Ensure all 71 methods exist in precisely_api_core.py
+4. Ensure all 72 methods exist in precisely_api_core.py
 
 ## Production-Ready Checklist
 
-- 100% test coverage (72/72 tests passing)
+- 100% test coverage (73/73 tests passing)
 - Dual transport support (stdio + HTTP)
 - Comprehensive error handling
 - Detailed logging (application + tests)
@@ -557,6 +592,6 @@ Solution:
 
 **Version**: 9.1 Production  
 **Last Updated**: March 30, 2026  
-**Tool Count**: 71 APIs  
+**Tool Count**: 72 APIs  
 **Transports**: stdio (default), Streamable HTTP  
-**Test Coverage**: 100% (72/72 passing)
+**Test Coverage**: 100% (73/73 passing)

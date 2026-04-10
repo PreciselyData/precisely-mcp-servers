@@ -136,7 +136,7 @@ logger.info(f"Tool-method cross-validation passed ({len(TOOLS)} tools verified)"
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 71 Precisely API tools"""
+    """List all 72 Precisely API tools"""
     return TOOLS
 
 @app.call_tool()
@@ -179,7 +179,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent | ImageConten
 async def run_stdio():
     """Run the server using stdio transport (for Claude Desktop, VS Code, etc.)"""
     logger.info("Starting Precisely MCP Server with stdio transport")
-    logger.info(f"71 tools available")
+    logger.info(f"72 tools available")
     
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
