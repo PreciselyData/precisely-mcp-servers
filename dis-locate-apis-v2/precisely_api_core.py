@@ -61,6 +61,20 @@ class PreciselyAPI:
             "Accept": "application/json"
         })
 
+    def with_bearer_token(self, token: str) -> "PreciselyAPI":
+        """Return a copy of this client that authenticates with a Bearer token instead of ApiKey."""
+        instance = object.__new__(PreciselyAPI)
+        instance.api_key = None
+        instance.api_secret = None
+        instance.base_url = self.base_url
+        instance.session = requests.Session()
+        instance.session.headers.update({
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        })
+        return instance
+
     def _validate_graphql_response(self, result: Dict[str, Any], method_name: str) -> Dict[str, Any]:
         """Validate a GraphQL response for errors. GraphQL returns HTTP 200 even on errors."""
         if "errors" in result:
