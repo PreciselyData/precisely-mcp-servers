@@ -1,0 +1,30 @@
+{
+  "name": "@precisely/mcp-server",
+  "version": "1.0.0",
+  "description": "Precisely Location Intelligence MCP Server - 71 APIs for AI assistants",
+  "bin": {
+    "precisely-mcp": "./bin/precisely-mcp.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "prepare": "node scripts/postinstall.js"
+  },
+  "files": [
+    "bin/",
+    "scripts/",
+    "mcp_servers/",
+    "precisely_api_core.py",
+    "requirements.txt",
+    ".env.template"
+  ],
+  "keywords": ["mcp", "precisely", "location-intelligence", "geocoding", "ai"],
+  "author": "Precisely",
+  "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PreciselyData/precisely-mcp-servers"
+  }
+}
