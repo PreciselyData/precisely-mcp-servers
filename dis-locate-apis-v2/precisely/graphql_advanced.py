@@ -1,4 +1,4 @@
-"""Advanced GraphQL API methods (5 tools — LLM constructs queries directly)."""
+"""Advanced GraphQL API methods (6 tools — LLM constructs queries directly)."""
 
 import json
 import logging
@@ -76,4 +76,18 @@ class GraphQLAdvancedMixin:
             return self._validate_graphql_response(response.json(), "get_places_by_address")
         except Exception as e:
             logger.error(f"Places by address error: {e}")
+            return {"error": str(e)}
+
+    def get_by_spatial(self, data: Dict, **kwargs) -> Dict[str, Any]:
+        """Run getBySpatial query via GraphQL"""
+        try:
+            url = f"{self.base_url}/data-graph/graphql"
+            json_data = data
+            logger.debug(f"[get_by_spatial] Request payload: {json.dumps(json_data, indent=2)}")
+            response = self.session.post(url, json=json_data)
+            logger.debug(f"[get_by_spatial] Raw response: {response.text}")
+            response.raise_for_status()
+            return self._validate_graphql_response(response.json(), "get_by_spatial")
+        except Exception as e:
+            logger.error(f"Get by spatial error: {e}")
             return {"error": str(e)}

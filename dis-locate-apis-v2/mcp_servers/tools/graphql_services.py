@@ -1,6 +1,6 @@
 """
 GraphQL Services Tools Module
-Contains 22 tools for property, demographics, risk, and advanced GraphQL queries
+Contains 23 tools for property, demographics, risk, and advanced GraphQL queries
 """
 from mcp.types import Tool
 from mcp_servers.tools.base_tool import handle_tool_call  # noqa: F401
@@ -217,7 +217,7 @@ def get_tools() -> list[Tool]:
         }
     ),
 
-    # Advanced GraphQL tools  (5 tools)
+    # Advanced GraphQL tools  (6 tools)
     Tool(
         name="get_addresses_detailed",
         description="""Get detailed address information using custom GraphQL query.
@@ -340,6 +340,36 @@ Available fields in places data section:
             "type": "object",
             "properties": {
                 "data": {"type": "object", "description": "GraphQL query with variables: address (string, required), country (string, default 'US')"}
+            },
+            "required": ["data"]
+        }
+    ),
+    Tool(
+        name="get_by_spatial",
+        description="""Run GraphQL getBySpatial queries with custom geometry/location input.
+        
+Example request:
+{'data': {
+    'query': 'query GetBySpatial($spatial: SpatialInput!, $country: String) { getBySpatial(spatial: $spatial, country: $country) { addresses(pageNumber: 1, pageSize: 20) { metadata { pageNumber pageCount totalPages count vintage } data { preciselyID addressNumber streetName city admin1ShortName postalCode } } } }',
+    'variables': {
+        'spatial': {
+            'format': 'WKT',
+            'value': 'POINT (-104.9903 39.7392)'
+        },
+        'country': 'US'
+    }
+}}
+
+Returns: Addresses/features matched by a spatial query instead of a street address.
+
+IMPORTANT:
+- Provide GraphQL payload as data.query and data.variables
+- Keep queried fields conservative to avoid GraphQL schema errors
+- If your schema uses different variable/field names for getBySpatial, adjust query text accordingly""",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "data": {"type": "object", "description": "GraphQL query with variables for getBySpatial (geometry/location input)"}
             },
             "required": ["data"]
         }
