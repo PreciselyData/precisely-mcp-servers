@@ -1,10 +1,10 @@
 ﻿# Precisely MCP Server
 
-A Model Context Protocol (MCP) server that exposes 71 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
+A Model Context Protocol (MCP) server that exposes 72 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
 
 ## Features
 
-- **71 Production-Ready API Tools**: Complete location intelligence suite
+- **72 Production-Ready API Tools**: Complete location intelligence suite
 - **Dual Transport Support**: stdio (default) and Streamable HTTP transports
 - **MCP Protocol**: Standard interface for AI assistants  
 - **100% Test Coverage**: Comprehensive unified test suite with 72/72 tests passing
@@ -321,7 +321,7 @@ Failed:    0
 Pass Rate: 100.0%
 ```
 
-## Available APIs (71 Tools)
+## Available APIs (72 Tools)
 
 ### Geocoding & Address (9 tools)
 
@@ -394,47 +394,48 @@ Pass Rate: 100.0%
 43. timezone_addresses - Get timezone for addresses
 44. timezone_locations - Get timezone for coordinates
 
-### GraphQL Advanced Queries (5 tools)
+### GraphQL Advanced Queries (6 tools)
 
 45. get_addresses_detailed - Comprehensive address details via GraphQL
 46. get_parcel_by_owner_detailed - Parcel ownership queries via GraphQL
 47. get_address_family - Related addresses via GraphQL
 48. get_serviceability - Broadband/utility serviceability via GraphQL
 49. get_places_by_address - Places/points of interest by address via GraphQL
+50. get_by_spatial - Spatial geometry/address GraphQL query support
 
 ### Spatial Analysis (7 tools)
 
-50. find_nearest_candidates - Find nearest spatial features by distance
-51. search_at_location - Search for features at/near a location
-52. overlap - Identify spatial overlaps between geometries
-53. get_spatial_products - Get available spatial data product metadata
-54. list_spatial_tables - List available spatial tables
-55. get_table_metadata - Get metadata for a specific spatial table
-56. summarize - Aggregate spatial data within a defined area
+51. find_nearest_candidates - Find nearest spatial features by distance
+52. search_at_location - Search for features at/near a location
+53. overlap - Identify spatial overlaps between geometries
+54. get_spatial_products - Get available spatial data product metadata
+55. list_spatial_tables - List available spatial tables
+56. get_table_metadata - Get metadata for a specific spatial table
+57. summarize - Aggregate spatial data within a defined area
 
 ### OGC API Features (10 tools)
 
-57. ogc_landing_page - OGC API landing page with links
-58. ogc_api_definition - Complete OpenAPI definition
-59. ogc_functions - Available spatial functions
-60. ogc_conformance - OGC conformance declaration
-61. ogc_collections - List feature collections
-62. ogc_collection - Information about a specific collection
-63. ogc_collection_schema - Schema for a collection
-64. ogc_collection_queryables - Queryable attributes for a collection
-65. ogc_collection_items - Data records from a collection
-66. ogc_feature_by_id - Get a specific feature by ID
+58. ogc_landing_page - OGC API landing page with links
+59. ogc_api_definition - Complete OpenAPI definition
+60. ogc_functions - Available spatial functions
+61. ogc_conformance - OGC conformance declaration
+62. ogc_collections - List feature collections
+63. ogc_collection - Information about a specific collection
+64. ogc_collection_schema - Schema for a collection
+65. ogc_collection_queryables - Queryable attributes for a collection
+66. ogc_collection_items - Data records from a collection
+67. ogc_feature_by_id - Get a specific feature by ID
 
 ### WMS - Web Map Service (2 tools, 3 tests)
 
-67. wms_get_request - WMS GET handler (GetCapabilities/GetMap/GetFeatureInfo) — tested with both GetCapabilities and GetFeatureInfo (2 tests)
-68. wms_post_get_map - WMS POST GetMap with custom SLD styling
+68. wms_get_request - WMS GET handler (GetCapabilities/GetMap/GetFeatureInfo) — tested with both GetCapabilities and GetFeatureInfo (2 tests)
+69. wms_post_get_map - WMS POST GetMap with custom SLD styling
 
 ### WMTS - Web Map Tile Service (3 tools)
 
-69. wmts_request - WMTS KVP handler (GetCapabilities/GetTile)
-70. wmts_get_standard_tile - WMTS tile via RESTful standard profile
-71. wmts_get_simple_tile - WMTS tile via RESTful simple profile
+70. wmts_request - WMTS KVP handler (GetCapabilities/GetTile)
+71. wmts_get_standard_tile - WMTS tile via RESTful standard profile
+72. wmts_get_simple_tile - WMTS tile via RESTful simple profile
 
 ## Project Structure
 
