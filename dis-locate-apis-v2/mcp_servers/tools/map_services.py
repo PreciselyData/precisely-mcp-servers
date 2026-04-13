@@ -3,7 +3,7 @@ Map Services Tools Module
 Contains 15 tools for WMS, WMTS, and OGC Features APIs
 """
 from typing import List, Dict, Any
-from mcp.types import Tool, TextContent, ImageContent
+from mcp.types import Tool, TextContent, ImageContent, CallToolResult
 from mcp_servers.tools.base_tool import get_logger
 import json
 
@@ -382,20 +382,26 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/wmts/1.0.0/simplePro
     ]
 
 
-def handle_tool_call(name: str, arguments: Dict[str, Any], precisely_api: Any) -> List[TextContent | ImageContent]:
+def handle_tool_call(name: str, arguments: Dict[str, Any], precisely_api: Any) -> List[TextContent | ImageContent] | CallToolResult:
     """Handle tool execution for map services tools"""
     try:
         if not hasattr(precisely_api, name):
-            return [TextContent(type="text", text=f'{{"error": "Unknown tool: {name}"}}')]
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"Unknown tool: {name}")],
+                isError=True,
+            )
         method = getattr(precisely_api, name)
         result = method(**arguments)
-        
+
         # Handle image responses for map services
         if isinstance(result, dict) and result.get("image_base64"):
-            return [ImageContent(type="image", data=result["image_base64"], 
+            return [ImageContent(type="image", data=result["image_base64"],
                                 mimeType=result.get("content_type", "image/png"))]
-        
+
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
     except Exception as e:
         logger.error(f"Error calling tool {name}: {e}", exc_info=True)
-        return [TextContent(type="text", text=f'{{"error": "{str(e)}"}}')]
+        return CallToolResult(
+            content=[TextContent(type="text", text=str(e))],
+            isError=True,
+        )

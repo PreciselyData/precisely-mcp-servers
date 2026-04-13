@@ -8,11 +8,12 @@ import sys
 import os
 import argparse
 import contextlib
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Dict, Optional
 from collections.abc import AsyncIterator
 from mcp.server import Server
-from mcp.types import Tool, TextContent, ImageContent
+from mcp.types import Tool, TextContent, ImageContent, CallToolResult
 from mcp.server.stdio import stdio_server
 import logging
 from dotenv import load_dotenv
@@ -61,6 +62,30 @@ class HealthCheckFilter(logging.Filter):
 # Apply filter to uvicorn access logger
 logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
 
+# Per-request Bearer token override (set by BearerTokenMiddleware for HTTP transport)
+_request_bearer_token: ContextVar[Optional[str]] = ContextVar("_request_bearer_token", default=None)
+
+
+class BearerTokenMiddleware:
+    """ASGI middleware: extracts 'Authorization: Bearer <token>' from incoming HTTP requests
+    and stores the token in _request_bearer_token so call_tool can forward it downstream."""
+
+    def __init__(self, app):
+        self._app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] in ("http", "websocket"):
+            headers = {k.lower(): v for k, v in scope.get("headers", [])}
+            auth = headers.get(b"authorization", b"").decode("utf-8", errors="replace")
+            if auth.lower().startswith("bearer "):
+                token = auth[len("bearer "):].strip()
+                # Store in scope (passed by reference) so handle_streamable_http
+                # can set the ContextVar right before session_manager runs,
+                # ensuring any tasks it spawns inherit the correct context.
+                scope["_bearer_token"] = token
+        await self._app(scope, receive, send)
+
+
 # Load environment variables (override=True ensures fresh values)
 load_dotenv(override=True)
 API_KEY = os.getenv("PRECISELY_API_KEY")
@@ -77,17 +102,6 @@ if not API_KEY or not API_SECRET:
 
 # Initialize the PreciselyAPI core module
 precisely_api = PreciselyAPI(API_KEY, API_SECRET, BASE_URL)
-
-# Lightweight health check: verify credentials work before serving tools
-try:
-    _health = precisely_api.geocode("1600 Pennsylvania Ave, Washington DC", country="USA")
-    if isinstance(_health, dict) and _health.get("error"):
-        logger.critical(f"Credential validation failed: {_health['error']}")
-        sys.exit(1)
-    logger.info("Credential validation passed")
-except Exception as e:
-    logger.critical(f"Credential validation failed: {e}")
-    sys.exit(1)
 
 # Create MCP server
 app = Server("precisely-complete-mcp")
@@ -133,21 +147,32 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent | ImageConten
     try:
         # Find the module that handles this tool
         if name not in TOOL_MODULE_MAP:
-            return [TextContent(type="text", text=f'{{"error": "Unknown tool: {name}"}}')]
-        
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"Unknown tool: {name}")],
+                isError=True,
+            )
+
         module = TOOL_MODULE_MAP[name]
-        
+
+        # If the caller supplied an Authorization: Bearer token (HTTP transport),
+        # forward it to downstream Precisely API calls instead of the default ApiKey.
+        bearer_token = _request_bearer_token.get()
+        api = precisely_api.with_bearer_token(bearer_token) if bearer_token else precisely_api
+
         # Call the module's handler (which is synchronous)
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
-            None, 
-            lambda: module.handle_tool_call(name, arguments, precisely_api)
+            None,
+            lambda: module.handle_tool_call(name, arguments, api)
         )
         return result
-        
+
     except Exception as e:
         logger.error(f"Error calling tool {name}: {e}", exc_info=True)
-        return [TextContent(type="text", text=f'{{"error": "{str(e)}"}}')]
+        return CallToolResult(
+            content=[TextContent(type="text", text=str(e))],
+            isError=True,
+        )
 
 # TRANSPORT: STDIO (default)
 # ============================================
@@ -207,7 +232,7 @@ async def readiness_check(request) -> "JSONResponse":
         )
 
 
-def create_http_app(json_response: bool = True, stateless: bool = True) -> "Starlette":
+def create_http_app(json_response: bool = True, stateless: bool = True) -> "BearerTokenMiddleware":
     """
     Create a Starlette app with Streamable HTTP transport.
     
@@ -234,7 +259,15 @@ def create_http_app(json_response: bool = True, stateless: bool = True) -> "Star
 
     # ASGI handler that delegates to session manager
     async def handle_streamable_http(scope: "Scope", receive: "Receive", send: "Send") -> None:
-        await session_manager.handle_request(scope, receive, send)
+        bearer = scope.get("_bearer_token")
+        if bearer:
+            ctx_token = _request_bearer_token.set(bearer)
+            try:
+                await session_manager.handle_request(scope, receive, send)
+            finally:
+                _request_bearer_token.reset(ctx_token)
+        else:
+            await session_manager.handle_request(scope, receive, send)
 
     # Lifespan context manager for proper startup/shutdown
     @contextlib.asynccontextmanager
@@ -257,7 +290,8 @@ def create_http_app(json_response: bool = True, stateless: bool = True) -> "Star
         lifespan=lifespan,
     )
 
-    return starlette_app
+    # Wrap with Bearer token middleware so caller-supplied tokens are forwarded downstream
+    return BearerTokenMiddleware(starlette_app)
 
 
 def run_http(host: str = "127.0.0.1", port: int = 8000):
