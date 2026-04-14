@@ -69,136 +69,90 @@ _TAX_PREFERENCES_SCHEMA = {
 def get_tools() -> list[Tool]:
     """Returns list of tax and emergency tool definitions"""
     return [
-        # Tax jurisdiction tools (4 tools)
+        # Tax jurisdiction tool (1 consolidated tool replacing lookup_by_address/addresses/location/locations)
         Tool(
-            name="lookup_by_address",
+            name="lookup_tax_jurisdiction",
             description=(
-                "Look up the tax jurisdictions that apply to a single US address. "
-                "Returns state, county, township, municipal, school district, and other tax type codes "
-                "for the most precise geographic match available. "
-                "Use this tool when you have a single address and need to determine applicable tax codes. "
-                "Do NOT use for multiple addresses — use lookup_by_addresses instead (one batch call is more efficient). "
-                "Do NOT use for coordinate-based lookup — use lookup_by_location instead. "
-                "Only works for addresses within the United States.\n\n"
-                "Output: Object containing tax jurisdiction identifiers and full names "
-                "(state, county, municipal, school district, etc.) for the resolved address."
+                "Look up US tax jurisdictions (state, county, municipal, school district, and other codes) "
+                "for one or more addresses or geographic coordinates in a single call.\n\n"
+                "Supports four usage patterns through one consistent interface:\n"
+                "  - Single address:    input_type='address', records=[{addressLines: ['123 Main St, Boston, MA']}]\n"
+                "  - Multiple addresses: input_type='address', records=[{...}, {...}]\n"
+                "  - Single coordinate: input_type='location', records=[{longitude: -71.0589, latitude: 42.3601}]\n"
+                "  - Multiple coordinates: input_type='location', records=[{...}, {...}]\n\n"
+                "Batch and single records use the same tool — pass 1 item for single lookup, N items for batch.\n"
+                "Only works for locations within the United States.\n\n"
+                "Output: For a single record, returns one tax jurisdiction object. "
+                "For multiple records, returns an array of tax jurisdiction objects, one per input record. "
+                "Each object contains tax type codes and full names "
+                "(state, county, township, municipal, school district, etc.)."
             ),
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "address": _ADDRESS_SCHEMA,
-                    "preferences": _TAX_PREFERENCES_SCHEMA
-                },
-                "required": ["address"]
-            }
-        ),
-        Tool(
-            name="lookup_by_addresses",
-            description=(
-                "Look up tax jurisdictions for multiple US addresses in a single batch call. "
-                "Returns state, county, township, municipal, school district, and other tax type codes for each address. "
-                "Use this tool when you have two or more addresses and need tax jurisdiction data "
-                "(more efficient than repeated lookup_by_address calls). "
-                "Do NOT use for a single address — use lookup_by_address instead. "
-                "Do NOT use for coordinate-based lookup — use lookup_by_locations instead. "
-                "Only works for addresses within the United States.\n\n"
-                "Output: Array of tax jurisdiction objects, one per input address, each containing "
-                "tax codes and full names (state, county, municipal, school district, etc.)."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "addresses": {
-                        "type": "array",
-                        "description": "List of addresses to look up tax jurisdictions for.",
-                        "items": _ADDRESS_SCHEMA,
-                        "minItems": 2
+                    "input_type": {
+                        "type": "string",
+                        "enum": ["address", "location"],
+                        "description": (
+                            "Discriminator for record type. "
+                            "Use 'address' when records contain street addresses. "
+                            "Use 'location' when records contain longitude/latitude coordinates."
+                        )
                     },
-                    "preferences": _TAX_PREFERENCES_SCHEMA
-                },
-                "required": ["addresses"]
-            }
-        ),
-        Tool(
-            name="lookup_by_location",
-            description=(
-                "Look up the tax jurisdiction for a single geographic coordinate (longitude/latitude) within the United States. "
-                "Returns state, county, township, municipal, school district, and other tax codes for the location. "
-                "Use this tool when you have coordinates (e.g., from a GPS or geocoder) and need tax jurisdiction data. "
-                "Do NOT use for address-based lookup — use lookup_by_address instead. "
-                "Do NOT use for multiple coordinates — use lookup_by_locations instead (one batch call is more efficient). "
-                "Only works for coordinates within the United States.\n\n"
-                "Output: Object containing tax jurisdiction identifiers and full names for the given coordinate location."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "object",
-                        "description": "Geographic coordinate for the tax jurisdiction lookup.",
-                        "properties": {
-                            "longitude": {
-                                "type": "number",
-                                "description": "Longitude in decimal degrees (e.g., -71.0589).",
-                                "minimum": -180,
-                                "maximum": 180
-                            },
-                            "latitude": {
-                                "type": "number",
-                                "description": "Latitude in decimal degrees (e.g., 42.3601).",
-                                "minimum": -90,
-                                "maximum": 90
-                            }
-                        },
-                        "required": ["longitude", "latitude"]
-                    },
-                    "preferences": _TAX_PREFERENCES_SCHEMA
-                },
-                "required": ["location"]
-            }
-        ),
-        Tool(
-            name="lookup_by_locations",
-            description=(
-                "Look up tax jurisdictions for multiple geographic coordinates (longitude/latitude) in a single batch call. "
-                "Returns state, county, township, municipal, school district, and other tax codes for each location. "
-                "Use this tool when you have two or more coordinate pairs and need tax jurisdiction data "
-                "(more efficient than repeated lookup_by_location calls). "
-                "Do NOT use for a single coordinate — use lookup_by_location instead. "
-                "Do NOT use for address-based lookup — use lookup_by_addresses instead. "
-                "Only works for coordinates within the United States.\n\n"
-                "Output: Array of tax jurisdiction objects, one per input coordinate, each containing "
-                "tax codes and full names (state, county, municipal, school district, etc.)."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "locations": {
+                    "records": {
                         "type": "array",
-                        "description": "List of coordinate pairs to look up tax jurisdictions for.",
+                        "minItems": 1,
+                        "description": (
+                            "List of one or more input records to look up. "
+                            "When input_type is 'address', each item is an address object with addressLines. "
+                            "When input_type is 'location', each item is a coordinate object with longitude and latitude."
+                        ),
                         "items": {
-                            "type": "object",
-                            "properties": {
-                                "longitude": {
-                                    "type": "number",
-                                    "description": "Longitude in decimal degrees.",
-                                    "minimum": -180,
-                                    "maximum": 180
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "title": "Address Record",
+                                    "description": "Use when input_type is 'address'.",
+                                    "properties": {
+                                        "addressLines": {
+                                            "type": "array",
+                                            "items": {"type": "string"},
+                                            "description": "Street address lines (e.g., ['123 Main St, Boston, MA'] or ['123 Main St', 'Boston, MA 02101']).",
+                                            "minItems": 1
+                                        },
+                                        "city": {"type": "string", "description": "City name (e.g., 'Boston')."},
+                                        "admin1": {"type": "string", "description": "State abbreviation (e.g., 'MA')."},
+                                        "postalCode": {"type": "string", "description": "ZIP or postal code (e.g., '02101')."},
+                                        "country": {"type": "string", "description": "ISO 3-letter country code. Default: 'USA'."}
+                                    },
+                                    "required": ["addressLines"]
                                 },
-                                "latitude": {
-                                    "type": "number",
-                                    "description": "Latitude in decimal degrees.",
-                                    "minimum": -90,
-                                    "maximum": 90
+                                {
+                                    "type": "object",
+                                    "title": "Location Record",
+                                    "description": "Use when input_type is 'location'.",
+                                    "properties": {
+                                        "longitude": {
+                                            "type": "number",
+                                            "description": "Longitude in decimal degrees (e.g., -71.0589). Valid range: -180 to 180.",
+                                            "minimum": -180,
+                                            "maximum": 180
+                                        },
+                                        "latitude": {
+                                            "type": "number",
+                                            "description": "Latitude in decimal degrees (e.g., 42.3601). Valid range: -90 to 90.",
+                                            "minimum": -90,
+                                            "maximum": 90
+                                        }
+                                    },
+                                    "required": ["longitude", "latitude"]
                                 }
-                            },
-                            "required": ["longitude", "latitude"]
-                        },
-                        "minItems": 2
+                            ]
+                        }
                     },
                     "preferences": _TAX_PREFERENCES_SCHEMA
                 },
-                "required": ["locations"]
+                "required": ["input_type", "records"]
             }
         ),
         # PSAP/Emergency services tools (5 tools)
