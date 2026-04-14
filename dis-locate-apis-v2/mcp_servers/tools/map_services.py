@@ -15,14 +15,12 @@ def get_tools() -> list[Tool]:
     return [
         Tool(
         name="ogc_landing_page",
-        description="""The landing page provides links to essential API resources, including:
-- **API Definition:** A machine-readable specification of the API.
-- **Conformance Declaration:** A list of standards that the API conforms to.
-- **Feature Collections:** Information and links to the available feature collections in the dataset.
+        description="""Discovery tool: retrieve the OGC API landing page with links to essential API resources.
+Provides links to the API definition, conformance declaration, and feature collections.
+Use this as the entry point to navigate and explore OGC API capabilities.
+Call this first if you have no other OGC resource URLs and need to discover what is available.
 
-Use this endpoint to quickly navigate and explore the API's capabilities.
-
-Returns: Object with links array.
+Returns: Object with links array (API definition, conformance, feature collections).
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/""",
         inputSchema={
@@ -33,11 +31,12 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/""",
     ),
     Tool(
         name="ogc_api_definition",
-        description="""This endpoint retrieves the complete OpenAPI definition for the API. The response is a machine-readable specification that describes all available endpoints, request/response schemas, and security configurations.
+        description="""Discovery tool: retrieve the full OpenAPI 3.0.1 specification for the OGC Enrich API.
+The specification describes all available endpoints, request/response schemas, and security configurations.
+Use this when you need to inspect full API capabilities programmatically.
+Do NOT use for listing feature collections — use ogc_collections instead.
 
-- **Format:** The API definition conforms to the OpenAPI 3.0.1 standard.
-
-Returns: OpenAPI 3.0.1 specification document describing all available endpoints.
+Returns: OpenAPI 3.0.1 specification document.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/api""",
         inputSchema={
@@ -48,11 +47,11 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/api""",
     ),
     Tool(
         name="ogc_functions",
-        description="""This endpoint returns a list of available spatial functions within the API.
-- **Purpose:** Provides supported spatial functions that can be used for querying features.
-- **Function Metadata:** Includes function names, argument types, and return types.
+        description="""Discovery tool: retrieve a list of available spatial functions within the OGC Enrich API.
+Use this to discover what spatial functions (e.g., s_contains, s_within, s_intersects) can be used
+in filter expressions for ogc_collection_items queries.
 
-Returns: List of available spatial functions with function names, argument types, and return types.
+Returns: List of spatial functions with their names, argument types, and return types.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/functions""",
         inputSchema={
@@ -63,12 +62,11 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/functions""",
     ),
     Tool(
         name="ogc_conformance",
-        description="""This endpoint returns the conformance declaration for the API. The conformance declaration is a list of all conformance classes specified in a standard that the server adheres to. It helps clients determine whether the API meets the required standards and their own requirements.
+        description="""Discovery tool: retrieve the conformance declaration listing all OGC API standards this server conforms to.
+Use this to verify whether the API supports specific OGC standards required by your client.
+Do NOT use to discover feature collections — use ogc_collections instead.
 
-- **Purpose:** Provides a comprehensive list of conformance classes to verify the API's compliance with OGC API standards and additional specifications.
-- **Standards:** Includes OGC API conformance classes and any extra specifications the API supports.
-
-Returns: Conformance declaration listing all conformance classes the server adheres to.
+Returns: Conformance declaration with a list of conformance class URIs.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/conformance""",
         inputSchema={
@@ -79,16 +77,12 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/conformance"""
     ),
     Tool(
         name="ogc_collections",
-        description="""This endpoint returns the list of feature collections available on the server. Each collection represents a spatial dataset that can be queried and provides essential metadata, including:
+        description="""Discovery tool: retrieve the list of all available OGC feature collections (spatial datasets) with metadata.
+Use this tool when you need to discover available datasets (collectionIds) before calling
+ogc_collection, ogc_collection_schema, ogc_collection_queryables, or ogc_collection_items.
+Do NOT use this to fetch actual features — use ogc_collection_items once you have the collectionId.
 
-- **Collection ID:** spatial dataset's unique identifier.
-- **Title and Description**
-- **Collection Item Type**
-- **Links:** Navigational links to access the collection’s items (e.g., `/collections/{collectionId}/items`).
-
-This resource is designed to help clients discover available geospatial datasets and understand the structure of each collection before making queries.
-
-Returns: List of feature collections with metadata including collection IDs, titles, descriptions, and links.
+Returns: List of feature collection metadata objects with id, title, description, item type, and navigation links.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections""",
         inputSchema={
@@ -99,14 +93,13 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections"""
     ),
     Tool(
         name="ogc_collection",
-        description="""Gives information about the feature collection with id `{collectionId}`. The response contains:
+        description="""Retrieve metadata for a specific OGC feature collection identified by collectionId.
+Returns title, description, item type, and links to items and schema for the collection.
+Use ogc_collections first if you do not yet know the collectionId.
+Do NOT use this to fetch actual features — use ogc_collection_items instead.
+Do NOT use this for column/field schema — use ogc_collection_schema or ogc_collection_queryables instead.
 
-- A link to the items in the collection (path `/collections/{collectionId}/items`, relation: items).
-- A unique local identifier for the collection.
-- Title and description for the collection.
-- An optional indicator of the item type (default is 'feature').
-
-Returns: Collection metadata including id, title, description, and links to items/schema.
+Returns: Collection metadata object with id, title, description, and navigation links.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings""",
         inputSchema={
@@ -119,15 +112,13 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
     ),
     Tool(
         name="ogc_collection_schema",
-        description="""Provides the schema for collection with id `{collectionId}`. The schema defines the structure of the collection. The response includes:
+        description="""Retrieve the full schema (all field names, data types, and descriptions) for a specific OGC feature collection.
+Use this tool when you need to know all fields and their types for a collection, including non-queryable fields.
+Call ogc_collections first if you do not yet know the collectionId.
+Do NOT use this for filtering — for filterable/queryable fields only, use ogc_collection_queryables instead
+(ogc_collection_queryables is a subset of ogc_collection_schema focused on fields usable in CQL filter expressions).
 
-- **Field Names:** Names of each field/attribute/property/column in the collection.
-- **Data Types/Formats:** The expected data type (e.g., string, integer, double) for each field.
-- **Descriptions:** Explanatory details for each attribute to clarify its purpose.
-
-This information is essential for validating client queries and constructing dynamic interfaces.
-
-Returns: JSON describing the collection structure with properties/field names, data types/formats, and descriptions.
+Returns: JSON schema with all field names, data types (string, integer, double, etc.), and descriptions.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/schema""",
         inputSchema={
@@ -140,15 +131,14 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
     ),
     Tool(
         name="ogc_collection_queryables",
-        description="""This resource returns the queryable properties for a specific collection identified by its unique id. It provides detailed metadata for each attribute in the collection that can be used to filter queries. The response includes:
+        description="""Retrieve the filterable (queryable) fields for a specific OGC feature collection.
+Queryable fields are the subset of collection properties that can be used in CQL filter expressions
+when calling ogc_collection_items (e.g., filter=fieldName='value' or spatial filters).
+Use this tool before constructing filter queries for ogc_collection_items to verify which fields can be filtered.
+Call ogc_collections first if you do not yet know the collectionId.
+Do NOT use this if you need all fields including non-queryable ones — use ogc_collection_schema instead.
 
-- **Field Names:** The names of queryable fields/attributes/properties/columns in the collection.
-- **Descriptions:** A description of each attribute to clarify its purpose and usage.
-- **Formats:** The data types i.e. formats (e.g., string, number, geospatial) of each attribute.
-
-This metadata is essential for clients to build dynamic query interfaces and validate their requests against the collection's schema.
-
-Returns: Queryable properties with metadata for each filterable attribute in the collection.
+Returns: List of queryable property definitions with field name, data type/format, and description.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/queryables""",
         inputSchema={
@@ -245,9 +235,13 @@ https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST
         inputSchema={
             "type": "object",
             "properties": {
-                "REQUEST": {"type": "string", "description": "The WMS request type: GetCapabilities, GetMap, or GetFeatureInfo"},
-                "SERVICE": {"type": "string", "description": "Service type. Always 'WMS'."},
-                "VERSION": {"type": "string", "description": "WMS version. Supported: '1.1.1', '1.3.0'."},
+                "REQUEST": {
+                    "type": "string",
+                    "description": "The WMS request type.",
+                    "enum": ["GetCapabilities", "GetMap", "GetFeatureInfo"]
+                },
+                "SERVICE": {"type": "string", "description": "Service type. Always 'WMS'.", "enum": ["WMS"]},
+                "VERSION": {"type": "string", "description": "WMS version. Use '1.1.1' (SRS+lon-lat BBOX) or '1.3.0' (CRS; axis order depends on CRS).", "enum": ["1.1.1", "1.3.0"]},
                 "crs": {"type": "string", "description": "Coordinate reference system (WMS 1.3.0). 'EPSG:3857', 'EPSG:4326' or 'CRS:84'"},
                 "srs": {"type": "string", "description": "Spatial reference system (WMS 1.1.1) 'EPSG:3857', 'EPSG:4326' or 'CRS:84'"},
                 "BBOX": {"type": "string", "description": "The area to be mapped, specified as four comma-separated numbers: 'min_x,min_y,max_x,max_y'. Order's dependent on SRS or CRS (e.g., '-30,20,50,80')."},
@@ -324,8 +318,12 @@ https://api.cloud.precisely.com/v1/spatial/wmts?SERVICE=WMTS&REQUEST=GetCapabili
             "type": "object",
             "properties": {
                 "Service": {"type": "string", "description": "Service type. Always 'WMTS'."},
-                "Request": {"type": "string", "description": "The WMTS request type: GetCapabilities or GetTile."},
-                "Version": {"type": "string", "description": "WMTS version (e.g., '1.0.0')."},
+                "Request": {
+                    "type": "string",
+                    "description": "The WMTS request type.",
+                    "enum": ["GetCapabilities", "GetTile"]
+                },
+                "Version": {"type": "string", "description": "WMTS version (e.g., '1.0.0').", "enum": ["1.0.0"]},
                 "Layer": {"type": "string", "description": "Layer name for GetTile request."},
                 "Style": {"type": "string", "description": "Style name for GetTile request."},
                 "TileMatrixSet": {"type": "string", "description": "Tile matrix set identifier for GetTile request."},

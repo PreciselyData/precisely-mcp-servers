@@ -11,22 +11,72 @@ def get_tools() -> list[Tool]:
     return [
         Tool(
             name="geo_locate_ip_address",
-            description="Geolocate IP address. Example: {'ip_address': '8.8.8.8'}",
+            description=(
+                "Resolve the approximate geographic location (city-level) of a device or network "
+                "from its public IP address. "
+                "Returns country, region, city, postal code, and approximate latitude/longitude. "
+                "Use this tool when you have a public IPv4 or IPv6 address and need to infer its physical location. "
+                "Do NOT use for precise location — IP geolocation is approximate (city-level accuracy at best) "
+                "and should not be used as a substitute for GPS or address-based geocoding. "
+                "Do NOT use with private/reserved IP addresses (e.g., 192.168.x.x, 10.x.x.x, 127.0.0.1) — "
+                "those will not resolve to a meaningful location. "
+                "For WiFi-based location, use geo_locate_wifi_access_point instead.\n\n"
+                "Output: Object with country, region/state, city, postal code, approximate latitude/longitude, "
+                "and ISP information for the given IP address."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "ip_address": {"type": "string"}
+                    "ip_address": {
+                        "type": "string",
+                        "description": (
+                            "Public IPv4 or IPv6 address to geolocate (e.g., '8.8.8.8' or '2001:4860:4860::8888'). "
+                            "Must be a routable public IP address. Private/reserved addresses will not return a location."
+                        )
+                    }
                 },
                 "required": ["ip_address"]
             }
         ),
         Tool(
             name="geo_locate_wifi_access_point",
-            description="Geolocate WiFi access point. Example: {'wifi_data': {'servingCell': {'mac': '00:22:75:10:d5:91', 'rssi': '-90'}}}",
+            description=(
+                "Resolve the geographic location of a device from nearby WiFi access point signal data. "
+                "Returns latitude, longitude, and accuracy radius based on the MAC address and signal strength "
+                "of the observed WiFi access point(s). "
+                "Use this tool when you have WiFi scanning data (MAC address, signal strength) "
+                "and need to determine physical location without GPS. "
+                "Do NOT use if you have an IP address — use geo_locate_ip_address instead. "
+                "Do NOT use if you have a street address — use geocode instead. "
+                "Accuracy depends on access point database coverage; may be unavailable or imprecise in rural areas.\n\n"
+                "Output: Object with latitude, longitude, and accuracy radius (in meters) "
+                "for the resolved location of the WiFi access point."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "wifi_data": {"type": "object"}
+                    "wifi_data": {
+                        "type": "object",
+                        "description": "WiFi access point signal data for location resolution.",
+                        "properties": {
+                            "servingCell": {
+                                "type": "object",
+                                "description": "The primary WiFi access point being used for geolocation.",
+                                "properties": {
+                                    "mac": {
+                                        "type": "string",
+                                        "description": "MAC address of the WiFi access point in colon-separated hex format (e.g., '00:22:75:10:d5:91')."
+                                    },
+                                    "rssi": {
+                                        "type": "string",
+                                        "description": "Received Signal Strength Indicator in dBm as a string (e.g., '-90'). Negative values expected."
+                                    }
+                                },
+                                "required": ["mac"]
+                            }
+                        },
+                        "required": ["servingCell"]
+                    }
                 },
                 "required": ["wifi_data"]
             }
