@@ -18,8 +18,8 @@ The server supports two transport methods:
 
 | Transport | Use Case | Command |
 |-----------|----------|---------|
-| **stdio** (default) | Claude Desktop, VS Code, Cursor, local CLI tools | `python precisely_wrapper_server.py` |
-| **Streamable HTTP** | LangChain, LlamaIndex, web apps, remote access | `python precisely_wrapper_server.py --transport http` |
+| **stdio** (default) | Claude Desktop, VS Code, Cursor, local CLI tools | `python -m mcp_servers` |
+| **Streamable HTTP** | LangChain, LlamaIndex, web apps, remote access | `python -m mcp_servers --transport http` |
 
 ## Prerequisites
 
@@ -85,10 +85,10 @@ Best for: Claude Desktop, VS Code, Cursor, local development
 
 ```bash
 # Default - stdio transport
-python mcp_servers/precisely_wrapper_server.py
+python -m mcp_servers
 
 # Show help
-python mcp_servers/precisely_wrapper_server.py --help
+python -m mcp_servers --help
 ```
 
 **Claude Desktop Configuration** (`claude_desktop_config.json`):
@@ -97,7 +97,8 @@ python mcp_servers/precisely_wrapper_server.py --help
   "mcpServers": {
     "precisely": {
       "command": "python",
-      "args": ["C:\\path\\to\\mcp_servers\\precisely_wrapper_server.py"],
+      "args": ["-m", "mcp_servers"],
+      "cwd": "C:\\path\\to\\dis-locate-apis-v2",
       "env": {
         "PRECISELY_API_KEY": "your_api_key",
         "PRECISELY_API_SECRET": "your_api_secret"
@@ -114,7 +115,8 @@ python mcp_servers/precisely_wrapper_server.py --help
     "precisely": {
       "type": "stdio",
       "command": "python",
-      "args": ["${workspaceFolder}/mcp_servers/precisely_wrapper_server.py"],
+      "args": ["-m", "mcp_servers"],
+      "cwd": "${workspaceFolder}",
       "env": {
         "PRECISELY_API_KEY": "${input:api-key}",
         "PRECISELY_API_SECRET": "${input:api-secret}"
@@ -130,13 +132,13 @@ Best for: LangChain, LlamaIndex, web applications, remote access, multi-client s
 
 ```bash
 # Start HTTP server on default port 8000
-python mcp_servers/precisely_wrapper_server.py --transport http
+python -m mcp_servers --transport http
 
 # Custom port
-python mcp_servers/precisely_wrapper_server.py --transport http --port 8080
+python -m mcp_servers --transport http --port 8080
 
 # Allow remote access (bind to all interfaces)
-python mcp_servers/precisely_wrapper_server.py --transport http --host 0.0.0.0 --port 8000
+python -m mcp_servers --transport http --host 0.0.0.0 --port 8000
 ```
 
 **MCP Endpoint**: `http://localhost:8000/mcp`
@@ -262,7 +264,7 @@ asyncio.run(use_with_llamaindex())
 ### CLI Reference
 
 ```
-usage: precisely_wrapper_server.py [-h] [--transport {stdio,http}] [--host HOST] [--port PORT]
+usage: python -m mcp_servers [-h] [--transport {stdio,http}] [--host HOST] [--port PORT]
 
 Precisely MCP Server - Location Intelligence APIs
 
@@ -275,13 +277,13 @@ options:
 
 Examples:
   # stdio transport (default, for Claude Desktop)
-  python precisely_wrapper_server.py
+  python -m mcp_servers
 
   # HTTP transport (for LangChain, LlamaIndex, web clients)
-  python precisely_wrapper_server.py --transport http --port 8000
+  python -m mcp_servers --transport http --port 8000
 
   # HTTP with custom host (for remote access)
-  python precisely_wrapper_server.py --transport http --host 0.0.0.0 --port 8080
+  python -m mcp_servers --transport http --host 0.0.0.0 --port 8080
 ```
 
 ## Testing
