@@ -5,24 +5,6 @@ Contains 9 tools for tax jurisdiction lookups and PSAP (911) services
 from mcp.types import Tool
 from mcp_servers.tools.base_tool import handle_tool_call  # noqa: F401
 
-_ADDRESS_SCHEMA = {
-    "type": "object",
-    "description": "Structured address object.",
-    "properties": {
-        "addressLines": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "Street address lines (e.g., ['123 Main St, Boston, MA'] or ['123 Main St', 'Boston, MA']).",
-            "minItems": 1
-        },
-        "city": {"type": "string", "description": "City name."},
-        "admin1": {"type": "string", "description": "State abbreviation (e.g., 'MA')."},
-        "postalCode": {"type": "string", "description": "ZIP or postal code."},
-        "country": {"type": "string", "description": "ISO 3-letter country code. Default: 'USA'."}
-    },
-    "required": ["addressLines"]
-}
-
 _PSAP_ADDRESS_SCHEMA = {
     "type": "object",
     "description": "Structured US address for PSAP lookup.",
@@ -36,9 +18,7 @@ _PSAP_ADDRESS_SCHEMA = {
         "city": {"type": "string", "description": "City name (e.g., 'Trumbull')."},
         "admin1": {"type": "string", "description": "State abbreviation (e.g., 'CT')."},
         "postalCode": {"type": "string", "description": "ZIP code (e.g., '06611')."},
-        "country": {"type": "string", "description": "ISO 3-letter country code. Default: 'USA'."}
-    },
-    "required": ["addressLines"]
+    }
 }
 
 _PSAP_LOCATION_SCHEMA = {
@@ -48,21 +28,12 @@ _PSAP_LOCATION_SCHEMA = {
         "coordinates": {
             "type": "array",
             "items": {"type": "number"},
-            "description": "Coordinates as [longitude, latitude] (e.g., [-71.0589, 42.3601]).",
+            "description": "Coordinates as [longitude, latitude] (e.g., [-71.0589, 42.3601]). WGS 84 datum/EPSG:4326 coordinate system.",
             "minItems": 2,
             "maxItems": 2
         }
     },
     "required": ["coordinates"]
-}
-
-_TAX_PREFERENCES_SCHEMA = {
-    "type": "object",
-    "description": "Optional preferences for tax jurisdiction lookup behavior.",
-    "properties": {
-        "returnLatLong": {"type": "boolean", "description": "Whether to include the resolved latitude/longitude in the response."},
-        "useGeoTaxTables": {"type": "boolean", "description": "Whether to use GeoTAX-specific tables for lookup."}
-    }
 }
 
 
@@ -73,7 +44,7 @@ def get_tools() -> list[Tool]:
         Tool(
             name="lookup_tax_jurisdiction",
             description=(
-                "Look up US tax jurisdictions (state, county, municipal, school district, and other codes) "
+                "Look up US tax jurisdictions (state, county, and other codes) "
                 "for one or more addresses or geographic coordinates in a single call.\n\n"
                 "Supports four usage patterns through one consistent interface:\n"
                 "  - Single address:    input_type='address', records=[{addressLines: ['123 Main St, Boston, MA']}]\n"
@@ -85,7 +56,7 @@ def get_tools() -> list[Tool]:
                 "Output: For a single record, returns one tax jurisdiction object. "
                 "For multiple records, returns an array of tax jurisdiction objects, one per input record. "
                 "Each object contains tax type codes and full names "
-                "(state, county, township, municipal, school district, etc.)."
+                "(state, county, etc.)."
             ),
             inputSchema={
                 "type": "object",
@@ -123,7 +94,6 @@ def get_tools() -> list[Tool]:
                                         "city": {"type": "string", "description": "City name (e.g., 'Boston')."},
                                         "admin1": {"type": "string", "description": "State abbreviation (e.g., 'MA')."},
                                         "postalCode": {"type": "string", "description": "ZIP or postal code (e.g., '02101')."},
-                                        "country": {"type": "string", "description": "ISO 3-letter country code. Default: 'USA'."}
                                     },
                                     "required": ["addressLines"]
                                 },
@@ -149,8 +119,7 @@ def get_tools() -> list[Tool]:
                                 }
                             ]
                         }
-                    },
-                    "preferences": _TAX_PREFERENCES_SCHEMA
+                    }
                 },
                 "required": ["input_type", "records"]
             }
@@ -160,12 +129,12 @@ def get_tools() -> list[Tool]:
             name="psap_address",
             description=(
                 "Retrieve the PSAP (Public Safety Answering Point / 911 dispatch center) responsible for a given US address. "
-                "Returns the PSAP name, phone number, and jurisdiction information. "
+                "Returns the PSAP name, phone number, fccId, and other information. "
                 "Use this tool when you need to identify the correct 911 call center for a street address. "
                 "Do NOT use if you also need AHJ (Authority Having Jurisdiction) data — use psap_ahj_address instead. "
                 "Do NOT use if you have coordinates rather than an address — use psap_location instead. "
                 "Only works for addresses within the United States.\n\n"
-                "Output: Object with PSAP name, contact phone number, and jurisdiction boundary information."
+                "Output: Object with PSAP information."
             ),
             inputSchema={
                 "type": "object",
@@ -179,12 +148,12 @@ def get_tools() -> list[Tool]:
             name="psap_location",
             description=(
                 "Retrieve the PSAP (Public Safety Answering Point / 911 dispatch center) responsible for a given geographic coordinate. "
-                "Returns the PSAP name, phone number, and jurisdiction information for the location. "
+                "Returns the PSAP name, phone number, fccId, and other information. "
                 "Use this tool when you have a coordinate pair (longitude, latitude) and need to identify the 911 center. "
                 "Do NOT use if you also need AHJ (Authority Having Jurisdiction) data — use psap_ahj_location instead. "
                 "Do NOT use if you have a street address rather than coordinates — use psap_address instead. "
                 "Only works for coordinates within the United States.\n\n"
-                "Output: Object with PSAP name, contact phone number, and jurisdiction boundary information."
+                "Output: Object with PSAP information."
             ),
             inputSchema={
                 "type": "object",
@@ -205,8 +174,8 @@ def get_tools() -> list[Tool]:
                 "Do NOT use if you have coordinates rather than an address — use psap_ahj_location instead. "
                 "Do NOT use if lookup is by FCC ID — use psap_ahj_fccid instead. "
                 "Only works for addresses within the United States.\n\n"
-                "Output: Object with PSAP details (name, phone, jurisdiction) and AHJ details "
-                "(authority name, NPA NXX, jurisdiction code)."
+                "Output: Object with PSAP name, phone, fccId, AHJ names "
+                "and other details."
             ),
             inputSchema={
                 "type": "object",
@@ -226,8 +195,8 @@ def get_tools() -> list[Tool]:
                 "Do NOT use if you have a street address rather than coordinates — use psap_ahj_address instead. "
                 "Do NOT use if lookup is by FCC ID — use psap_ahj_fccid instead. "
                 "Only works for coordinates within the United States.\n\n"
-                "Output: Object with PSAP details (name, phone, jurisdiction) and AHJ details "
-                "(authority name, NPA NXX, jurisdiction code)."
+                "Output: Object with PSAP name, phone, fccId, AHJ names "
+                "and other details."
             ),
             inputSchema={
                 "type": "object",
@@ -247,7 +216,7 @@ def get_tools() -> list[Tool]:
                 "Do NOT use if you are starting from coordinates — use psap_ahj_location instead. "
                 "FCC IDs are obtained from prior psap_address, psap_location, or related calls. "
                 "Only works for US PSAP entities.\n\n"
-                "Output: Object with PSAP details (name, phone, jurisdiction) and AHJ details for the specified FCC ID."
+                "Output: Object with PSAP name, phone, fccID, AHJ names and other details for the specified FCC ID."
             ),
             inputSchema={
                 "type": "object",

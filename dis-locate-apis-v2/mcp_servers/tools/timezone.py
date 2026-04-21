@@ -13,7 +13,7 @@ def get_tools() -> list[Tool]:
             name="timezone_addresses",
             description=(
                 "Look up the timezone for one or more addresses, including UTC offset and DST status, "
-                "optionally at a specific point in time. "
+                "at a specific UTC time. "
                 "Returns the IANA timezone name (e.g., 'America/New_York'), UTC offset in hours and minutes, "
                 "and whether daylight saving time (DST) is in effect at the given timestamp. "
                 "Use this tool when you have street addresses and need timezone information. "
@@ -38,7 +38,7 @@ def get_tools() -> list[Tool]:
                                         "timestamp": {
                                             "type": "integer",
                                             "description": (
-                                                "Unix timestamp in milliseconds for which to evaluate timezone/DST status "
+                                                "UTC timestamp in milliseconds for which to evaluate timezone/DST status "
                                                 "(e.g., 1691138974831). If omitted, the current server time is used."
                                             )
                                         },
@@ -58,13 +58,13 @@ def get_tools() -> list[Tool]:
                                                 },
                                                 "country": {
                                                     "type": "string",
-                                                    "description": "ISO 3-letter country code (e.g., 'USA'). Default: 'USA'."
+                                                    "description": "ISO 3166-1 compliant country code (alpha-2, alpha-3, or numeric). (e.g., 'USA')."
                                                 }
                                             },
-                                            "required": ["id", "addressLines"]
+                                            "required": ["country"]
                                         }
                                     },
-                                    "required": ["address"]
+                                    "required": ["timestamp", "address"]
                                 },
                                 "minItems": 1
                             }
@@ -79,7 +79,7 @@ def get_tools() -> list[Tool]:
             name="timezone_locations",
             description=(
                 "Look up the timezone for one or more geographic coordinates (longitude, latitude), "
-                "including UTC offset and DST status, optionally at a specific point in time. "
+                "including UTC offset and DST status, at a specific UTC point in time. "
                 "Returns the IANA timezone name (e.g., 'America/Chicago'), UTC offset in hours and minutes, "
                 "and whether daylight saving time (DST) is in effect at the given timestamp. "
                 "Use this tool when you have coordinate pairs and need timezone information. "
@@ -108,7 +108,7 @@ def get_tools() -> list[Tool]:
                                         "timestamp": {
                                             "type": "integer",
                                             "description": (
-                                                "Unix timestamp in milliseconds for which to evaluate timezone/DST status "
+                                                "UTC timestamp in milliseconds for which to evaluate timezone/DST status "
                                                 "(e.g., 1691138974831). If omitted, the current server time is used."
                                             )
                                         },
@@ -119,7 +119,7 @@ def get_tools() -> list[Tool]:
                                                 "coordinates": {
                                                     "type": "array",
                                                     "items": {"type": "number"},
-                                                    "description": "Coordinates as [longitude, latitude] (e.g., [-71.0589, 42.3601]).",
+                                                    "description": "Coordinates as [longitude, latitude] WGS 84 datum/EPSG:4326 coordinate system (e.g., [-71.0589, 42.3601]).",
                                                     "minItems": 2,
                                                     "maxItems": 2
                                                 }
@@ -127,7 +127,7 @@ def get_tools() -> list[Tool]:
                                             "required": ["coordinates"]
                                         }
                                     },
-                                    "required": ["id", "geometry"]
+                                    "required": ["timestamp", "geometry"]
                                 },
                                 "minItems": 1
                             }

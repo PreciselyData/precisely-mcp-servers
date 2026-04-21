@@ -70,7 +70,7 @@ Example 3 Request (Address, CONTAINS — find the building enclosing an address)
                 "spatialOperation": {
                     "type": "string",
                     "description": "Spatial operation to perform. Choose based on query intent: use 'contains' when a table feature should enclose/surround the input (e.g., 'find the building containing this address'); use 'within' when table features should be inside the input area; use 'intersects' when any intersection/overlap is acceptable.",
-                    "enum": ["intersects", "within", "contains", "INTERSECTS", "WITHIN", "CONTAINS"]
+                    "enum": ["intersects", "within", "contains"]
                 },
                 "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
@@ -100,12 +100,12 @@ Example 2 Request (Address):
                 "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns; will only include scalar columns."},
                 "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "uom": {"type": "string", "description": "Unit of measurement used to return intersection length/area (e.g., 'm')"},
-                "areaAttributeName": {"type": "string", "default": "intersectionArea", "description": "Custom name of intersection area parameter when intersection area is polygon. Default: 'intersectionArea'."},
-                "lengthAttributeName": {"type": "string", "default": "intersectionLength", "description": "Custom name of intersection length parameter when intersection area is linestring. Default: 'intersectionLength'."},
-                "percentTargetAttributeName": {"type": "string", "default": "percentageOfTarget", "description": "Custom name of parameter indicating percentage of overlap with target geometry. Default: 'percentageOfTarget'."},
-                "percentInputAttributeName": {"type": "string", "default": "percentageOfInput", "description": "Custom name of parameter indicating percentage of overlap with input geometry. Default: 'percentageOfInput'."},
-                "uomAttributeName": {"type": "string", "default": "uom", "description": "Custom name of unit of measurement parameter. Default: 'uom'."},
-                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
+                "areaAttributeName": {"type": "string", "default": "intersectionArea", "description": "Custom name of intersection area parameter when intersection area is polygon."},
+                "lengthAttributeName": {"type": "string", "default": "intersectionLength", "description": "Custom name of intersection length parameter when intersection area is linestring."},
+                "percentTargetAttributeName": {"type": "string", "default": "percentageOfTarget", "description": "Custom name of parameter indicating percentage of overlap with target geometry."},
+                "percentInputAttributeName": {"type": "string", "default": "percentageOfInput", "description": "Custom name of parameter indicating percentage of overlap with input geometry."},
+                "uomAttributeName": {"type": "string", "default": "uom", "description": "Custom name of unit of measurement parameter."},
+                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated. Supports positive values for all geometry types. Negative values are only supported for polygon geometries to create inward buffers e.g., '100 m', '2 km'."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
                 "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
                 "offset": {"type": "integer", "description": "Specifies the number of records to skip."}
@@ -167,6 +167,10 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/tables/properties/bu
         name="summarize",
         description="""Generates min, max, avg, sum, or median statistics for given columns of geometries fully within the input geometry, or intersecting the input geometry. Input can also be an address, no need to geocode it. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
+IMPORTANT — spatialOperation selection:
+- Use 'intersects' when you want features that TOUCH or OVERLAP the input geometry (partial overlap counts).
+- Use 'within' when you want features that are FULLY CONTAINED INSIDE the input geometry. The user's query keyword 'within' (e.g., "records within 10 miles") means spatialOperation='within'.
+
 Returns: Aggregate statistics for specified columns.
 
 Example 1 Request (Geometry, Intersects):
@@ -186,9 +190,9 @@ Example 4 Request (Address, Within):
                 "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/risks/historical_weather_windgrid')"},
                 "aggregateColumns": {"type": "object", "description": "Dictionary of column names mapped to lists of aggregate functions. Supported functions: min, max, avg, sum, median."},
                 "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
-                "spatialOperation": {"type": "string", "description": "Spatial operation to perform.", "enum": ["intersects", "within", "INTERSECTS", "WITHIN"]},
+                "spatialOperation": {"type": "string", "description": "Spatial operation to perform.", "enum": ["intersects", "within"]},
                 "proportionalCalculation": {"type": "boolean", "description": "Whether to use proportional calculation. Only applicable when the spatialOperation parameter is 'intersects'"},
-                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
+                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated. Supports positive values for all geometry types. Negative values are only supported for polygon geometries to create inward buffers e.g., '100 m', '2 km'."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"}
             },
             "required": ["tableName", "location", "aggregateColumns"]

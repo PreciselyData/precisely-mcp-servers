@@ -42,13 +42,12 @@ def get_tools() -> list[Tool]:
             name="geo_locate_wifi_access_point",
             description=(
                 "Resolve the geographic location of a device from nearby WiFi access point signal data. "
-                "Returns latitude, longitude, and accuracy radius based on the MAC address and signal strength "
+                "Returns latitude, longitude, and accuracy radius based on the MAC address, optionally signal strength "
                 "of the observed WiFi access point(s). "
                 "Use this tool when you have WiFi scanning data (MAC address, signal strength) "
                 "and need to determine physical location without GPS. "
                 "Do NOT use if you have an IP address — use geo_locate_ip_address instead. "
                 "Do NOT use if you have a street address — use geocode instead. "
-                "Accuracy depends on access point database coverage; may be unavailable or imprecise in rural areas.\n\n"
                 "Output: Object with latitude, longitude, and accuracy radius (in meters) "
                 "for the resolved location of the WiFi access point."
             ),

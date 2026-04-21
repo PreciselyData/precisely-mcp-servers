@@ -79,8 +79,8 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/conformance"""
         name="ogc_collections",
         description="""Discovery tool: retrieve the list of all available OGC feature collections (spatial datasets) with metadata.
 Use this tool when you need to discover available datasets (collectionIds) before calling
-ogc_collection, ogc_collection_schema, ogc_collection_queryables, or ogc_collection_items.
-Do NOT use this to fetch actual features — use ogc_collection_items once you have the collectionId.
+ogc_collection, ogc_collection_schema, ogc_collection_queryables, ogc_collection_items, or ogc_feature_by_id.
+Do NOT use this to fetch actual features — use ogc_collection_items or ogc_feature_by_id once you have the collectionId.
 
 Returns: List of feature collection metadata objects with id, title, description, item type, and navigation links.
 
@@ -96,7 +96,7 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections"""
         description="""Retrieve metadata for a specific OGC feature collection identified by collectionId.
 Returns title, description, item type, and links to items and schema for the collection.
 Use ogc_collections first if you do not yet know the collectionId.
-Do NOT use this to fetch actual features — use ogc_collection_items instead.
+Do NOT use this to fetch actual features — use ogc_collection_items or ogc_feature_by_id instead.
 Do NOT use this for column/field schema — use ogc_collection_schema or ogc_collection_queryables instead.
 
 Returns: Collection metadata object with id, title, description, and navigation links.
@@ -152,10 +152,6 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
     Tool(
         name="ogc_collection_items",
         description="""Fetch features of the feature collection with id `{collectionId}` subject to parameters. Use ogc_collections tool to list all available collections and their ids, ogc_collection_queryables tool to get properties that can be used for filtering, and get_spatial_products tool to discover layer extents for bbox, data vintage, recommended label columns, and other metadata.
-
-Every feature in a dataset belongs to a collection. A dataset may consist of multiple feature collections, each representing a group of features that share a common schema and type.
-
-The **collection id** is a unique identifier for the spatial dataset and is used to reference a specific collection within the API.
 
 Additional capabilities include:
 - **Filtering:** Supports attribute-based filtering using CQL (Common Query Language).
@@ -214,7 +210,7 @@ Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/pr
     # ========================================
     Tool(
         name="wms_get_request",
-        description="""Processes WMS requests using GET: GetCapabilities, GetMap, or GetFeatureInfo. Use GetCapabilities to retrieve all available layers, their styles, CRS, and geographic bounding box. Use get_spatial_products tool to discover recommended styles, summary attributes, label columns, and data vintage, layer extents, and other metadata.
+        description="""Processes following WMS requests using HTTP GET: GetCapabilities, GetMap, or GetFeatureInfo. Use GetCapabilities to retrieve all available layers, their styles, CRS, and geographic bounding box. Use get_spatial_products tool to discover recommended styles, summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
 Returns: For GetMap success: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int). For GetCapabilities success: Dict with 'xml' (str), 'content_type' (str). For GetFeatureInfo success: JSON dict. On any error (auth, invalid params, or WMS ServiceException): Dict with 'error' (str) containing the error or ServiceExceptionReport XML.
 
@@ -243,7 +239,7 @@ https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST
                 "SERVICE": {"type": "string", "description": "Service type. Always 'WMS'.", "enum": ["WMS"]},
                 "VERSION": {"type": "string", "description": "WMS version. Use '1.1.1' (SRS+lon-lat BBOX) or '1.3.0' (CRS; axis order depends on CRS).", "enum": ["1.1.1", "1.3.0"]},
                 "crs": {"type": "string", "description": "Coordinate reference system (WMS 1.3.0). 'EPSG:3857', 'EPSG:4326' or 'CRS:84'"},
-                "srs": {"type": "string", "description": "Spatial reference system (WMS 1.1.1) 'EPSG:3857', 'EPSG:4326' or 'CRS:84'"},
+                "srs": {"type": "string", "description": "Spatial reference system (WMS 1.1.1) 'EPSG:3857' or 'EPSG:4326'"},
                 "BBOX": {"type": "string", "description": "The area to be mapped, specified as four comma-separated numbers: 'min_x,min_y,max_x,max_y'. Order's dependent on SRS or CRS (e.g., '-30,20,50,80')."},
                 "width": {"type": "string", "description": "Width of the map image in pixels."},
                 "height": {"type": "string", "description": "Height of the map image in pixels."},
@@ -259,8 +255,8 @@ https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST
                 "Y": {"type": "string", "description": "Y pixel coordinate for GetFeatureInfo (WMS 1.1.1)."},
                 "Feature_Count": {"type": "string", "description": "Maximum number of features returned for GetFeatureInfo."},
                 "PIXELSEARCHRADIUS": {"type": "string", "description": "Pixel search radius for GetFeatureInfo."},
-                "BGCOLOR": {"type": "string", "description": "Background color for the map image."},
-                "RESOLUTION": {"type": "string", "description": "Resolution of the map image."},
+                "BGCOLOR": {"type": "string", "description": "Hex RGB background color for the map image."},
+                "RESOLUTION": {"type": "string", "description": "Resolution of the map image. Minimum 72 dpi."},
                 "EXCEPTIONS": {"type": "string", "description": "Format for exception reporting."}
             },
             "required": ["REQUEST", "SERVICE", "VERSION"]
@@ -268,7 +264,9 @@ https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST
     ),
     Tool(
         name="wms_post_get_map",
-        description="""Processes WMS GetMap requests using POST. Supports both WMS 1.3.0 (use 'crs' param) and WMS 1.1.1 (use 'srs' param). Accepts SLD_BODY as a form parameter (URL-encoded JSON). Use wms_get_request GetCapabilities to retrieve all available layers, their styles, CRS, and geographic bounding box. Use get_spatial_products tool to discover recommended styles, and data vintage, layer extents, and other metadata.
+        description="""Processes WMS GetMap requests using HTTP POST. Supports both WMS 1.3.0 (use 'crs' param) and WMS 1.1.1 (use 'srs' param). Accepts SLD_BODY as a form parameter (URL-encoded JSON). Use wms_get_request GetCapabilities to retrieve all available layers, their styles, CRS/SRS, and geographic bounding box. Use get_spatial_products tool to discover recommended styles, and data vintage, layer extents, and other metadata.
+
+When the STYLES parameter is left empty, the styling defined in SLD_BODY (if provided) is applied. If the STYLES parameter specifies a server-side style, the SLD_BODY is ignored, even if it is included in the request.
 
 Returns: On success: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int). On any error (auth, invalid params, or WMS ServiceException): Dict with 'error' (str) containing the error or ServiceExceptionReport XML.
 
@@ -308,7 +306,7 @@ BODY: SLD_BODY={"styleDetails": [{"layer": {"name": "address_fabric","type": "Na
     # ========================================
     Tool(
         name="wmts_request",
-        description="""Handles WMTS operations via the KVP (Key-Value Pair) query parameter interface. Use Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use Request=GetTile to retrieve a map tile image by specifying Layer, Style, TileMatrixSet, TileMatrix, TileRow, TileCol, and Format. Use get_spatial_products tool to discover recommended styles, zoom levels, and data vintage, layer extents, and other metadata.
+        description="""Handles WMTS operations via the KVP (Key-Value Pair) query parameter interface. Use Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use Request=GetTile to retrieve a map tile image by specifying Layer, Style, TileMatrixSet, TileMatrix, TileRow, TileCol, and Format. Use get_spatial_products tool to discover recommended zoom levels, and data vintage, layer extents, and other metadata.
 
 Returns: For GetCapabilities: Dict with 'xml' (str) containing the capabilities XML document and 'content_type' (str). For GetTile: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
 
@@ -337,7 +335,7 @@ https://api.cloud.precisely.com/v1/spatial/wmts?SERVICE=WMTS&REQUEST=GetCapabili
     ),
     Tool(
         name="wmts_get_standard_tile",
-        description="""Returns a map tile, using standard parameters/approach. RESTful encoding of WMTS service. Use wmts_request with Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use get_spatial_products tool to discover recommended styles, zoom levels, and data vintage, layer extents, and other metadata.
+        description="""Returns a map tile, using standard parameters/approach. RESTful encoding of WMTS service. Use wmts_request with Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use get_spatial_products tool to discover recommended zoom levels, and data vintage, layer extents, and other metadata.
 
 Returns: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int) containing the requested map tile.
 
@@ -359,7 +357,7 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/wmts/1.0.0/default/t
     ),
     Tool(
         name="wmts_get_simple_tile",
-        description="""Returns a map tile, using less parameters/simple approach. Use this tool when you do NOT need to specify Style or TileMatrixSet. RESTful encoding of WMTS service. Use wmts_request with Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use get_spatial_products tool to discover recommended styles, zoom levels, and data vintage, layer extents, and other metadata.
+        description="""Returns a map tile, using less parameters/simple approach. Use this tool when you do NOT need to specify Style or TileMatrixSet. RESTful encoding of WMTS service. Use wmts_request with Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use get_spatial_products tool to discover recommended zoom levels, and data vintage, layer extents, and other metadata.
 
 Returns: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int) containing the requested map tile.
 

@@ -20,8 +20,8 @@ def get_tools() -> list[Tool]:
                 "(more efficient for 2 or more addresses). "
                 "Does not send any email; this is a read-only verification call.\n\n"
                 "Output: Object with verification result including validity status "
-                "(e.g., valid, invalid, risky, unknown), confidence score, reason code, "
-                "corrected email (if applicable), and domain details."
+                "(e.g., valid, invalid, risky, unknown), reason code, "
+                "and domain details."
             ),
             inputSchema={
                 "type": "object",
@@ -46,7 +46,7 @@ def get_tools() -> list[Tool]:
                 "Maximum batch size: 10 addresses per call. "
                 "Does not send any email; this is a read-only verification call.\n\n"
                 "Output: Array of verification result objects (one per input), each containing validity status, "
-                "confidence score, reason code, and corrected email if applicable. "
+                "reason code. "
                 "Each result includes the 'id' from the corresponding input for correlation."
             ),
             inputSchema={
@@ -68,7 +68,7 @@ def get_tools() -> list[Tool]:
                                     "format": "email"
                                 }
                             },
-                            "required": ["id", "email"]
+                            "required": ["email"]
                         },
                         "minItems": 1,
                         "maxItems": 10
@@ -80,8 +80,7 @@ def get_tools() -> list[Tool]:
         Tool(
             name="parse_name",
             description=(
-                "Parse a full personal name string into its individual components: "
-                "title/salutation, first name, middle name, last name, and suffix. "
+                "Parse a full personal name, or business name. Personal names parsed  into: title/salutation, first name, middle name, last name, and suffix."
                 "Use this tool when you need to decompose a combined name string for data processing, "
                 "personalization, or storage in structured fields. "
                 "Do NOT use if you need address parsing — use parse_address or parse_address_batch instead. "
@@ -133,7 +132,7 @@ def get_tools() -> list[Tool]:
                             },
                             "country": {
                                 "type": "string",
-                                "description": "ISO 2-letter country code to scope the validation (e.g., 'US', 'GB', 'DE'). Strongly recommended for accurate validation."
+                                "description": "Country code in ISO2 or ISO3 format to assist in phone number verification. e.g., 'US', 'GB', 'DE'. Strongly recommended for accurate validation."
                             }
                         },
                         "required": ["phoneNumber"]
@@ -178,10 +177,10 @@ def get_tools() -> list[Tool]:
                                         },
                                         "country": {
                                             "type": "string",
-                                            "description": "ISO 2-letter country code (e.g., 'US'). Strongly recommended for accurate validation."
+                                            "description": "Country code in ISO2 or ISO3 format (e.g., 'US'). Strongly recommended for accurate validation."
                                         }
                                     },
-                                    "required": ["id", "phoneNumber"]
+                                    "required": ["phoneNumber"]
                                 },
                                 "minItems": 1,
                                 "maxItems": 10
