@@ -35,7 +35,7 @@ Example 2 Request (Address):
                 "bearingAttributeName": {"type": "string", "description": "Custom name of bearing angle between input and target point."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
                 "sortBy": {"type": "string", "description": "Column name to sort by."},
-                "sortOrder": {"type": "string", "description": "Sort order: 'ASC' or 'DESC'."},
+                "sortOrder": {"type": "string", "description": "Sort order.", "enum": ["ASC", "DESC"]},
                 "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
                 "offset": {"type": "integer", "description": "Specifies the number of records to skip."}
             },
@@ -67,11 +67,15 @@ Example 3 Request (Address, CONTAINS — find the building enclosing an address)
                 "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/risks/flood_risk')"},
                 "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns, will only include scalar columns."},
                 "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
-                "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within, contains. Choose based on query intent: use 'contains' when a table feature should enclose/surround the input (e.g., 'find the building containing this address'); use 'within' when table features should be inside the input area; use 'intersects' when any intersection/overlap is acceptable."},
+                "spatialOperation": {
+                    "type": "string",
+                    "description": "Spatial operation to perform. Choose based on query intent: use 'contains' when a table feature should enclose/surround the input (e.g., 'find the building containing this address'); use 'within' when table features should be inside the input area; use 'intersects' when any intersection/overlap is acceptable.",
+                    "enum": ["intersects", "within", "contains"]
+                },
                 "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
                 "sortBy": {"type": "string", "description": "Column name to sort by."},
-                "sortOrder": {"type": "string", "description": "Sort order: 'ASC' or 'DESC'."},
+                "sortOrder": {"type": "string", "description": "Sort order.", "enum": ["ASC", "DESC"]},
                 "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
                 "offset": {"type": "integer", "description": "Specifies the number of records to skip."}
             },
@@ -96,12 +100,12 @@ Example 2 Request (Address):
                 "attributes": {"type": "array", "items": {"type": "string"}, "description": "Comma separated list of column names of enrich table to be included in the response. '*' can be used to specify all columns; will only include scalar columns."},
                 "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
                 "uom": {"type": "string", "description": "Unit of measurement used to return intersection length/area (e.g., 'm')"},
-                "areaAttributeName": {"type": "string", "default": "intersectionArea", "description": "Custom name of intersection area parameter when intersection area is polygon. Default: 'intersectionArea'."},
-                "lengthAttributeName": {"type": "string", "default": "intersectionLength", "description": "Custom name of intersection length parameter when intersection area is linestring. Default: 'intersectionLength'."},
-                "percentTargetAttributeName": {"type": "string", "default": "percentageOfTarget", "description": "Custom name of parameter indicating percentage of overlap with target geometry. Default: 'percentageOfTarget'."},
-                "percentInputAttributeName": {"type": "string", "default": "percentageOfInput", "description": "Custom name of parameter indicating percentage of overlap with input geometry. Default: 'percentageOfInput'."},
-                "uomAttributeName": {"type": "string", "default": "uom", "description": "Custom name of unit of measurement parameter. Default: 'uom'."},
-                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
+                "areaAttributeName": {"type": "string", "default": "intersectionArea", "description": "Custom name of intersection area parameter when intersection area is polygon."},
+                "lengthAttributeName": {"type": "string", "default": "intersectionLength", "description": "Custom name of intersection length parameter when intersection area is linestring."},
+                "percentTargetAttributeName": {"type": "string", "default": "percentageOfTarget", "description": "Custom name of parameter indicating percentage of overlap with target geometry."},
+                "percentInputAttributeName": {"type": "string", "default": "percentageOfInput", "description": "Custom name of parameter indicating percentage of overlap with input geometry."},
+                "uomAttributeName": {"type": "string", "default": "uom", "description": "Custom name of unit of measurement parameter."},
+                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated. Supports positive values for all geometry types. Negative values are only supported for polygon geometries to create inward buffers e.g., '100 m', '2 km'."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"},
                 "limit": {"type": "integer", "description": "Specifies the maximum number of results to return."},
                 "offset": {"type": "integer", "description": "Specifies the number of records to skip."}
@@ -111,9 +115,12 @@ Example 2 Request (Address):
     ),
     Tool(
         name="get_spatial_products",
-        description="""Get a list of available Enrich Data products along with their metadata such as product family, geography, data vintage, availablity, recommended zoom levels, styles, summary attributes, label columns, layer extents, and other metadata.
+        description="""Discovery tool: list all available Enrich Data products with metadata needed to make informed spatial queries.
+Call this before querying spatial data when you need to discover: product family, geography coverage, data vintage, recommended zoom levels, recommended styles, summary attributes, label column names, and layer extents.
 
 Returns: List of product metadata objects with productId, productName, productFamily, vintage, geography, and layers (including layerId, displayName, featureTable, recommendedStyle).
+
+Use this before: wms_get_request, wms_post_get_map, wmts_request, wmts_get_standard_tile, wmts_get_simple_tile, find_nearest_candidates, search_at_location, overlap, summarize.
 
 Example Request: https://api.cloud.precisely.com/v1/spatial/products""",
         inputSchema={
@@ -124,9 +131,11 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/products""",
     ),
     Tool(
         name="list_spatial_tables",
-        description="""Retrieves list of available spatial tables.
+        description="""Discovery tool: retrieve the full list of spatial table names available in the Precisely platform.
+Call this before calling find_nearest_candidates, search_at_location, overlap, summarize, or get_table_metadata when the correct tableName is not yet known.
+Do NOT use this if you already know the tableName — call get_table_metadata directly for column/schema details.
 
-Returns: List of spatial table names available in the database.
+Returns: List of spatial table path strings (e.g., ['/risks/flood_risk', '/properties/buildings', ...]).
 
 Example Request: https://api.cloud.precisely.com/v1/spatial/tables""",
         inputSchema={
@@ -137,9 +146,13 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/tables""",
     ),
     Tool(
         name="get_table_metadata",
-        description="""Retrieves metadata for a specific spatial table.
+        description="""Discovery tool: retrieve column names, data types, descriptions, bounding box, and row count for a specific spatial table.
+Call this before calling find_nearest_candidates, search_at_location, overlap, or summarize when you need to know which columns are available in a table.
+Use list_spatial_tables first if the tableName is not yet known.
 
-Returns: Object with table name, columns and their description and type, bounding box in case of spatial table, and row count.
+Returns: Object with table name, columns (name, type, description), spatial bounding box, and approximate row count.
+
+Note: The tableName parameter should NOT include a leading slash (e.g., 'properties/buildings', not '/properties/buildings').
 
 Example Request: https://api.cloud.precisely.com/v1/spatial/tables/properties/buildings/metadata""",
         inputSchema={
@@ -153,6 +166,10 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/tables/properties/bu
     Tool(
         name="summarize",
         description="""Generates min, max, avg, sum, or median statistics for given columns of geometries fully within the input geometry, or intersecting the input geometry. Input can also be an address, no need to geocode it. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
+
+IMPORTANT — spatialOperation selection:
+- Use 'intersects' when you want features that TOUCH or OVERLAP the input geometry (partial overlap counts).
+- Use 'within' when you want features that are FULLY CONTAINED INSIDE the input geometry. The user's query keyword 'within' (e.g., "records within 10 miles") means spatialOperation='within'.
 
 Returns: Aggregate statistics for specified columns.
 
@@ -173,9 +190,9 @@ Example 4 Request (Address, Within):
                 "tableName": {"type": "string", "description": "Name of the spatial table (e.g., '/risks/historical_weather_windgrid')"},
                 "aggregateColumns": {"type": "object", "description": "Dictionary of column names mapped to lists of aggregate functions. Supported functions: min, max, avg, sum, median."},
                 "location": {"type": "object", "description": "Input geometry or address. Supported formats: wkt, geojson, lonlat, address. If format is 'address', country field is mandatory."},
-                "spatialOperation": {"type": "string", "description": "Spatial operation to perform. Supported values: intersects, within."},
+                "spatialOperation": {"type": "string", "description": "Spatial operation to perform.", "enum": ["intersects", "within"]},
                 "proportionalCalculation": {"type": "boolean", "description": "Whether to use proportional calculation. Only applicable when the spatialOperation parameter is 'intersects'"},
-                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated (e.g., '100 m', '2 km')."},
+                "bufferDistance": {"type": "string", "description": "Distance by which the input geometry will be extrapolated. Supports positive values for all geometry types. Negative values are only supported for polygon geometries to create inward buffers e.g., '100 m', '2 km'."},
                 "attributeFilter": {"type": "string", "description": "specifies filter on scalar attributes"}
             },
             "required": ["tableName", "location", "aggregateColumns"]

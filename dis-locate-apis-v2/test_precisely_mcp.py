@@ -464,17 +464,17 @@ class PreciselyMCPTestSuite:
             ("Lookup by PreciselyID", "lookup", "Lookup address for PreciselyID P0000GL41OME",
              {"keys": [{"key": "P0000GL41OME", "country": "USA", "type": "PB_KEY"}]}),
             
-            ("Lookup by Address", "lookup_by_address", "Get tax jurisdiction for 123 Main St, Boston, MA",
-             {"address": {"addressLines": ["123 Main St, Boston, MA"]}}),
-            
-            ("Lookup by Location", "lookup_by_location", "Get tax jurisdiction for coordinates -71.0589, 42.3601",
-             {"location": {"longitude": -71.0589, "latitude": 42.3601}}),
-            
-            ("Lookup Batch by Addresses", "lookup_by_addresses", "Get tax jurisdictions for multiple addresses",
-             {"addresses": [{"addressLines": ["2001 Main St, Eagle Butte, SD 57625"]}, {"addressLines": ["2520 Columbia House Blvd #108, Vancouver, WA 98661"]}], "preferences": {}}),
-            
-            ("Lookup Batch by Locations", "lookup_by_locations", "Find tax jurisdictions for multiple coordinates",
-             {"locations": [{"longitude": -98.401796, "latitude": 34.688726}, {"longitude": -92.9036, "latitude": 34.8192}], "preferences": {}}),
+            ("Tax Jurisdiction by Address", "lookup_tax_jurisdiction", "Get tax jurisdiction for 123 Main St, Boston, MA",
+             {"input_type": "address", "records": [{"addressLines": ["123 Main St, Boston, MA"]}]}),
+
+            ("Tax Jurisdiction by Addresses", "lookup_tax_jurisdiction", "Get tax jurisdictions for multiple addresses",
+             {"input_type": "address", "records": [{"addressLines": ["2001 Main St, Eagle Butte, SD 57625"]}, {"addressLines": ["2520 Columbia House Blvd #108, Vancouver, WA 98661"]}], "preferences": {}}),
+
+            ("Tax Jurisdiction by Location", "lookup_tax_jurisdiction", "Get tax jurisdiction for coordinates -71.0589, 42.3601",
+             {"input_type": "location", "records": [{"longitude": -71.0589, "latitude": 42.3601}]}),
+
+            ("Tax Jurisdiction by Locations", "lookup_tax_jurisdiction", "Find tax jurisdictions for multiple coordinates",
+             {"input_type": "location", "records": [{"longitude": -98.401796, "latitude": 34.688726}, {"longitude": -92.9036, "latitude": 34.8192}], "preferences": {}}),
             
             # Geolocation
             ("Geolocate IP Address", "geo_locate_ip_address", "Where is IP address 8.8.8.8 located?",

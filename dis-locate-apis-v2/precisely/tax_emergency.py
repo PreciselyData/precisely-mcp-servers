@@ -64,6 +64,67 @@ class TaxEmergencyMixin:
             logger.error(f"Tax jurisdiction by locations error: {e}")
             return {"error": str(e)}
 
+    def lookup_tax_jurisdiction(self, input_type: str, records: List[Dict], preferences: Dict = None, **kwargs) -> Dict[str, Any]:
+        """Consolidated tax jurisdiction lookup: single or batch, address or coordinate input.
+
+        Args:
+            input_type: 'address' or 'location'
+            records: list of address dicts or location dicts (length >= 1)
+            preferences: optional lookup preferences
+        """
+        VALID_INPUT_TYPES = {"address", "location"}
+        if input_type not in VALID_INPUT_TYPES:
+            return {
+                "error": (
+                    f"Invalid input_type '{input_type}'. "
+                    f"Must be one of: {sorted(VALID_INPUT_TYPES)}. "
+                    "Use 'address' when records contain street addresses, "
+                    "or 'location' when records contain longitude/latitude coordinates."
+                )
+            }
+        if not records or not isinstance(records, list):
+            return {"error": "records must be a non-empty list."}
+
+        if input_type == "address":
+            for i, rec in enumerate(records):
+                if not isinstance(rec, dict) or "addressLines" not in rec:
+                    return {
+                        "error": (
+                            f"records[{i}] is missing required field 'addressLines'. "
+                            "Each address record must include: "
+                            '{"addressLines": ["..."], "city": "...", "admin1": "...", "postalCode": "..."}'
+                        )
+                    }
+            try:
+                if len(records) == 1:
+                    return self.lookup_by_address(address=records[0], preferences=preferences)
+                return self.lookup_by_addresses(addresses=records, preferences=preferences)
+            except Exception as e:
+                logger.error(f"Tax jurisdiction lookup error: {e}")
+                return {"error": str(e)}
+
+        # input_type == "location"
+        for i, rec in enumerate(records):
+            if not isinstance(rec, dict) or "longitude" not in rec or "latitude" not in rec:
+                return {
+                    "error": (
+                        f"records[{i}] is missing 'longitude' or 'latitude'. "
+                        "Each location record must include: "
+                        '{"longitude": <number>, "latitude": <number>}'
+                    )
+                }
+            if not isinstance(rec["longitude"], (int, float)) or not isinstance(rec["latitude"], (int, float)):
+                return {
+                    "error": f"records[{i}]: longitude and latitude must be numeric values."
+                }
+        try:
+            if len(records) == 1:
+                return self.lookup_by_location(location=records[0], preferences=preferences)
+            return self.lookup_by_locations(locations=records, preferences=preferences)
+        except Exception as e:
+            logger.error(f"Tax jurisdiction lookup error: {e}")
+            return {"error": str(e)}
+
     def psap_address(self, address: Dict, **kwargs) -> Dict[str, Any]:
         """Retrieve PSAP contact details using address input
 
