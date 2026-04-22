@@ -2,7 +2,7 @@
 Unified Test Suite for Precisely MCP Server
 Combines 3-tier testing: Layer 1 (API Core) → Layer 2 (MCP Server) → Layer 3 (Functional)
 
-Tests all 71 Precisely API tools with comprehensive validation and detailed logging
+Tests all 68 Precisely API tools with comprehensive validation and detailed logging
 """
 
 import os
@@ -122,10 +122,10 @@ class PreciselyMCPTestSuite:
         methods = [m for m in dir(self.api) if not m.startswith('_') and callable(getattr(self.api, m))]
         logger.info(f"  Found {len(methods)} API methods")
         
-        if len(methods) != 71:
-            logger.warning(f"  [WARN] Expected 71 methods, found {len(methods)}")
+        if len(methods) != 73:
+            logger.warning(f"  [WARN] Expected 73 methods, found {len(methods)}")
         else:
-            logger.info("  [PASS] All 71 API methods present")
+            logger.info("  [PASS] All 73 API methods present")
         
         # Test 3: Quick smoke tests
         logger.info("\n[3/3] Running Quick Smoke Tests...")
@@ -158,8 +158,8 @@ class PreciselyMCPTestSuite:
     def test_layer2_mcp_server(self) -> bool:
         """
         Layer 2: Test the wrapper - are all tools exposed via MCP?
-        - Load MCP server module
-        - Verify 49 tool definitions
+        - Load tool definitions from registry
+        - Verify 68 tool definitions
         - Cross-reference MCP tools with API methods
         """
         self.log_header("LAYER 2: MCP SERVER TESTING")
@@ -167,15 +167,8 @@ class PreciselyMCPTestSuite:
         logger.info("\n[1/2] Loading MCP Server Tool Definitions...")
         
         try:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location(
-                "precisely_wrapper_server",
-                "mcp_servers/precisely_wrapper_server.py"
-            )
-            server_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(server_module)
-            
-            tools = server_module.TOOLS
+            from mcp_servers.registry import build_registry
+            tools, tool_module_map = build_registry(self.api)
             logger.info(f"  [PASS] MCP server loaded: {len(tools)} tools defined")
             
             # Check for duplicates
@@ -186,10 +179,10 @@ class PreciselyMCPTestSuite:
                 logger.error(f"  [FAIL] Duplicate tools found: {set(duplicates)}")
                 return False
             
-            if len(tools) != 71:
-                logger.warning(f"  [WARN] Expected 71 tools, found {len(tools)}")
+            if len(tools) != 68:
+                logger.warning(f"  [WARN] Expected 68 tools, found {len(tools)}")
             else:
-                logger.info("  [PASS] All 71 MCP tools defined")
+                logger.info("  [PASS] All 68 MCP tools defined")
             
         except Exception as e:
             logger.error(f"  [FAIL] Failed to load MCP server: {e}")

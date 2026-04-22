@@ -48,6 +48,24 @@ class BaseClient:
         )
         return instance
 
+    def _build_error(self, method_name: str, exception: Exception) -> Dict[str, Any]:
+        """Build enriched error dict from an exception, extracting API response details when available."""
+        error_info: Dict[str, Any] = {
+            "message": f"{method_name} error: {exception}",
+            "error_type": type(exception).__name__,
+        }
+        if hasattr(exception, "response") and exception.response is not None:
+            resp = exception.response
+            error_info["status_code"] = resp.status_code
+            try:
+                error_info["detail"] = resp.json()
+            except Exception:
+                body = resp.text
+                if body:
+                    error_info["detail"] = body
+        logger.error(f"[{method_name}] {error_info}")
+        return {"error": error_info}
+
     def _validate_graphql_response(
         self, result: Dict[str, Any], method_name: str
     ) -> Dict[str, Any]:

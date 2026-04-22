@@ -20,7 +20,7 @@ class VerificationMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Email verification error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Email verification", e)
 
     def verify_batch_emails(self, emails: List, **kwargs) -> Dict[str, Any]:
         """Verify a batch of email addresses - accepts either strings or objects"""
@@ -51,7 +51,7 @@ class VerificationMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Batch email verification error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Batch email verification", e)
 
     def parse_name(self, data: Dict, **kwargs) -> Dict[str, Any]:
         """Parse a name"""
@@ -65,7 +65,7 @@ class VerificationMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Name parsing error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Name parsing", e)
 
     def validate_phone(self, data: Dict, **kwargs) -> Dict[str, Any]:
         """Validate a phone number"""
@@ -79,7 +79,7 @@ class VerificationMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Phone validation error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Phone validation", e)
 
     def validate_batch_phones(self, data: Dict, **kwargs) -> Dict[str, Any]:
         """Validate a batch of phone numbers"""
@@ -93,4 +93,4 @@ class VerificationMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Batch phone validation error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Batch phone validation", e)

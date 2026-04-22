@@ -66,7 +66,7 @@ class SpatialMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Find nearest candidates error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Find nearest candidates", e)
 
     def search_at_location(self, tableName: str, attributes: list, location: dict, **kwargs) -> Dict[str, Any]:
         """Searches for locations or points of interest within or intersecting a defined geographic area(geometry or address) or a buffer around a specified location.
@@ -116,7 +116,7 @@ class SpatialMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Search at location error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Search at location", e)
 
     def overlap(self, tableName: str, attributes: list, location: dict, uom: str, **kwargs) -> Dict[str, Any]:
         """Identifies spatial intersections between a specified geometry or address in a chosen Enrich spatial table returning the overlap geometry with the percentage and area of overlap.
@@ -174,7 +174,7 @@ class SpatialMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Overlap error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Overlap", e)
 
     def get_spatial_products(self, **kwargs) -> Dict[str, Any]:
         """Get a list of available Enrich Data products along with their metadata such as product family, applicable geographic area, vintage, available layers, appropriate zoom levels for display and styles to use.
@@ -199,7 +199,7 @@ class SpatialMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Get spatial products error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Get spatial products", e)
 
     def list_spatial_tables(self, **kwargs) -> Dict[str, Any]:
         """This endpoint retrieves a list of spatial tables from database
@@ -222,7 +222,7 @@ class SpatialMixin:
             return response.json()
         except Exception as e:
             logger.error(f"List spatial tables error: {e}")
-            return {"error": str(e)}
+            return self._build_error("List spatial tables", e)
 
     def get_table_metadata(self, tableName: str, **kwargs) -> Dict[str, Any]:
         """This endpoint retrieves a metadata information of a specific/given table from database
@@ -249,7 +249,7 @@ class SpatialMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Get table metadata error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Get table metadata", e)
 
     def summarize(self, tableName: str, location: Dict, aggregateColumns: Dict, **kwargs) -> Dict[str, Any]:
         """Generates detailed data summaries within a user defined region(geometry or address), including total, average, minimum and maximum values for data such as population.
@@ -295,4 +295,4 @@ class SpatialMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Summarize error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Summarize", e)

@@ -66,7 +66,7 @@ class DemographicsMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Demographics error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Demographics", e)
 
     def get_crime_index(self, address: str, country: str = "US") -> Dict[str, Any]:
         """Get crime index data"""
@@ -110,7 +110,7 @@ class DemographicsMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Crime index error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Crime index", e)
 
     def get_psyte_geodemographics_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get Psyte geodemographics by address using GraphQL"""
@@ -162,7 +162,7 @@ class DemographicsMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Psyte geodemographics error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Psyte geodemographics", e)
 
     def get_ground_view_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get ground view demographics by address using GraphQL"""
@@ -220,7 +220,7 @@ class DemographicsMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Ground view error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Ground view", e)
 
     def get_neighborhoods_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get neighborhood information for an address using GraphQL"""
@@ -277,7 +277,7 @@ class DemographicsMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Neighborhoods error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Neighborhoods", e)
 
     def get_schools_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get school information for an address using GraphQL"""
@@ -341,7 +341,7 @@ class DemographicsMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Schools error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Schools", e)
 
     def get_buildings_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get building information for an address using GraphQL"""
@@ -385,7 +385,7 @@ class DemographicsMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Buildings error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Buildings", e)
 
     def get_parcels_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get parcel information for an address using GraphQL"""
@@ -426,4 +426,4 @@ class DemographicsMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Parcels error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Parcels", e)

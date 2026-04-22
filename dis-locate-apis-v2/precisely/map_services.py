@@ -40,7 +40,7 @@ Use this endpoint to quickly navigate and explore the API's capabilities.
             return response.json()
         except Exception as e:
             logger.error(f"OGC landing page error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC landing page", e)
 
     def ogc_api_definition(self, **kwargs) -> Dict[str, Any]:
         """This endpoint retrieves the complete OpenAPI definition for the API. The response is a machine-readable specification that describes all available endpoints, request/response schemas, and security configurations.
@@ -67,7 +67,7 @@ Use this endpoint to quickly navigate and explore the API's capabilities.
             return response.json()
         except Exception as e:
             logger.error(f"OGC API definition error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC API definition", e)
 
     def ogc_functions(self, **kwargs) -> Dict[str, Any]:
         """This endpoint returns a list of available spatial functions within the API.
@@ -93,7 +93,7 @@ Use this endpoint to quickly navigate and explore the API's capabilities.
             return response.json()
         except Exception as e:
             logger.error(f"OGC functions error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC functions", e)
 
     def ogc_conformance(self, **kwargs) -> Dict[str, Any]:
         """This endpoint returns the conformance declaration for the API. The conformance declaration is a list of all conformance classes specified in a standard that the server adheres to. It helps clients determine whether the API meets the required standards and their own requirements.
@@ -119,7 +119,7 @@ Use this endpoint to quickly navigate and explore the API's capabilities.
             return response.json()
         except Exception as e:
             logger.error(f"OGC conformance error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC conformance", e)
 
     def ogc_collections(self, **kwargs) -> Dict[str, Any]:
         """This endpoint returns the list of feature collections available on the server. Each collection represents a spatial dataset that can be queried and provides essential metadata, including:
@@ -151,7 +151,7 @@ This resource is designed to help clients discover available geospatial datasets
             return response.json()
         except Exception as e:
             logger.error(f"OGC collections error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC collections", e)
 
     def ogc_collection(self, collectionId: str, **kwargs) -> Dict[str, Any]:
         """This resource describes the feature collection identified in the path.
@@ -185,7 +185,7 @@ Information about the feature collection with id `{collectionId}` is provided. T
             return response.json()
         except Exception as e:
             logger.error(f"OGC collection error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC collection", e)
 
     def ogc_collection_schema(self, collectionId: str, **kwargs) -> Dict[str, Any]:
         """This resource provides the schema for a specified feature collection. The schema defines the structure of the collection and includes details such as field names, data types, formats, and descriptions.
@@ -220,7 +220,7 @@ This information is essential for validating client queries and constructing dyn
             return response.json()
         except Exception as e:
             logger.error(f"OGC collection schema error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC collection schema", e)
 
     def ogc_collection_queryables(self, collectionId: str, **kwargs) -> Dict[str, Any]:
         """This resource returns the queryable properties for a specific collection identified by its unique id. Queryable properties provide detailed metadata for each attribute available in the collection that can be used to filter queries. The response includes information such as:
@@ -253,7 +253,7 @@ This metadata is essential for clients to build dynamic query interfaces and val
             return response.json()
         except Exception as e:
             logger.error(f"OGC collection queryables error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC collection queryables", e)
 
     def ogc_collection_items(self, collectionId: str, **kwargs) -> Dict[str, Any]:
         """Fetch features of the feature collection with id `{collectionId}`.
@@ -297,7 +297,7 @@ Additional capabilities include:
             return response.json()
         except Exception as e:
             logger.error(f"OGC collection items error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC collection items", e)
 
     def ogc_feature_by_id(self, collectionId: str, featureId: str, **kwargs) -> Dict[str, Any]:
         """Retrieves a single feature in GeoJSON format,
@@ -325,7 +325,7 @@ Additional capabilities include:
             return response.json()
         except Exception as e:
             logger.error(f"OGC feature by ID error: {e}")
-            return {"error": str(e)}
+            return self._build_error("OGC feature by ID", e)
 
     # ========================================
     # WMS (Web Map Service) APIs
@@ -397,7 +397,7 @@ Additional capabilities include:
             return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
             logger.error(f"WMS get request error: {e}")
-            return {"error": str(e)}
+            return self._build_error("WMS get request", e)
 
     def wms_post_get_map(self, **kwargs) -> Dict[str, Any]:
         """Processes WMS GetMap requests using a POST method. Accepts SLD_BODY as a form parameter (URL-encoded JSON). WMS service errors (ServiceExceptionReport) with HTTP 2xx are raised as exceptions and returned as {"error": <xml>}.
@@ -465,7 +465,7 @@ Additional capabilities include:
             return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
             logger.error(f"WMS POST GetMap error: {e}")
-            return {"error": str(e)}
+            return self._build_error("WMS POST GetMap", e)
 
     # ========================================
     # WMTS (Web Map Tile Service) APIs
@@ -513,7 +513,7 @@ Additional capabilities include:
             return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
             logger.error(f"WMTS request error: {e}")
-            return {"error": str(e)}
+            return self._build_error("WMTS request", e)
 
     def wmts_get_standard_tile(self, Version: str, Layer: str, Style: str, TileMatrixSet: str, TileMatrix: str, TileCol: int, TileRow: int, Format: str, **kwargs) -> Dict[str, Any]:
         """Returns a map tile based on the RESTful encoding for the WMTS service.
@@ -560,7 +560,7 @@ Additional capabilities include:
             return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
             logger.error(f"WMTS get standard tile error: {e}")
-            return {"error": str(e)}
+            return self._build_error("WMTS get standard tile", e)
 
     def wmts_get_simple_tile(self, Version: str, Layer: str, TileMatrix: str, TileCol: int, TileRow: int, Format: str, **kwargs) -> Dict[str, Any]:
         """Returns a map tile based on the RESTful encoding for the WMTS service.
@@ -602,4 +602,4 @@ Additional capabilities include:
             return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
             logger.error(f"WMTS get simple tile error: {e}")
-            return {"error": str(e)}
+            return self._build_error("WMTS get simple tile", e)

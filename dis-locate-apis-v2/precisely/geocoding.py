@@ -33,7 +33,7 @@ class GeocodingMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Geocoding error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Geocoding", e)
 
     def reverse_geocode(self, lat: float, lon: float, **kwargs) -> Dict[str, Any]:
         """Convert coordinates to address using correct payload structure"""
@@ -61,7 +61,7 @@ class GeocodingMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Reverse geocoding error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Reverse geocoding", e)
 
     def verify_address(self, address: str, **kwargs) -> Dict[str, Any]:
         """Verify and standardize address using correct payload structure"""
@@ -87,7 +87,7 @@ class GeocodingMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Address verification error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Address verification", e)
 
     def parse_address(self, address: str, **kwargs) -> Dict[str, Any]:
         """Parse a single-line address into structured components"""
@@ -101,7 +101,7 @@ class GeocodingMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Parse address error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Parse address", e)
 
     def parse_address_batch(self, addresses: List[Dict], **kwargs) -> Dict[str, Any]:
         """Parse a batch of addresses into structured components"""
@@ -115,7 +115,7 @@ class GeocodingMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Parse address batch error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Parse address batch", e)
 
     def autocomplete(self, address: Dict, preferences: Dict = None, **kwargs) -> Dict[str, Any]:
         """Address autocomplete suggestions"""
@@ -129,7 +129,7 @@ class GeocodingMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Autocomplete error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Autocomplete", e)
 
     def autocomplete_postal_city(self, address: Dict, preferences: Dict = None, **kwargs) -> Dict[str, Any]:
         """Autocomplete postal city API"""
@@ -143,7 +143,7 @@ class GeocodingMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Autocomplete postal city error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Autocomplete postal city", e)
 
     def autocomplete_v2(self, address: Dict, preferences: Dict = None, **kwargs) -> Dict[str, Any]:
         """Express autocomplete API (V2)"""
@@ -157,7 +157,7 @@ class GeocodingMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Autocomplete v2 error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Autocomplete v2", e)
 
     def lookup(self, keys: List[Dict], preferences: Dict = None, **kwargs) -> Dict[str, Any]:
         """Lookup address details by PreciselyID"""
@@ -171,4 +171,4 @@ class GeocodingMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Lookup error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Lookup", e)
