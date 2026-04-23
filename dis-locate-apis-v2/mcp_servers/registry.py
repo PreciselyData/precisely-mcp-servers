@@ -13,6 +13,7 @@ from mcp_servers.tools import (
     timezone,
     verification,
 )
+from mcp_servers.tools.output_schemas import TOOL_OUTPUT_SCHEMAS
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,14 @@ def build_registry(precisely_api) -> tuple:
         for tool in module_tools:
             tool_module_map[tool.name] = module
 
+    # Annotate tools with outputSchema from the central mapping
+    annotated = 0
+    for tool in tools:
+        schema = TOOL_OUTPUT_SCHEMAS.get(tool.name)
+        if schema:
+            tool.outputSchema = schema
+            annotated += 1
+
     missing = [t.name for t in tools if not hasattr(precisely_api, t.name)]
     if missing:
         logger.critical(
@@ -51,5 +60,5 @@ def build_registry(precisely_api) -> tuple:
         )
         sys.exit(1)
 
-    logger.info(f"Tool-method cross-validation passed ({len(tools)} tools verified)")
+    logger.info(f"Tool-method cross-validation passed ({len(tools)} tools verified, {annotated} with outputSchema)")
     return tools, tool_module_map

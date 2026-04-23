@@ -183,8 +183,9 @@ class SpatialMixin:
             **kwargs: Additional keyword arguments passed to the API.
 
         Returns:
-            Dict[str, Any]: List of product metadata objects, each with keys 'productId' (str), 'productName' (str),
-                'productFamily' (str), 'vintage' (str), 'geography' (str), and 'layers' (list of layer objects
+            Dict[str, Any]: Dict with key 'products' containing a list of product metadata objects,
+                each with keys 'productId' (str), 'productName' (str), 'productFamily' (str),
+                'vintage' (str), 'geography' (str), and 'layers' (list of layer objects
                 with layerId, displayName, featureTable, recommendedStyle, etc.).
 
         Example:
@@ -196,7 +197,7 @@ class SpatialMixin:
             response = self.session.get(url)
             logger.debug(f"[get_spatial_products] Raw response: {response.text}")
             response.raise_for_status()
-            return response.json()
+            return {"products": response.json()}
         except Exception as e:
             logger.error(f"Get spatial products error: {e}")
             return self._build_error("Get spatial products", e)
@@ -208,7 +209,8 @@ class SpatialMixin:
             **kwargs: Additional keyword arguments passed to the API.
 
         Returns:
-            Dict[str, Any]: List of table name strings (e.g., ["/properties/buildings", "/risks/flood_risk", ...]).
+            Dict[str, Any]: Dict with key 'tables' containing a list of table name strings
+                (e.g., {"tables": ["properties/buildings", "risks/flood_risk", ...]}).
 
         Example:
             list_spatial_tables()
@@ -219,7 +221,7 @@ class SpatialMixin:
             response = self.session.get(url)
             logger.debug(f"[list_spatial_tables] Raw response: {response.text}")
             response.raise_for_status()
-            return response.json()
+            return {"tables": response.json()}
         except Exception as e:
             logger.error(f"List spatial tables error: {e}")
             return self._build_error("List spatial tables", e)

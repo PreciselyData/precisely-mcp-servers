@@ -45,7 +45,10 @@ def handle_tool_call(name: str, arguments: Dict[str, Any], precisely_api: Any) -
                 isError=True,
             )
 
-        return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        return CallToolResult(
+            content=[TextContent(type="text", text=json.dumps(result, indent=2))],
+            structuredContent=result,
+        )
 
     except Exception as e:
         logger.error(f"Error calling tool {name}: {e}", exc_info=True)

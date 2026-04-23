@@ -31,7 +31,7 @@ def create_server(precisely_api, tools: list, tool_module_map: dict) -> Server:
         return tools
 
     @app.call_tool()
-    async def call_tool(name: str, arguments: Any) -> list[TextContent | ImageContent]:
+    async def call_tool(name: str, arguments: Any) -> list[TextContent | ImageContent] | CallToolResult:
         """Dispatch tool calls to the appropriate module handler."""
         try:
             if name not in tool_module_map:
