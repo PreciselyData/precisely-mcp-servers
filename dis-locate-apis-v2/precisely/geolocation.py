@@ -20,7 +20,7 @@ class GeolocationMixin:
             return response.json()
         except Exception as e:
             logger.error(f"IP geolocation error: {e}")
-            return {"error": str(e)}
+            return self._build_error("IP geolocation", e)
 
     def geo_locate_wifi_access_point(self, wifi_data: Dict, **kwargs) -> Dict[str, Any]:
         """Geolocate a WiFi access point"""
@@ -34,4 +34,4 @@ class GeolocationMixin:
             return response.json()
         except Exception as e:
             logger.error(f"WiFi geolocation error: {e}")
-            return {"error": str(e)}
+            return self._build_error("WiFi geolocation", e)

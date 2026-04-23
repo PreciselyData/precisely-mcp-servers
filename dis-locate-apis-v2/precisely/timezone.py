@@ -20,7 +20,7 @@ class TimezoneMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Timezone addresses error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Timezone addresses", e)
 
     def timezone_locations(self, data: Dict, **kwargs) -> Dict[str, Any]:
         """Get timezone for locations"""
@@ -34,4 +34,4 @@ class TimezoneMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Timezone locations error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Timezone locations", e)

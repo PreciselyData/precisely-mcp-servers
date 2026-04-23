@@ -80,7 +80,7 @@ class PropertyRiskMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Property data error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Property data", e)
 
     def get_property_attributes_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get property attributes by address using GraphQL"""
@@ -115,7 +115,7 @@ class PropertyRiskMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Property attributes error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Property attributes", e)
 
     def get_replacement_cost_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get replacement cost by address using GraphQL"""
@@ -146,7 +146,7 @@ class PropertyRiskMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Replacement cost error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Replacement cost", e)
 
     def get_flood_risk_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get flood risk for a property by address"""
@@ -206,7 +206,7 @@ class PropertyRiskMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Flood risk error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Flood risk", e)
 
     def get_wildfire_risk_by_address(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get wildfire risk for a property by address"""
@@ -288,7 +288,7 @@ class PropertyRiskMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Wildfire risk error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Wildfire risk", e)
 
     def get_property_fire_risk(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get fire risk for a property"""
@@ -354,7 +354,7 @@ class PropertyRiskMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Fire risk error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Fire risk", e)
 
     def get_earth_risk(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get earthquake risk for a property"""
@@ -421,7 +421,7 @@ class PropertyRiskMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Earthquake risk error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Earthquake risk", e)
 
     def get_coastal_risk(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get coastal risk for a property"""
@@ -484,7 +484,7 @@ class PropertyRiskMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Coastal risk error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Coastal risk", e)
 
     def get_historical_weather_risk(self, address: str, country: str = "US", **kwargs) -> Dict[str, Any]:
         """Get historical weather risk for a property"""
@@ -534,4 +534,4 @@ class PropertyRiskMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Historical weather risk error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Historical weather risk", e)

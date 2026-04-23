@@ -20,7 +20,7 @@ class TaxEmergencyMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Tax jurisdiction by address error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Tax jurisdiction by address", e)
 
     def lookup_by_addresses(self, addresses: List[Dict], preferences: Dict = None, **kwargs) -> Dict[str, Any]:
         """Lookup tax jurisdiction for multiple addresses"""
@@ -34,7 +34,7 @@ class TaxEmergencyMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Tax jurisdiction by addresses error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Tax jurisdiction by addresses", e)
 
     def lookup_by_location(self, location: Dict, preferences: Dict = None, **kwargs) -> Dict[str, Any]:
         """Lookup tax jurisdiction by location"""
@@ -48,7 +48,7 @@ class TaxEmergencyMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Tax jurisdiction by location error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Tax jurisdiction by location", e)
 
     def lookup_by_locations(self, locations: List[Dict], preferences: Dict = None, **kwargs) -> Dict[str, Any]:
         """Lookup tax jurisdiction for multiple locations"""
@@ -62,7 +62,7 @@ class TaxEmergencyMixin:
             return response.json()
         except Exception as e:
             logger.error(f"Tax jurisdiction by locations error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Tax jurisdiction by locations", e)
 
     def lookup_tax_jurisdiction(self, input_type: str, records: List[Dict], preferences: Dict = None, **kwargs) -> Dict[str, Any]:
         """Consolidated tax jurisdiction lookup: single or batch, address or coordinate input.
@@ -101,7 +101,7 @@ class TaxEmergencyMixin:
                 return self.lookup_by_addresses(addresses=records, preferences=preferences)
             except Exception as e:
                 logger.error(f"Tax jurisdiction lookup error: {e}")
-                return {"error": str(e)}
+                return self._build_error("Tax jurisdiction lookup", e)
 
         # input_type == "location"
         for i, rec in enumerate(records):
@@ -123,7 +123,7 @@ class TaxEmergencyMixin:
             return self.lookup_by_locations(locations=records, preferences=preferences)
         except Exception as e:
             logger.error(f"Tax jurisdiction lookup error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Tax jurisdiction lookup", e)
 
     def psap_address(self, address: Dict, **kwargs) -> Dict[str, Any]:
         """Retrieve PSAP contact details using address input
@@ -147,7 +147,7 @@ class TaxEmergencyMixin:
             return response.json()
         except Exception as e:
             logger.error(f"PSAP address error: {e}")
-            return {"error": str(e)}
+            return self._build_error("PSAP address", e)
 
     def psap_location(self, location: Dict, **kwargs) -> Dict[str, Any]:
         """Retrieve PSAP contact details using location input
@@ -167,7 +167,7 @@ class TaxEmergencyMixin:
             return response.json()
         except Exception as e:
             logger.error(f"PSAP location error: {e}")
-            return {"error": str(e)}
+            return self._build_error("PSAP location", e)
 
     def psap_ahj_address(self, address: Dict, **kwargs) -> Dict[str, Any]:
         """Retrieve PSAP+AHJ contact details using address input
@@ -191,7 +191,7 @@ class TaxEmergencyMixin:
             return response.json()
         except Exception as e:
             logger.error(f"PSAP AHJ address error: {e}")
-            return {"error": str(e)}
+            return self._build_error("PSAP AHJ address", e)
 
     def psap_ahj_location(self, location: Dict, **kwargs) -> Dict[str, Any]:
         """Retrieve PSAP+AHJ contact details using location input
@@ -211,7 +211,7 @@ class TaxEmergencyMixin:
             return response.json()
         except Exception as e:
             logger.error(f"PSAP AHJ location error: {e}")
-            return {"error": str(e)}
+            return self._build_error("PSAP AHJ location", e)
 
     def psap_ahj_fccid(self, fcc_id: str, **kwargs) -> Dict[str, Any]:
         """Retrieve PSAP+AHJ contact details using FCC ID"""
@@ -225,4 +225,4 @@ class TaxEmergencyMixin:
             return response.json()
         except Exception as e:
             logger.error(f"PSAP AHJ FCC ID error: {e}")
-            return {"error": str(e)}
+            return self._build_error("PSAP AHJ FCC ID", e)

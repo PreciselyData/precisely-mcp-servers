@@ -1,10 +1,10 @@
 ﻿# Precisely MCP Server
 
-A Model Context Protocol (MCP) server that exposes 71 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
+A Model Context Protocol (MCP) server that exposes 68 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
 
 ## Features
 
-- **71 Production-Ready API Tools**: Complete location intelligence suite
+- **68 Production-Ready API Tools**: Complete location intelligence suite
 - **Dual Transport Support**: stdio (default) and Streamable HTTP transports
 - **MCP Protocol**: Standard interface for AI assistants  
 - **100% Test Coverage**: Comprehensive unified test suite with 72/72 tests passing
@@ -167,7 +167,7 @@ async def test_http():
         async with ClientSession(read, write) as session:
             await session.initialize()
             
-            # List all 71 tools
+            # List all 68 tools
             tools = await session.list_tools()
             print(f"Available tools: {len(tools.tools)}")
             
@@ -192,7 +192,7 @@ async def test_http():
         async with ClientSession(read, write) as session:
             await session.initialize()
             
-            # List all 71 tools
+            # List all 68 tools
             tools = await session.list_tools()
             print(f"Available tools: {len(tools.tools)}")
             
@@ -223,7 +223,7 @@ async def use_with_langchain():
         }
     })
     
-    # Get all 71 tools as LangChain tools
+    # Get all 68 tools as LangChain tools
     tools = await client.get_tools()
     print(f"LangChain tools: {len(tools)} tools available")
     
@@ -299,13 +299,13 @@ python test_precisely_mcp.py
 Test Architecture:
 
 1. **Layer 1 - API Core**: Validates initialization and core functionality
-2. **Layer 2 - MCP Server**: Verifies all 71 tools are properly defined
-3. **Layer 3 - Functional**: Tests all 71 tools with real API calls
+2. **Layer 2 - MCP Server**: Verifies all 68 tools are properly defined
+3. **Layer 3 - Functional**: Tests all 72 test cases with real API calls
 
 Test Features:
 
 - Single unified test file
-- 100% coverage (71/71 tools)
+- 100% coverage (68/68 tools)
 - Comprehensive logging (query, payload, response)
 - Detailed test reports in test_logs/
 - JSON results for CI/CD integration
@@ -315,15 +315,15 @@ Sample Output:
 ```
 Layer 1 (API Core):      [PASS]
 Layer 2 (MCP Server):    [PASS]
-Layer 3 (Functional):    [PASS] 71/71 tests
+Layer 3 (Functional):    [PASS] 72/72 tests
 
-Total:     71
-Passed:    71
+Total:     72
+Passed:    72
 Failed:    0
 Pass Rate: 100.0%
 ```
 
-## Available APIs (71 Tools)
+## Available APIs (68 Tools)
 
 ### Geocoding & Address (9 tools)
 
@@ -441,13 +441,13 @@ Pass Rate: 100.0%
 ## Project Structure
 
 ```
- precisely_api_core.py              # Core API implementation (2,500+ lines, 71 methods)
+ precisely_api_core.py              # Core API implementation (2,500+ lines, 72 methods)
  test_precisely_mcp.py              # Unified 3-tier test suite (680+ lines, 72 tests)
  requirements.txt                   # Python dependencies (core + HTTP transport)
  .env.template                      # Credential configuration template
  readme.md                          # This file
  mcp_servers/
-    precisely_wrapper_server.py   # MCP server wrapper (1,300+ lines, 71 tools, dual transport)
+    precisely_wrapper_server.py   # MCP server wrapper (1,300+ lines, 68 tools, dual transport)
     setup_claude_desktop.ps1      # Windows setup script (UTF-8 no-BOM)
  logs/                              # Application logs (automatically generated)
  test_logs/                         # Test results and reports (automatically generated)
@@ -471,7 +471,7 @@ Pass Rate: 100.0%
 
 ### Architecture Changes
 
-- Perfect tool alignment: 71 methods = 71 tools = 71 tests
+- 72 API methods, 68 MCP tools, 72 functional test cases
 - File size reductions: precisely_api_core.py 8% smaller
 - Removed redundant files
 
@@ -479,7 +479,7 @@ Pass Rate: 100.0%
 
 - Fixed UTF-8 BOM issue in setup_claude_desktop.ps1
 - Standardized credential naming
-- Updated test suite for 71 tools
+- Updated test suite for 68 tools
 
 ## Configuration
 
@@ -532,7 +532,7 @@ Solution: pip install -r requirements.txt --upgrade
 
 ### Issue: Tool not found errors
 
-Solution: Verify tool count matches 71
+Solution: Verify tool count matches 68
 
 ### Issue: Test failures
 
@@ -540,7 +540,7 @@ Solution:
 1. Check API credentials are valid
 2. Verify internet connectivity
 3. Review test logs in test_logs/
-4. Ensure all 71 methods exist in precisely_api_core.py
+4. Ensure all 72 methods exist in precisely_api_core.py
 
 ## Production-Ready Checklist
 
@@ -559,6 +559,6 @@ Solution:
 
 **Version**: 9.1 Production  
 **Last Updated**: March 30, 2026  
-**Tool Count**: 71 APIs  
+**Tool Count**: 68 APIs  
 **Transports**: stdio (default), Streamable HTTP  
 **Test Coverage**: 100% (72/72 passing)

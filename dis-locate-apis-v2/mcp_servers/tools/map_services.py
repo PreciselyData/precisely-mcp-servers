@@ -389,6 +389,15 @@ def handle_tool_call(name: str, arguments: Dict[str, Any], precisely_api: Any) -
         method = getattr(precisely_api, name)
         result = method(**arguments)
 
+        # Check for error responses first
+        if isinstance(result, dict) and "error" in result:
+            error_val = result["error"]
+            error_text = json.dumps(error_val, indent=2) if isinstance(error_val, dict) else str(error_val)
+            return CallToolResult(
+                content=[TextContent(type="text", text=error_text)],
+                isError=True,
+            )
+
         # Handle image responses for map services
         if isinstance(result, dict) and result.get("image_base64"):
             return [ImageContent(type="image", data=result["image_base64"],

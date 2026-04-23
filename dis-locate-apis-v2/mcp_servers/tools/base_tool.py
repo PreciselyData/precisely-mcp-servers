@@ -37,6 +37,14 @@ def handle_tool_call(name: str, arguments: Dict[str, Any], precisely_api: Any) -
         method = getattr(precisely_api, name)
         result = method(**arguments)
 
+        if isinstance(result, dict) and "error" in result:
+            error_val = result["error"]
+            error_text = json.dumps(error_val, indent=2) if isinstance(error_val, dict) else str(error_val)
+            return CallToolResult(
+                content=[TextContent(type="text", text=error_text)],
+                isError=True,
+            )
+
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:

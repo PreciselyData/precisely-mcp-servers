@@ -20,7 +20,7 @@ class GraphQLAdvancedMixin:
             return self._validate_graphql_response(response.json(), "get_addresses_detailed")
         except Exception as e:
             logger.error(f"Detailed addresses error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Detailed addresses", e)
 
     def get_parcel_by_owner_detailed(self, data: Dict, **kwargs) -> Dict[str, Any]:
         """Get parcel by owner (detailed) using GraphQL"""
@@ -34,7 +34,7 @@ class GraphQLAdvancedMixin:
             return self._validate_graphql_response(response.json(), "get_parcel_by_owner_detailed")
         except Exception as e:
             logger.error(f"Parcel by owner detailed error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Parcel by owner detailed", e)
 
     def get_address_family(self, data: Dict, **kwargs) -> Dict[str, Any]:
         """Get address family using GraphQL"""
@@ -48,7 +48,7 @@ class GraphQLAdvancedMixin:
             return self._validate_graphql_response(response.json(), "get_address_family")
         except Exception as e:
             logger.error(f"Address family error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Address family", e)
 
     def get_serviceability(self, data: Dict, **kwargs) -> Dict[str, Any]:
         """Get serviceability via GraphQL"""
@@ -62,7 +62,7 @@ class GraphQLAdvancedMixin:
             return self._validate_graphql_response(response.json(), "get_serviceability")
         except Exception as e:
             logger.error(f"Serviceability error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Serviceability", e)
 
     def get_places_by_address(self, data: Dict, **kwargs) -> Dict[str, Any]:
         """Get places (points of interest) by address via GraphQL"""
@@ -76,4 +76,4 @@ class GraphQLAdvancedMixin:
             return self._validate_graphql_response(response.json(), "get_places_by_address")
         except Exception as e:
             logger.error(f"Places by address error: {e}")
-            return {"error": str(e)}
+            return self._build_error("Places by address", e)
