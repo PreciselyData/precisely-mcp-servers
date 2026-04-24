@@ -400,10 +400,19 @@ def handle_tool_call(name: str, arguments: Dict[str, Any], precisely_api: Any) -
 
         # Handle image responses for map services
         if isinstance(result, dict) and result.get("image_base64"):
-            return [ImageContent(type="image", data=result["image_base64"],
-                                mimeType=result.get("content_type", "image/png"))]
+            return CallToolResult(
+                content=[ImageContent(type="image", data=result["image_base64"],
+                                     mimeType=result.get("content_type", "image/png"))],
+                structuredContent={
+                    "content_type": result.get("content_type", "image/png"),
+                    "size_bytes": result.get("size_bytes", 0),
+                },
+            )
 
-        return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        return CallToolResult(
+            content=[TextContent(type="text", text=json.dumps(result, indent=2))],
+            structuredContent=result,
+        )
     except Exception as e:
         logger.error(f"Error calling tool {name}: {e}", exc_info=True)
         return CallToolResult(

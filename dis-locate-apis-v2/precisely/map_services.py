@@ -371,8 +371,14 @@ Additional capabilities include:
         """
         try:
             url = f"{self.base_url}/v1/spatial/wms"
-            params = {k: kwargs[k] for k in ["REQUEST", "SERVICE", "VERSION", "crs", "srs", "BBOX", "width", "height", "layers", "Info_Format", "QUERY_LAYERS", "I", "J", "X", "Y", "Feature_Count", "PIXELSEARCHRADIUS", "STYLES", "FORMAT", "TRANSPARENT", "BGCOLOR", "RESOLUTION", "EXCEPTIONS"] if k in kwargs}
-            request_type = kwargs.get("REQUEST", "").upper()
+            # Normalize parameter names to uppercase (WMS spec: parameter names are case-insensitive)
+            _wms_canonical = ["REQUEST", "SERVICE", "VERSION", "CRS", "SRS", "BBOX", "WIDTH", "HEIGHT",
+                              "LAYERS", "INFO_FORMAT", "QUERY_LAYERS", "I", "J", "X", "Y",
+                              "FEATURE_COUNT", "PIXELSEARCHRADIUS", "STYLES", "FORMAT",
+                              "TRANSPARENT", "BGCOLOR", "RESOLUTION", "EXCEPTIONS"]
+            kwargs_upper = {k.upper(): v for k, v in kwargs.items()}
+            params = {name: kwargs_upper[name] for name in _wms_canonical if name in kwargs_upper}
+            request_type = params.get("REQUEST", "").upper()
             logger.debug(f"[wms_get_request] GET {url}")
             logger.debug(f"[wms_get_request] Request params: {params}")
             response = self.session.get(url, params=params, headers={"Accept": "*/*"})
@@ -441,10 +447,14 @@ Additional capabilities include:
         """
         try:
             url = f"{self.base_url}/v1/spatial/wms"
-            params = {k: kwargs[k] for k in ["REQUEST", "SERVICE", "VERSION", "crs", "srs", "BBOX", "width", "height", "layers", "STYLES", "FORMAT", "TRANSPARENT"] if k in kwargs}
+            # Normalize parameter names to uppercase (WMS spec: parameter names are case-insensitive)
+            _wms_post_canonical = ["REQUEST", "SERVICE", "VERSION", "CRS", "SRS", "BBOX", "WIDTH", "HEIGHT",
+                                   "LAYERS", "STYLES", "FORMAT", "TRANSPARENT"]
+            kwargs_upper = {k.upper(): v for k, v in kwargs.items()}
+            params = {name: kwargs_upper[name] for name in _wms_post_canonical if name in kwargs_upper}
             form_data = {}
-            if "SLD_BODY" in kwargs:
-                form_data["SLD_BODY"] = kwargs["SLD_BODY"]
+            if "SLD_BODY" in kwargs_upper:
+                form_data["SLD_BODY"] = kwargs_upper["SLD_BODY"]
             headers = dict(self.session.headers)
             headers.pop("Content-Type", None)
             headers["Accept"] = "image/png"
@@ -496,7 +506,11 @@ Additional capabilities include:
         """
         try:
             url = f"{self.base_url}/v1/spatial/wmts"
-            params = {k: kwargs[k] for k in ["Service", "Request", "Version", "Layer", "Style", "TileMatrixSet", "TileMatrix", "TileRow", "TileCol", "Format"] if k in kwargs}
+            # Normalize WMTS KVP parameter names (case-insensitive per WMTS spec)
+            _wmts_canonical = ["SERVICE", "REQUEST", "VERSION", "LAYER", "STYLE",
+                               "TILEMATRIXSET", "TILEMATRIX", "TILEROW", "TILECOL", "FORMAT"]
+            kwargs_upper = {k.upper(): v for k, v in kwargs.items()}
+            params = {name: kwargs_upper[name] for name in _wmts_canonical if name in kwargs_upper}
             logger.debug(f"[wmts_request] GET {url}")
             logger.debug(f"[wmts_request] Request params: {params}")
             response = self.session.get(url, params=params)
@@ -508,7 +522,7 @@ Additional capabilities include:
             response.raise_for_status()
             if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
                 return {"image_base64": base64.b64encode(response.content).decode(), "content_type": content_type, "size_bytes": len(response.content)}
-            if "xml" in content_type.lower() or kwargs.get("Request", "").upper() == "GETCAPABILITIES":
+            if "xml" in content_type.lower() or params.get("REQUEST", "").upper() == "GETCAPABILITIES":
                 return {"xml": response.text, "content_type": content_type or "application/xml"}
             return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
