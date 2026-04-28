@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "precisely-spectrum": {
+      "command": "python",
+      "args": ["-m", "mcp_servers"],
+      "cwd": "C:\\path\\to\\spectrum-mcp",
+      "env": {
+        "SPECTRUM_HOST": "your-spectrum-host",
+        "SPECTRUM_PORT": "8080",
+        "SPECTRUM_USERNAME": "your_username",
+        "SPECTRUM_PASSWORD": "your_password"
+      }
+    }
+  }
+}
+

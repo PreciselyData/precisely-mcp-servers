@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "precisely-trillium": {
+      "command": "python",
+      "args": ["-m", "mcp_servers"],
+      "cwd": "C:\\path\\to\\trillium-quality-mcp",
+      "env": {
+        "TRILLIUM_LICENSE_PATH": "C:\\trillium\\license.dat",
+        "TRILLIUM_DB_CONNECTION": "your_db_connection_string",
+        "TRILLIUM_INSTALL_PATH": "C:\\Program Files\\Precisely\\Trillium"
+      }
+    }
+  }
+}
+

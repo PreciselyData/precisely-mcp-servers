@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "precisely-analyze": {
+      "command": "python",
+      "args": ["-m", "mcp_servers"],
+      "cwd": "C:\\path\\to\\analyze-mcp",
+      "env": {
+        "ANALYZE_API_ENDPOINT": "https://your-analyze-instance/api",
+        "ANALYZE_API_KEY": "your_api_key"
+      }
+    }
+  }
+}
+

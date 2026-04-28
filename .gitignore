@@ -54,3 +54,4 @@ test_logs/
 .pytest_cache/
 .coverage
 htmlcov/
+# _specs/ is intentionally tracked — contains planning documents

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "precisely-ga-sdk": {
+      "command": "python",
+      "args": ["-m", "mcp_servers"],
+      "cwd": "C:\\path\\to\\ga-sdk-mcp",
+      "env": {
+        "GASDK_INSTALL_PATH": "C:\\PreciselySDK\\GA",
+        "GASDK_LICENSE_KEY": "your_license_key",
+        "GASDK_DATA_PATH": "C:\\PreciselySDK\\GA\\data"
+      }
+    }
+  }
+}
+
