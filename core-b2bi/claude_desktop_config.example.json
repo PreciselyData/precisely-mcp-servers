@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "precisely-B2BI": {
+      "command": "python",
+      "args": ["-m", "mcp_servers"],
+      "cwd": "C:\\path\\to\\b2bi-mcp",
+      "env": {
+        "B2BI_API_ENDPOINT": "https://your-b2bi-instance/api",
+        "B2BI_API_KEY": "your_api_key",
+        "B2BI_INSTALL_PATH": "C:\\Program Files\\Precisely\\B2Bi"
+      }
+    }
+  }
+}
+
