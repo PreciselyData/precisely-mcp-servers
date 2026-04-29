@@ -9,15 +9,15 @@
 | Server | Product                     | Tools | Transport | Server Location | Docs | Status |
 |--------|-----------------------------|:-----:|-----------|-----------------|------|:------:|
 | `precisely-dis-locate` | DIS / Locate APIs v2        | 68 | stdio, HTTP | [`dis-locate-apis-v2/`](dis-locate-apis-v2/) | [README](dis-locate-apis-v2/readme.md) | ✅ Active |
-| `precisely-spectrum` | Spectrum Technology Platform | ~10 | stdio, HTTP | TBD | [README](core-spectrum/README.md) | 🔵 Beta |
-| `precisely-trillium` | Trillium Quality            | ~5 | stdio, HTTP | External repo | [README](core-trillium-quality/README.md) | 🔵 Beta |
-| `precisely-trillium-discovery` | Trillium Discovery          | ~5 | stdio, HTTP | External repo | [README](core-trillium-discovery/README.md) | 🔵 Beta |
-| `precisely-dqplus` | Data360 DQ+                 | ~5 | stdio, HTTP | External repo | [README](core-dq-plus/README.md) | 🔵 Beta |
-| `precisely-enterworks` | Enterworks                  | ~5 | stdio, HTTP | External repo | [README](core-enterworks/README.md) | 🔵 Beta |
-| `precisely-analyze` | Data360 Analyze             | ~5 | stdio, HTTP | External repo | [README](core-analyze/README.md) | 🔵 Beta |
-| `precisely-ga-sdk` | Geographic Addressing SDK   | ~5 | stdio | External repo | [README](core-ga-sdk/README.md) | 🔵 Beta |
-| `precisely-geotax-sdk` | GeoTAX SDK                  | ~5 | stdio | External repo | [README](core-geotax-sdk/README.md) | 🔵 Beta |
-| `precisely-B2BI` | B2Bi                        | ~6 | stdio, HTTP | External repo | [README](core-b2bi/README.md) | 🟡 In Development |
+| `precisely-spectrum` | Spectrum Technology Platform | ~10 | stdio, HTTP | | [README](core-spectrum/README.md) | 🔵 Beta |
+| `precisely-trillium` | Trillium Quality            | ~5 | stdio, HTTP | | [README](core-trillium-quality/README.md) | 🔵 Beta |
+| `precisely-trillium-discovery` | Trillium Discovery          | ~5 | stdio, HTTP | | [README](core-trillium-discovery/README.md) | 🔵 Beta |
+| `precisely-dqplus` | Data360 DQ+                 | ~5 | stdio, HTTP | | [README](core-dq-plus/README.md) | 🔵 Beta |
+| `precisely-enterworks` | Enterworks                  | ~5 | stdio, HTTP | | [README](core-enterworks/README.md) | 🔵 Beta |
+| `precisely-analyze` | Data360 Analyze             | ~5 | stdio, HTTP | | [README](core-analyze/README.md) | 🔵 Beta |
+| `precisely-ga-sdk` | Geographic Addressing SDK   | ~5 | stdio | | [README](core-ga-sdk/README.md) | 🔵 Beta |
+| `precisely-geotax-sdk` | GeoTAX SDK                  | ~5 | stdio | | [README](core-geotax-sdk/README.md) | 🔵 Beta |
+| `precisely-B2BI` | B2Bi                        | ~6 | stdio, HTTP | | [README](core-b2bi/README.md) | 🟡 In Development |
 
 **Status key:**
 - ✅ **Active** — fully implemented, tested, and production-ready in this repo
