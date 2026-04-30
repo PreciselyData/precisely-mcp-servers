@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "precisely-geotax-sdk": {
+      "command": "python",
+      "args": ["-m", "mcp_servers"],
+      "cwd": "C:\\path\\to\\geotax-sdk-mcp",
+      "env": {
+        "GEOTAX_INSTALL_PATH": "C:\\PreciselySDK\\GeoTAX",
+        "GEOTAX_LICENSE_KEY": "your_license_key",
+        "GEOTAX_DATA_PATH": "C:\\PreciselySDK\\GeoTAX\\data"
+      }
+    }
+  }
+}
+

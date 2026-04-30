@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "precisely-trillium-discovery": {
+      "command": "python",
+      "args": ["-m", "mcp_servers"],
+      "cwd": "C:\\path\\to\\trillium-discovery-mcp",
+      "env": {
+        "TRILLIUM_DISCOVERY_LICENSE_PATH": "C:\\trillium-discovery\\license.dat",
+        "TRILLIUM_DISCOVERY_INSTALL_PATH": "C:\\Program Files\\Precisely\\Trillium Discovery",
+        "TRILLIUM_DISCOVERY_DB_CONNECTION": "your_db_connection_string"
+      }
+    }
+  }
+}

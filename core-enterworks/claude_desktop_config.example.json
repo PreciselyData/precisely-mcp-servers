@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "precisely-enterworks": {
+      "command": "python",
+      "args": ["-m", "mcp_servers"],
+      "cwd": "C:\\path\\to\\enterworks-mcp",
+      "env": {
+        "ENTERWORKS_HOST": "https://your-enterworks-instance",
+        "ENTERWORKS_USERNAME": "your_username",
+        "ENTERWORKS_PASSWORD": "your_password"
+      }
+    }
+  }
+}
+
