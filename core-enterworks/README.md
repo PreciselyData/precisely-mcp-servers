@@ -251,9 +251,9 @@ direct, single-user connection between Claude and your MDM instance.
 
    | Platform | Binary |
    |----------|--------|
-   | Windows  | `enable2020-mcp-server-service-windows-amd64.exe` |
-   | Linux    | `enable2020-mcp-server-service-linux-amd64` |
-   | macOS    | `enable2020-mcp-server-service-darwin-amd64` |
+   | Windows  | `enable2020-mcp-server-service-windows.exe` |
+   | Linux    | `enable2020-mcp-server-service-linux` |
+   | macOS    | `enable2020-mcp-server-service-darwin` |
 
    Place the binary in a convenient local folder, e.g.:
    - **Windows:** `C:\Enterworks\mcp-server\`
@@ -261,9 +261,9 @@ direct, single-user connection between Claude and your MDM instance.
 
    On Linux and macOS, make the binary executable after downloading:
    ```bash
-   chmod +x enable2020-mcp-server-service-linux-amd64
+   chmod +x enable2020-mcp-server-service-linux
    # or
-   chmod +x enable2020-mcp-server-service-darwin-amd64
+   chmod +x enable2020-mcp-server-service-darwin
    ```
 
 2. **Edit `claude_desktop_config.json`:**
@@ -279,7 +279,7 @@ direct, single-user connection between Claude and your MDM instance.
    {
      "mcpServers": {
        "enterworks": {
-         "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service-windows-amd64.exe",
+         "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service-windows.exe",
          "args": [
            "--enterworks-url", "https://your-mdm-server.example.com",
            "--login", "your_username",
@@ -296,7 +296,7 @@ direct, single-user connection between Claude and your MDM instance.
    {
      "mcpServers": {
        "enterworks": {
-         "command": "/home/you/enterworks/mcp-server/enable2020-mcp-server-service-linux-amd64",
+         "command": "/home/you/enterworks/mcp-server/enable2020-mcp-server-service-linux",
          "args": [
            "--enterworks-url", "https://your-mdm-server.example.com",
            "--login", "your_username",
@@ -322,7 +322,7 @@ one entry per environment in `claude_desktop_config.json`:
 {
   "mcpServers": {
     "enterworks-dev": {
-      "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service-windows-amd64.exe",
+      "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service-windows.exe",
       "args": [
         "--enterworks-url", "https://dev-mdm.example.com",
         "--login", "your_username",
@@ -331,7 +331,7 @@ one entry per environment in `claude_desktop_config.json`:
       ]
     },
     "enterworks-prod": {
-      "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service-windows-amd64.exe",
+      "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service-windows.exe",
       "args": [
         "--enterworks-url", "https://prod-mdm.example.com",
         "--login", "prod_user",
