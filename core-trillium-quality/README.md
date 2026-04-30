@@ -86,7 +86,7 @@ The primary configuration snippet for all clients uses `uvx --from` with the whe
 }
 ```
 
-For detailed per-client configuration (VS Code / GitHub Copilot, IntelliJ, JetBrains AI Assistant, Microsoft Visual Studio), see [deployment-clients.dist.md](deployment-clients.dist.md).
+For detailed per-client configuration (VS Code / GitHub Copilot, IntelliJ, JetBrains AI Assistant, Microsoft Visual Studio), see [deployment-clients.md](deployment-clients.md).
 
 ### Claude Desktop
 
@@ -242,6 +242,6 @@ Replace `{version}` with the actual version number (e.g. `0.1.0`). Discard the e
 
 ## See Also
 
-- [deployment-clients.dist.md](deployment-clients.dist.md) — Per-client deployment guide (VS Code, JetBrains, Visual Studio)
+- [deployment-clients.md](deployment-clients.md) — Per-client deployment guide (VS Code, JetBrains, Visual Studio)
 - [Trillium Software](https://www.trilliumsoftware.com/) — Trillium Realtime product page
 - [Model Context Protocol documentation](https://modelcontextprotocol.io/) — MCP specification and client guides
