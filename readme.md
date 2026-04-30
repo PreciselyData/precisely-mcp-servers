@@ -17,11 +17,9 @@
 | `precisely-analyze` | Data360 Analyze             |   ~5    | stdio, HTTP | | [README](core-analyze/README.md) | 🔵 Beta |
 | `precisely-ga-sdk` | Geographic Addressing SDK   |   ~5    | stdio | | [README](core-ga-sdk/README.md) | 🔵 Beta |
 | `precisely-geotax-sdk` | GeoTAX SDK                  |   ~5    | stdio | | [README](core-geotax-sdk/README.md) | 🔵 Beta |
-| `precisely-B2BI` | B2Bi                        |    ?    | stdio, HTTP | | [README](core-b2bi/README.md) | 🟡 In Development |
 
 **Status key:**
 - ✅ **Active** — fully implemented, tested, and production-ready in this repo
-- 🟡 **In Development** — actively being built; not yet ready for production use
 - 🔵 **Beta** — folder and docs scaffolded; full implementation in progress or external
 - 🔴 **Deprecated** — no longer maintained
 
@@ -66,7 +64,6 @@ precisely-mcp-servers/
 ├── core-analyze/                    ← 🔵 Beta: Precisely Analyze
 ├── core-ga-sdk/                     ← 🔵 Beta: Geographic Addressing SDK
 └── core-geotax-sdk/                 ← 🔵 Beta: GeoTAX SDK
-└── core-b2bi/                       ← 🟡 In Development: B2Bi
 ```
 
 ---
