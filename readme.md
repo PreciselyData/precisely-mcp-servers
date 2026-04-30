@@ -15,7 +15,7 @@
 | `precisely-dqplus`             | Data360 DQ+                 | Graphql | HTTP | hosted only                                                                                                                              | [README](core-dq-plus/README.md) | 🔵 Beta |
 | `precisely-enterworks`         | Enterworks                  | GraphQL | HTTP | [enterworks-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/enterworks-mcp-beta.v1.0)                 | [README](core-enterworks/README.md) | 🔵 Beta |
 | `precisely-analyze`            | Data360 Analyze             |    6    | stdio | [data360-analyze-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/data360-analyze-mcp-beta.v1.0)       | [README](core-analyze/README.md) | 🔵 Beta |
-| `precisely-ga-sdk`             | Geographic Addressing SDK   |   ~5    | stdio |                                                                                                                                          | [README](core-ga-sdk/README.md) | 🔵 Beta |
+| `precisely-ga-sdk`             | Geographic Addressing SDK   |   ~5    | stdio | [ga-sdk-mcp-server-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/ga-sdk-mcp-server-beta.v1.0) | [README](core-ga-sdk/README.md) | 🔵 Beta |
 | `precisely-geotax-sdk`         | GeoTAX SDK                  |   ~5    | stdio |                                                                                                                                          | [README](core-geotax-sdk/README.md) | 🔵 Beta |
 
 **Status key:**
