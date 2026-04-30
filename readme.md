@@ -7,14 +7,14 @@
 ## MCP Server Registry
 
 | Server | Product                     |  Tools  | Transport | Server Location | Docs | Status |
-|--------|-----------------------------|:-------:|-----------|-----------------|------|:------:|
+|--------|-----------------------------|:-------:|-------|-----------------|------|:------:|
 | `precisely-dis-locate` | DIS / Locate APIs v2        |   68    | stdio, HTTP | [`dis-locate-apis-v2/`](dis-locate-apis-v2/) | [README](dis-locate-apis-v2/readme.md) | ✅ Active |
 | `precisely-spectrum` | Spectrum Technology Platform |   ~10   | stdio, HTTP | | [README](core-spectrum/README.md) | 🔵 Beta |
-| `precisely-trillium` | Trillium Quality            |   ~25   | stdio, HTTP | | [README](core-trillium-quality/README.md) | 🔵 Beta |
-| `precisely-trillium-discovery` | Trillium Discovery          |   ~25   | stdio, HTTP | | [README](core-trillium-discovery/README.md) | 🔵 Beta |
+| `precisely-trillium` | Trillium Quality            |    7    | stdio | | [README](core-trillium-quality/README.md) | 🔵 Beta |
+| `precisely-trillium-discovery` | Trillium Discovery          |   11    | stdio | | [README](core-trillium-discovery/README.md) | 🔵 Beta |
 | `precisely-dqplus` | Data360 DQ+                 | Graphql | HTTP | | [README](core-dq-plus/README.md) | 🔵 Beta |
 | `precisely-enterworks` | Enterworks                  | Grpahql | HTTP | | [README](core-enterworks/README.md) | 🔵 Beta |
-| `precisely-analyze` | Data360 Analyze             |   ~5    | stdio, HTTP | | [README](core-analyze/README.md) | 🔵 Beta |
+| `precisely-analyze` | Data360 Analyze             |    6    | stdio | | [README](core-analyze/README.md) | 🔵 Beta |
 | `precisely-ga-sdk` | Geographic Addressing SDK   |   ~5    | stdio | | [README](core-ga-sdk/README.md) | 🔵 Beta |
 | `precisely-geotax-sdk` | GeoTAX SDK                  |   ~5    | stdio | | [README](core-geotax-sdk/README.md) | 🔵 Beta |
 
