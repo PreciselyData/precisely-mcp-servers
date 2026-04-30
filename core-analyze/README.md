@@ -1,5 +1,7 @@
 # Analyze MCP Server
 
+> 📦 **Download:** [data360-analyze-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/data360-analyze-mcp-beta.v1.0)
+
 Analyze MCP Server exposes an MCP tool surface that lets an MCP client (for example, Copilot or Claude Desktop) discover, execute, and inspect Analyze dataflows through natural language.
 
 ## Prerequisites

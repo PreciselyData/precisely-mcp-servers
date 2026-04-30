@@ -1,5 +1,7 @@
 # Beta Test VM Deployment
 
+> 📦 **Download:** [trillium-discovery-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/trillium-discovery-mcp.beta.v1.0)
+
 ## Purpose
 
 This file gives the exact minimum deployment bundle for running the packaged MCP server on a separate Windows test VM.

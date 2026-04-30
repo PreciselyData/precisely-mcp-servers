@@ -1,5 +1,7 @@
 # Enterworks GraphQL MCP Server
 
+> 📦 **Download:** [enterworks-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/enterworks-mcp-beta.v1.0)
+
 The **enable-mcp** module exposes an Enterworks MDM (Master Data Management)
 system as both a GraphQL API and an
 [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server.
