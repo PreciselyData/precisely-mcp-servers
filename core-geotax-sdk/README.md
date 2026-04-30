@@ -1,67 +1,105 @@
-# Precisely GeoTAX SDK MCP Server
+# GeoTax MCP Server
 
-> **Registry Entry** | Server: `precisely-geotax-sdk` | Status: 🟡 Planned
+> 📦 **Download:** [geotax-sdk-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/geotax-sdk-mcp.beta.v1.0)
 
-The GeoTAX SDK is Precisely's on-premise tax jurisdiction and rate lookup library. It determines the applicable tax jurisdictions (federal, state, county, city, district) and tax rates for any US address or coordinate, supporting sales tax compliance, SUT (Sales and Use Tax), and property tax workflows. This MCP server wraps the GeoTAX SDK for use with AI assistants.
+A standalone **Model Context Protocol (MCP)** server that exposes GeoTax SDK capabilities as tools and resources for LLM-based applications.
+
+**Transport:** stdio (tested and working with GitHub Copilot & Claude Desktop)
 
 ---
 
-## MCP Tools
+## Overview
 
-| Tool Name | Description |
-|-----------|-------------|
-| `geotax_lookup` | Look up tax jurisdiction(s) for an address or lat/lon coordinate |
-| `geotax_rates` | Retrieve applicable tax rates for a jurisdiction code |
-| `geotax_boundary` | Return tax boundary polygon(s) for a given location |
-| `geotax_verify_address` | Address-level tax jurisdiction verification with standardization |
-| `geotax_batch_lookup` | Batch tax jurisdiction lookups for multiple addresses |
-
-> ⚠️ Tool list is indicative. Final tool names and count will be confirmed during implementation.
+This MCP server provides programmatic access to GeoTax tax calculation, comparison, and knowledge base features through the standardized MCP protocol. It can be used with MCP-compatible clients such as Claude Desktop, VS Code Copilot, JetBrains Copilot, and custom LLM applications.
 
 ---
 
 ## Prerequisites
 
-- Precisely GeoTAX SDK installed on the host machine
-- Valid GeoTAX SDK license key
-- GeoTAX reference data (PB TaxData) downloaded and accessible
-- Python 3.8+
-- GeoTAX SDK Python bindings (or REST wrapper) configured
+- Node.js 18+
+- GeoTax SDK service running and reachable (default: `http://localhost:8080`)
 
 ---
 
-## Authentication
+## Installation
 
-| Environment Variable | Description |
-|----------------------|-------------|
-| `GEOTAX_INSTALL_PATH` | Absolute path to the GeoTAX SDK installation directory |
-| `GEOTAX_LICENSE_KEY` | GeoTAX SDK license key |
-| `GEOTAX_DATA_PATH` | Path to the GeoTAX reference data (PB TaxData) directory |
+```bash
+cd geotax-mcp-server
+npm install
+```
+
+---
+
+## Configuration
+
+Set environment variable to point to your GeoTax service:
+
+```bash
+# Default: http://localhost:8080
+export GEOTAX_BASE_URL=http://localhost:8080
+```
+
+---
+
+## MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `get_tax` | Get tax rate and jurisdiction information for a US address |
+| `compare_tax` | Compare tax rates between two US addresses |
+| `get_tax_info` | Get information about GeoTax API response fields, datasets, or system |
+
+### `get_tax`
+
+**Input:**
+```json
+{ "address": "30 Pleasant St Northampton MA" }
+```
+
+### `compare_tax`
+
+**Input:**
+```json
+{
+  "address1": "1 Global View Troy NY",
+  "address2": "30 Pleasant St Northampton MA"
+}
+```
+
+### `get_tax_info`
+
+**Input:**
+```json
+{ "question": "what is preciselyId?" }
+```
+
+---
+
+## MCP Resources
+
+| URI | Description |
+|-----|-------------|
+| `geotax://fields` | Complete list of all GeoTax API response fields |
+| `geotax://datasets` | Information about GeoTax datasets (SPD, IPD, etc.) |
+| `geotax://response-structure` | Full API response JSON structure |
 
 ---
 
 ## Claude Desktop Configuration
 
-> **Note:** The GeoTAX SDK MCP server runs as a **local stdio process** only, since it depends on a locally installed shared library and reference data.
-
 ```json
 {
   "mcpServers": {
     "precisely-geotax-sdk": {
-      "command": "python",
-      "args": ["-m", "mcp_servers"],
-      "cwd": "C:\\path\\to\\geotax-sdk-mcp",
+      "command": "node",
+      "args": ["C:/path/to/geotax-mcp-server/src/index.js"],
       "env": {
-        "GEOTAX_INSTALL_PATH": "C:\\PreciselySDK\\GeoTAX",
-        "GEOTAX_LICENSE_KEY": "your_license_key",
-        "GEOTAX_DATA_PATH": "C:\\PreciselySDK\\GeoTAX\\data"
+        "GEOTAX_BASE_URL": "http://localhost:8080"
       }
     }
   }
 }
 ```
-
-See [`claude_desktop_config.example.json`](claude_desktop_config.example.json) for a ready-to-copy file.
 
 ---
 
@@ -72,13 +110,11 @@ See [`claude_desktop_config.example.json`](claude_desktop_config.example.json) f
   "servers": {
     "precisely-geotax-sdk": {
       "type": "stdio",
-      "command": "python",
-      "args": ["-m", "mcp_servers"],
-      "cwd": "${workspaceFolder}/../geotax-sdk-mcp",
+      "command": "node",
+      "args": ["./src/index.js"],
+      "cwd": "${workspaceFolder}/core-geotax-sdk",
       "env": {
-        "GEOTAX_INSTALL_PATH": "${input:geotax-install-path}",
-        "GEOTAX_LICENSE_KEY": "${input:geotax-license-key}",
-        "GEOTAX_DATA_PATH": "${input:geotax-data-path}"
+        "GEOTAX_BASE_URL": "http://localhost:8080"
       }
     }
   }
@@ -87,42 +123,36 @@ See [`claude_desktop_config.example.json`](claude_desktop_config.example.json) f
 
 ---
 
-## Transport Options
+## Integration with JetBrains (GitHub Copilot)
+
+```json
+{
+  "servers": {
+    "precisely-geotax-sdk": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["C:/path/to/geotax-mcp-server/src/index.js"],
+      "env": {
+        "GEOTAX_BASE_URL": "http://localhost:8080"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Transport
 
 | Transport | Command | Best For |
 |-----------|---------|----------|
-| stdio | `python -m mcp_servers` | Claude Desktop, VS Code, Cursor, local scripts |
-
-> ℹ️ HTTP transport is not recommended for SDK-based servers that rely on a local shared library. Use stdio for all GeoTAX SDK deployments.
-
----
-
-## Supported Tax Types
-
-| Tax Type | Supported |
-|----------|-----------|
-| State Sales Tax | ✅ |
-| County Tax | ✅ |
-| City / Municipal Tax | ✅ |
-| Special District Tax | ✅ |
-| Use Tax | ✅ |
-| Property Tax Jurisdiction | ✅ |
-
----
-
-## Data Updates
-
-GeoTAX reference data requires updates to reflect legislative tax rate changes. Precisely publishes updated PB TaxData:
-- **Quarterly** for major US rate changes
-- **Monthly** for states with frequent changes (e.g., Louisiana, Colorado)
-
-Refer to your Precisely data subscription for update procedures.
+| stdio | `node src/index.js` | Claude Desktop, VS Code, JetBrains Copilot |
 
 ---
 
 ## Server Repository
 
-- **Code:** External — link TBD once the GeoTAX SDK MCP repo is established
+- **Release:** [geotax-sdk-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/geotax-sdk-mcp.beta.v1.0)
 - **Issues:** [GitHub Issues](../../../issues)
 - **GeoTAX Docs:** https://support.precisely.com/geotax-sdk
 
@@ -131,4 +161,3 @@ Refer to your Precisely data subscription for update procedures.
 ## License
 
 The GeoTAX SDK is subject to a Precisely SDK license agreement. This MCP wrapper is subject to the license in [`dis-locate-apis-v2/LICENSE`](../dis-locate-apis-v2/LICENSE).
-
