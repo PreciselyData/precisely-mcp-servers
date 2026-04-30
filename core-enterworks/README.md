@@ -245,20 +245,58 @@ direct, single-user connection between Claude and your MDM instance.
 
 ### Setup
 
-1. **Download the EXE** — copy `enable2020-mcp-server-service.exe` to a local
-   folder (e.g. `C:\Enterworks\mcp-server\`).
+1. **Download the binary** from the GitHub release:
 
-2. **Edit `claude_desktop_config.json`** — the file lives at:
-   ```
-   %APPDATA%\Claude\claude_desktop_config.json
-   ```
-   Add an entry under `"mcpServers"`:
+   > **Release tag:** [`enterworks-mcp-beta.v1.0`](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/enterworks-mcp-beta.v1.0)
 
+   | Platform | Binary |
+   |----------|--------|
+   | Windows  | `enable2020-mcp-server-service-windows-amd64.exe` |
+   | Linux    | `enable2020-mcp-server-service-linux-amd64` |
+   | macOS    | `enable2020-mcp-server-service-darwin-amd64` |
+
+   Place the binary in a convenient local folder, e.g.:
+   - **Windows:** `C:\Enterworks\mcp-server\`
+   - **Linux / macOS:** `~/enterworks/mcp-server/`
+
+   On Linux and macOS, make the binary executable after downloading:
+   ```bash
+   chmod +x enable2020-mcp-server-service-linux-amd64
+   # or
+   chmod +x enable2020-mcp-server-service-darwin-amd64
+   ```
+
+2. **Edit `claude_desktop_config.json`:**
+
+   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+   - **Linux:** `~/.config/Claude/claude_desktop_config.json`
+   - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+   Add an entry under `"mcpServers"` — adjust the path and binary name for your platform:
+
+   **Windows:**
    ```jsonc
    {
      "mcpServers": {
        "enterworks": {
-         "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service.exe",
+         "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service-windows-amd64.exe",
+         "args": [
+           "--enterworks-url", "https://your-mdm-server.example.com",
+           "--login", "your_username",
+           "--password", "your_password",
+           "--repository-group-ids", "2,10006"
+         ]
+       }
+     }
+   }
+   ```
+
+   **Linux / macOS:**
+   ```jsonc
+   {
+     "mcpServers": {
+       "enterworks": {
+         "command": "/home/you/enterworks/mcp-server/enable2020-mcp-server-service-linux-amd64",
          "args": [
            "--enterworks-url", "https://your-mdm-server.example.com",
            "--login", "your_username",
@@ -284,7 +322,7 @@ one entry per environment in `claude_desktop_config.json`:
 {
   "mcpServers": {
     "enterworks-dev": {
-      "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service.exe",
+      "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service-windows-amd64.exe",
       "args": [
         "--enterworks-url", "https://dev-mdm.example.com",
         "--login", "your_username",
@@ -293,7 +331,7 @@ one entry per environment in `claude_desktop_config.json`:
       ]
     },
     "enterworks-prod": {
-      "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service.exe",
+      "command": "C:\\Enterworks\\mcp-server\\enable2020-mcp-server-service-windows-amd64.exe",
       "args": [
         "--enterworks-url", "https://prod-mdm.example.com",
         "--login", "prod_user",
