@@ -1,5 +1,7 @@
 # Analyze MCP Server
 
+> 📦 **Download:** [data360-analyze-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/data360-analyze-mcp-beta.v1.0)
+
 Analyze MCP Server exposes an MCP tool surface that lets an MCP client (for example, Copilot or Claude Desktop) discover, execute, and inspect Analyze dataflows through natural language.
 
 ## Prerequisites
@@ -9,14 +11,11 @@ Analyze MCP Server exposes an MCP tool surface that lets an MCP client (for exam
 
 ## Setup
 
-1. Clone the repository:
+1. Download and unzip 'analyze_mcp_v0.0.3.zip'.
 
-```bash
-git clone <repo-url>
-cd <repo-folder>
-```
+2. From the command line change directories into the extracted zip folder.
 
-2. Edit `config.json` and set `analyzeUrl` to point at your Analyze instance:
+3. Edit `config.json` and set `analyzeUrl` to point at your Analyze instance:
 
 ```json
 {
@@ -33,7 +32,7 @@ See configuration reference below for details on all available configuration opt
 > Use `https://` if your Analyze instance supports it. Using `http://` means all requests, including credentials, will be sent in plain text and are not secure.
 
 
-3. Run the server:
+4. Run the server:
 
 ```bash
 node server/server.js

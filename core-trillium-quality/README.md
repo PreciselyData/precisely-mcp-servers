@@ -1,5 +1,7 @@
 # Trillium Realtime MCP
 
+> 📦 **Download:** [trillium-quality-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/trillium-quality-mcp.beta.v1.0)
+
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that exposes [Trillium Realtime](https://www.trilliumsoftware.com/) data-quality operations as tool calls for LLM agents such as GitHub Copilot.
 
 ---
