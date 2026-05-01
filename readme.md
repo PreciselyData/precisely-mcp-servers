@@ -16,7 +16,8 @@
 | `precisely-enterworks`         | Enterworks                  | GraphQL | HTTP | [enterworks-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/enterworks-mcp-beta.v1.0)                 | [README](core-enterworks/README.md) | 🔵 Beta |
 | `precisely-analyze`            | Data360 Analyze             |    6    | stdio | [data360-analyze-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/data360-analyze-mcp-beta.v1.0)       | [README](core-analyze/README.md) | 🔵 Beta |
 | `precisely-ga-sdk`             | Geographic Addressing SDK   |   5    | stdio | [ga-sdk-mcp-server-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/ga-sdk-mcp-server-beta.v1.0) | [README](core-ga-sdk/README.md) | 🔵 Beta |
-| `precisely-geotax-sdk`         | GeoTAX SDK                  |   ~5    | stdio | [geotax-sdk-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/geotax-sdk-mcp.beta.v1.0) | [README](core-geotax-sdk/README.md) | 🔵 Beta |
+| `precisely-geotax-sdk`         | GeoTAX SDK                  |   ~5    | stdio |                                                                                                                                          | [README](core-geotax-sdk/README.md) | 🔵 Beta |
+| `precisely-dis-mcp`            | Data Integrity Suite (DIS)  |    3    | HTTP  | hosted only                                                                                                                              | [README](data-integrity-suite/README.md) | 🔵 Beta |
 
 **Status key:**
 - ✅ **Active** — fully implemented, tested, and production-ready in this repo
@@ -63,7 +64,8 @@ precisely-mcp-servers/
 ├── core-enterworks/                 ← 🔵 Beta: Enterworks MDM
 ├── core-analyze/                    ← 🔵 Beta: Precisely Analyze
 ├── core-ga-sdk/                     ← 🔵 Beta: Geographic Addressing SDK
-└── core-geotax-sdk/                 ← 🔵 Beta: GeoTAX SDK
+├── core-geotax-sdk/                 ← 🔵 Beta: GeoTAX SDK
+└── data-integrity-suite/            ← 🔵 Beta: Data Integrity Suite (DIS) — hosted MCP
 ```
 
 ---
