@@ -1,7 +1,5 @@
 # Beta Test VM Deployment
 
-> 📦 **Download:** [trillium-discovery-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/trillium-discovery-mcp.beta.v1.0)
-
 ## Purpose
 
 This file gives the exact minimum deployment bundle for running the packaged MCP server on a separate Windows test VM.
@@ -76,7 +74,7 @@ YU7Aa9f5XDZ3uZDnNHO81GgdMd3Hy7f3ovOTFZLqOhBcrbw=
 
 Do this certificate replacement before launching the MCP server.
 
-> ***After replacing the Discovery SSL certificate, you will need to restart the Trillium Scheduler service.***
+**After replacing the Discovery SSL certifiate, you will need to restart the Trillium Scheduler service.**
 
 ## Exact .env Contents
 
@@ -246,7 +244,7 @@ list_repositories
 run_business_rule
 ```
 
-### 6. If using VS Code stdio, add repository startup args
+### 6. If using VS Code or Claude Desktop stdio, add repository startup args
 
 If you want VS Code to start the MCP server directly, add a server entry like this to `mcp.json` and adjust the paths and repository names for the test VM:
 
@@ -279,7 +277,6 @@ If you want VS Code to start the MCP server directly, add a server entry like th
   }
 }
 ```
-
 VS Code notes:
 
 - Use `--trillium.transport=stdio` in the `args` list because VS Code MCP launches the server over stdio, not SSE.
@@ -287,6 +284,45 @@ VS Code notes:
 - Replace `germany` and `france` with the exact repository names returned by Trillium.
 - Add one repository block per repository you want to use through VS Code.
 - The `.env` file can still keep `TRILLIUM_TRANSPORT=sse` for HTTP validation; the command-line `--trillium.transport=stdio` override takes precedence for the VS Code launch.
+
+If you want Claude Desktop to start the MCP server directly, add a server entry like this to `claude_desktop_config.json` and adjust the paths and repository names for the test VM:
+
+```json
+{
+  "mcpServers": {
+    "trillium-mcp": {
+      "env": {
+        "JAVA_HOME": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.17.10-hotspot"
+      },
+      "command": "cmd.exe",
+      "args": [
+        "/c",
+        "C:\\tss-mcp-server-deploy\\scripts\\run-server-with-env.cmd",
+        "C:\\tss-mcp-server-deploy\\.env",
+        "--server.port=0",
+        "--trillium.transport=stdio",
+
+                "--trillium.repositories.germany.principal=system",
+        "--trillium.repositories.germany.permissions[0]=repositories:read",
+        "--trillium.repositories.germany.permissions[1]=entities:read",
+        "--trillium.repositories.germany.permissions[2]=business-rules:read",
+        "--trillium.repositories.germany.permissions[3]=business-rules:execute",
+
+        "--trillium.repositories.france.principal=system",
+        "--trillium.repositories.france.permissions[0]=repositories:read",
+        "--trillium.repositories.france.permissions[1]=entities:read",
+        "--trillium.repositories.france.permissions[2]=business-rules:read",
+        "--trillium.repositories.france.permissions[3]=business-rules:execute"
+      ]
+    }
+  },
+  "preferences": {
+    "coworkWebSearchEnabled": true,
+    "coworkScheduledTasksEnabled": false,
+    "ccdScheduledTasksEnabled": false
+  }
+}
+```
 
 Use one block like this for each allowed repository name:
 
@@ -318,11 +354,7 @@ Notes:
 - Any protected repository-scoped follow-on tool still requires the repository to be configured at startup.
 - `get_entity_rows` is a compatibility alias for `list_entity_rows`.
 
-### 7. Working with Claude Desktop
-
-The Beta MCP Server for Trillium Discovery will **NOT** work with Claude Desktop at this time. We are working to enable this integration as soon as possible.
-
-### 8. Run a minimal validation sequence
+### 7. Run a minimal validation sequence
 
 After startup, validate in this order:
 
