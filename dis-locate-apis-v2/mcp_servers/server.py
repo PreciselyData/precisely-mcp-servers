@@ -27,7 +27,7 @@ def create_server(precisely_api, tools: list, tool_module_map: dict) -> Server:
 
     @app.list_tools()
     async def list_tools() -> list[Tool]:
-        """List all 68 Precisely API tools."""
+        """List all 51 Precisely API tools."""
         return tools
 
     @app.call_tool()

@@ -1,6 +1,6 @@
 """
 Timezone Tools Module
-Contains 2 tools for timezone lookups by address and coordinates
+Contains 1 tool for timezone lookups by address or coordinates
 """
 from mcp.types import Tool
 from mcp_servers.tools.base_tool import handle_tool_call  # noqa: F401
@@ -10,24 +10,14 @@ def get_tools() -> list[Tool]:
     """Returns list of timezone tool definitions"""
     return [
         Tool(
-            name="timezone_addresses",
-            description=(
-                "Look up the timezone for one or more addresses, including UTC offset and DST status, "
-                "at a specific UTC time. "
-                "Returns the IANA timezone name (e.g., 'America/New_York'), UTC offset in hours and minutes, "
-                "and whether daylight saving time (DST) is in effect at the given timestamp. "
-                "Use this tool when you have street addresses and need timezone information. "
-                "Do NOT use if you have coordinates instead of addresses — use timezone_locations instead. "
-                "Supports multiple addresses in a single call.\n\n"
-                "Output: Array of timezone result objects (one per input address), each containing "
-                "the IANA timezone ID, UTC offset, DST status, and the input address id for correlation."
-            ),
+            name="get_timezones",
+            description="""Look up the timezone for one or more addresses or geographic coordinates (longitude, latitude), including UTC offset and DST status, at a specific UTC point in time. Returns the IANA timezone name (e.g., 'America/New_York'), UTC offset in hours and minutes, and whether daylight saving time (DST) is in effect at the given timestamp. Provide either 'addresses' (when you have street addresses) or 'locations' (when you have coordinate pairs) — not both. Supports multiple entries in a single call.
+
+Output: Array of timezone result objects (one per input), each containing the IANA timezone ID, UTC offset, DST status, and the input id for correlation.""",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "object",
-                        "description": "Timezone lookup request payload.",
+                "oneOf": [
+                    {
                         "properties": {
                             "addresses": {
                                 "type": "array",
@@ -70,30 +60,8 @@ def get_tools() -> list[Tool]:
                             }
                         },
                         "required": ["addresses"]
-                    }
-                },
-                "required": ["data"]
-            }
-        ),
-        Tool(
-            name="timezone_locations",
-            description=(
-                "Look up the timezone for one or more geographic coordinates (longitude, latitude), "
-                "including UTC offset and DST status, at a specific UTC point in time. "
-                "Returns the IANA timezone name (e.g., 'America/Chicago'), UTC offset in hours and minutes, "
-                "and whether daylight saving time (DST) is in effect at the given timestamp. "
-                "Use this tool when you have coordinate pairs and need timezone information. "
-                "Do NOT use if you have street addresses instead of coordinates — use timezone_addresses instead. "
-                "Supports multiple coordinate pairs in a single call.\n\n"
-                "Output: Array of timezone result objects (one per input coordinate), each containing "
-                "the IANA timezone ID, UTC offset, DST status, and the input id for correlation."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "object",
-                        "description": "Timezone lookup request payload.",
+                    },
+                    {
                         "properties": {
                             "locations": {
                                 "type": "array",
@@ -134,8 +102,7 @@ def get_tools() -> list[Tool]:
                         },
                         "required": ["locations"]
                     }
-                },
-                "required": ["data"]
+                ]
             }
         ),
     ]

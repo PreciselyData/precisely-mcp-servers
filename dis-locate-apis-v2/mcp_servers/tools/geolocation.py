@@ -11,19 +11,16 @@ def get_tools() -> list[Tool]:
     return [
         Tool(
             name="geo_locate_ip_address",
-            description=(
-                "Resolve the approximate geographic location (city-level) of a device or network "
-                "from its public IP address. "
-                "Returns country, region, city, postal code, and approximate latitude/longitude. "
-                "Use this tool when you have a public IPv4 or IPv6 address and need to infer its physical location. "
-                "Do NOT use for precise location — IP geolocation is approximate (city-level accuracy at best) "
-                "and should not be used as a substitute for GPS or address-based geocoding. "
-                "Do NOT use with private/reserved IP addresses (e.g., 192.168.x.x, 10.x.x.x, 127.0.0.1) — "
-                "those will not resolve to a meaningful location. "
-                "For WiFi-based location, use geo_locate_wifi_access_point instead.\n\n"
-                "Output: Object with country, region/state, city, postal code, approximate latitude/longitude, "
-                "and ISP information for the given IP address."
-            ),
+            description="""Resolve the approximate geographic location (city-level) of a device or network from its
+public IP address. Returns country, region, city, postal code, and approximate latitude/longitude.
+Use this tool when you have a public IPv4 or IPv6 address and need to infer its physical location.
+Do NOT use for precise location — IP geolocation is approximate (city-level accuracy at best)
+and should not be used as a substitute for GPS or address-based geocoding.
+Do NOT use with private/reserved IP addresses (e.g., 192.168.x.x, 10.x.x.x, 127.0.0.1) —
+those will not resolve to a meaningful location.
+For WiFi-based location, use geo_locate_wifi_access_point instead.
+
+Output: Object with country, region/state, city, postal code, approximate latitude/longitude, and ISP information for the given IP address.""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -40,17 +37,15 @@ def get_tools() -> list[Tool]:
         ),
         Tool(
             name="geo_locate_wifi_access_point",
-            description=(
-                "Resolve the geographic location of a device from nearby WiFi access point signal data. "
-                "Returns latitude, longitude, and accuracy radius based on the MAC address, optionally signal strength "
-                "of the observed WiFi access point(s). "
-                "Use this tool when you have WiFi scanning data (MAC address, signal strength) "
-                "and need to determine physical location without GPS. "
-                "Do NOT use if you have an IP address — use geo_locate_ip_address instead. "
-                "Do NOT use if you have a street address — use geocode instead. "
-                "Output: Object with latitude, longitude, and accuracy radius (in meters) "
-                "for the resolved location of the WiFi access point."
-            ),
+            description="""Resolve the geographic location of a device from nearby WiFi access point signal data.
+Returns latitude, longitude, and accuracy radius based on the MAC address, optionally signal
+strength of the observed WiFi access point(s). Use this tool when you have WiFi scanning data
+(MAC address, signal strength) and need to determine physical location without GPS.
+Do NOT use if you have an IP address — use geo_locate_ip_address instead.
+Do NOT use if you have a street address — use geocode instead.
+
+Output: Object with latitude, longitude, and accuracy radius (in meters) for the resolved
+location of the WiFi access point.""",
             inputSchema={
                 "type": "object",
                 "properties": {

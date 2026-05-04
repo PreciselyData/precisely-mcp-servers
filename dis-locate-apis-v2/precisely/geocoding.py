@@ -89,75 +89,102 @@ class GeocodingMixin:
             logger.error(f"Address verification error: {e}")
             return self._build_error("Address verification", e)
 
-    def parse_address(self, address: str, **kwargs) -> Dict[str, Any]:
-        """Parse a single-line address into structured components"""
-        try:
-            url = f"{self.base_url}/v1/address/parse"
-            json_data = {"address": address}
-            logger.debug(f"[parse_address] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, json=json_data)
-            logger.debug(f"[parse_address] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Parse address error: {e}")
-            return self._build_error("Parse address", e)
+    def parse_addresses(self, addresses, **kwargs) -> Dict[str, Any]:
+        """Parse one or more free-text addresses into structured components.
 
-    def parse_address_batch(self, addresses: List[Dict], **kwargs) -> Dict[str, Any]:
-        """Parse a batch of addresses into structured components"""
+        Accepts a single address string or a list of address objects.
+        Always uses the batch endpoint; a single string is auto-wrapped.
+
+        Args:
+            addresses: A single address string (e.g., "1700 District Ave #300, Burlington, MA 01803"),
+                or a list of dicts with 'address' (and optional 'id') keys.
+                Maximum 10 addresses per call.
+        """
         try:
             url = f"{self.base_url}/v1/address/parse/batch"
-            json_data = {"addresses": addresses}
-            logger.debug(f"[parse_address_batch] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, json=json_data)
-            logger.debug(f"[parse_address_batch] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Parse address batch error: {e}")
-            return self._build_error("Parse address batch", e)
 
-    def autocomplete(self, address: Dict, preferences: Dict = None, **kwargs) -> Dict[str, Any]:
-        """Address autocomplete suggestions"""
-        try:
-            url = f"{self.base_url}/v1/autocomplete"
-            json_data = {"address": address, "preferences": preferences or {}}
-            logger.debug(f"[autocomplete] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, json=json_data)
-            logger.debug(f"[autocomplete] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Autocomplete error: {e}")
-            return self._build_error("Autocomplete", e)
+            # Normalize input → list of {"address": ...} dicts
+            if isinstance(addresses, str):
+                processed_addresses = [{"address": addresses}]
+            elif isinstance(addresses, list):
+                processed_addresses = addresses
+            else:
+                return self._build_error(
+                    "Address parsing",
+                    ValueError(
+                        "'addresses' must be a string (single address) or a list of "
+                        "dicts with 'address' key (multiple addresses)."
+                    ),
+                )
 
-    def autocomplete_postal_city(self, address: Dict, preferences: Dict = None, **kwargs) -> Dict[str, Any]:
-        """Autocomplete postal city API"""
-        try:
-            url = f"{self.base_url}/v1/autocomplete/postal-city"
-            json_data = {"address": address, "preferences": preferences or {}}
-            logger.debug(f"[autocomplete_postal_city] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, json=json_data)
-            logger.debug(f"[autocomplete_postal_city] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Autocomplete postal city error: {e}")
-            return self._build_error("Autocomplete postal city", e)
+            if not processed_addresses:
+                return self._build_error(
+                    "Address parsing",
+                    ValueError("No addresses provided."),
+                )
 
-    def autocomplete_v2(self, address: Dict, preferences: Dict = None, **kwargs) -> Dict[str, Any]:
-        """Express autocomplete API (V2)"""
-        try:
-            url = f"{self.base_url}/v1/express-autocomplete"
-            json_data = {"address": address, "preferences": preferences or {}}
-            logger.debug(f"[autocomplete_v2] Request payload: {json.dumps(json_data, indent=2)}")
+            json_data = {"addresses": processed_addresses}
+            logger.debug(f"[parse_addresses] Request payload: {json.dumps(json_data, indent=2)}")
             response = self.session.post(url, json=json_data)
-            logger.debug(f"[autocomplete_v2] Raw response: {response.text}")
+            logger.debug(f"[parse_addresses] Raw response: {response.text}")
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"Autocomplete v2 error: {e}")
-            return self._build_error("Autocomplete v2", e)
+            logger.error(f"Address parsing error: {e}")
+            return self._build_error("Address parsing", e)
+
+    def autocomplete_address(
+        self,
+        address: Dict,
+        preferences: Dict = None,
+        express: bool = False,
+        **kwargs,
+    ) -> Dict[str, Any]:
+        """Autocomplete addresses, postal codes, or city names.
+
+        Routes to the correct endpoint based on address structure:
+        - addressLines present → street address autocomplete (standard or express)
+        - postAddress present → postal code / city name autocomplete
+
+        Args:
+            address: Address input — either {addressLines, country, ...} for street
+                or {postAddress, country, type?} for postal/city.
+            preferences: Optional preferences (e.g., maxResults).
+            express: When True, uses the faster express engine for street address
+                autocomplete. Ignored for postal/city lookups.
+        """
+        is_street = "addressLines" in address
+        is_postal = "postAddress" in address
+
+        if not is_street and not is_postal:
+            return {
+                "error": {
+                    "message": (
+                        "Address must contain either 'addressLines' (for street autocomplete) "
+                        "or 'postAddress' (for postal/city autocomplete)."
+                    ),
+                    "error_type": "ValidationError",
+                }
+            }
+
+        try:
+            if is_postal:
+                url = f"{self.base_url}/v1/autocomplete/postal-city"
+            elif express:
+                url = f"{self.base_url}/v1/express-autocomplete"
+            else:
+                url = f"{self.base_url}/v1/autocomplete"
+
+            json_data = {"address": address, "preferences": preferences or {}}
+            logger.debug(f"[autocomplete_address] POST {url}")
+            logger.debug(f"[autocomplete_address] Request payload: {json.dumps(json_data, indent=2)}")
+            response = self.session.post(url, json=json_data)
+            logger.debug(f"[autocomplete_address] Raw response: {response.text}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Autocomplete address error: {e}")
+            return self._build_error("Autocomplete address", e)
 
     def lookup(self, keys: List[Dict], preferences: Dict = None, **kwargs) -> Dict[str, Any]:
         """Lookup address details by PreciselyID"""

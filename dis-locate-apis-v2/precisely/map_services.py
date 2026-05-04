@@ -1,4 +1,4 @@
-"""OGC Features, WMS, and WMTS API methods (15 tools)."""
+"""OGC Features, WMS, and WMTS API methods (8 tools)."""
 
 import base64
 import json
@@ -12,62 +12,6 @@ class MapServicesMixin:
     # ========================================
     # OGC Features APIs
     # ========================================
-
-    def ogc_landing_page(self, **kwargs) -> Dict[str, Any]:
-        """The landing page provides links to essential API resources, including:
-- **API Definition:** A machine-readable specification of the API.
-- **Conformance Declaration:** A list of standards that the API conforms to.
-- **Feature Collections:** Information and links to the available feature collections in the dataset.
-
-Use this endpoint to quickly navigate and explore the API's capabilities.
-
-        Args:
-            **kwargs: Additional keyword arguments passed to the API.
-
-        Returns:
-            Dict[str, Any]: LandingPageResponse with keys 'title' (str), 'description' (str),
-                and 'links' (list of Link objects with href, rel, type, title).
-
-        Example:
-            ogc_landing_page()
-        """
-        try:
-            url = f"{self.base_url}/v1/ogcapi/enrich/"
-            logger.debug(f"[ogc_landing_page] GET {url}")
-            response = self.session.get(url)
-            logger.debug(f"[ogc_landing_page] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"OGC landing page error: {e}")
-            return self._build_error("OGC landing page", e)
-
-    def ogc_api_definition(self, **kwargs) -> Dict[str, Any]:
-        """This endpoint retrieves the complete OpenAPI definition for the API. The response is a machine-readable specification that describes all available endpoints, request/response schemas, and security configurations.
-
-- **Format:** The API definition conforms to the OpenAPI 3.0.1 standard.
-
-        Args:
-            **kwargs: Additional keyword arguments passed to the API.
-
-        Returns:
-            Dict[str, Any]: Complete OpenAPI 3.0.1 definition as a JSON object with keys 'openapi' (str),
-                'info' (dict), 'servers' (list), 'paths' (dict), and 'components' (dict).
-
-        Example:
-            ogc_api_definition()
-        """
-        try:
-            url = f"{self.base_url}/v1/ogcapi/enrich/api"
-            headers = {"Accept": "application/vnd.oai.openapi+json;version=3.0"}
-            logger.debug(f"[ogc_api_definition] GET {url}")
-            response = self.session.get(url, headers=headers)
-            logger.debug(f"[ogc_api_definition] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"OGC API definition error: {e}")
-            return self._build_error("OGC API definition", e)
 
     def ogc_functions(self, **kwargs) -> Dict[str, Any]:
         """This endpoint returns a list of available spatial functions within the API.
@@ -94,32 +38,6 @@ Use this endpoint to quickly navigate and explore the API's capabilities.
         except Exception as e:
             logger.error(f"OGC functions error: {e}")
             return self._build_error("OGC functions", e)
-
-    def ogc_conformance(self, **kwargs) -> Dict[str, Any]:
-        """This endpoint returns the conformance declaration for the API. The conformance declaration is a list of all conformance classes specified in a standard that the server adheres to. It helps clients determine whether the API meets the required standards and their own requirements.
-
-- **Purpose:** Provides a comprehensive list of conformance classes to verify the API's compliance with OGC API standards and additional specifications.
-- **Standards:** Includes OGC API conformance classes and any extra specifications the API supports.
-
-        Args:
-            **kwargs: Additional keyword arguments passed to the API.
-
-        Returns:
-            Dict[str, Any]: ConformancePageResponse with key 'conformsTo' (list of conformance class URI strings).
-
-        Example:
-            ogc_conformance()
-        """
-        try:
-            url = f"{self.base_url}/v1/ogcapi/enrich/conformance"
-            logger.debug(f"[ogc_conformance] GET {url}")
-            response = self.session.get(url)
-            logger.debug(f"[ogc_conformance] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"OGC conformance error: {e}")
-            return self._build_error("OGC conformance", e)
 
     def ogc_collections(self, **kwargs) -> Dict[str, Any]:
         """This endpoint returns the list of feature collections available on the server. Each collection represents a spatial dataset that can be queried and provides essential metadata, including:
@@ -255,14 +173,16 @@ This metadata is essential for clients to build dynamic query interfaces and val
             logger.error(f"OGC collection queryables error: {e}")
             return self._build_error("OGC collection queryables", e)
 
-    def ogc_collection_items(self, collectionId: str, **kwargs) -> Dict[str, Any]:
+    def ogc_collection_items(self, collectionId: str, featureId: str = None, **kwargs) -> Dict[str, Any]:
         """Fetch features of the feature collection with id `{collectionId}`.
 
 Every feature in a dataset belongs to a collection. A dataset may consist of multiple feature collections, each representing a group of features that share a common schema and type.
 
 The **collection id** is a unique identifier for the spatial dataset and is used to reference a specific collection within the API.
 
-Additional capabilities include:
+When a featureId is provided, retrieves a single feature in GeoJSON format.
+
+When no featureId is provided, additional capabilities include:
 - **Filtering:** Supports attribute-based filtering using CQL (Common Query Language).
 - **Pagination:** Use `limit` and `offset` parameters to paginate results.
 - **Spatial Queries:**
@@ -271,6 +191,7 @@ Additional capabilities include:
 
         Args:
             collectionId (str): Unique identifier of the collection.
+            featureId (str, optional): Unique feature identifier. When provided, returns a single feature.
             **kwargs: Additional keyword arguments passed to the API.
                 limit (str): Number of items to return (max: 10,000).
                 offset (str): Offset for pagination.
@@ -284,13 +205,19 @@ Additional capabilities include:
 
         Example:
             ogc_collection_items(collectionId="properties/buildings", limit=100, offset=0)
+            ogc_collection_items(collectionId="properties/buildings", featureId="1")
         """
         try:
-            url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/items"
-            params = {k: kwargs[k] for k in ["limit", "offset", "bbox", "filter"] if k in kwargs}
+            if featureId:
+                url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/items/{featureId}"
+                params = {}
+            else:
+                url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/items"
+                params = {k: kwargs[k] for k in ["limit", "offset", "bbox", "filter"] if k in kwargs}
             headers = {"Accept": "application/geo+json"}
             logger.debug(f"[ogc_collection_items] GET {url}")
-            logger.debug(f"[ogc_collection_items] Request params: {params}")
+            if params:
+                logger.debug(f"[ogc_collection_items] Request params: {params}")
             response = self.session.get(url, params=params, headers=headers)
             logger.debug(f"[ogc_collection_items] Raw response: {response.text}")
             response.raise_for_status()
@@ -299,48 +226,20 @@ Additional capabilities include:
             logger.error(f"OGC collection items error: {e}")
             return self._build_error("OGC collection items", e)
 
-    def ogc_feature_by_id(self, collectionId: str, featureId: str, **kwargs) -> Dict[str, Any]:
-        """Retrieves a single feature in GeoJSON format,
-
-        Args:
-            collectionId (str): Unique collection identifier
-            featureId (str): Unique feature identifier
-            **kwargs: Additional keyword arguments passed to the API.
-
-        Returns:
-            Dict[str, Any]: FeatureCollectionResponse (GeoJSON) with keys 'type' (str), 'features'
-                (list containing the single Feature with properties, geometry, and id), 'timeStamp' (str),
-                and 'links' (list of Link objects).
-
-        Example:
-            ogc_feature_by_id(collectionId="properties/buildings", featureId="1")
-        """
-        try:
-            url = f"{self.base_url}/v1/ogcapi/enrich/collections/{collectionId}/items/{featureId}"
-            headers = {"Accept": "application/geo+json"}
-            logger.debug(f"[ogc_feature_by_id] GET {url}")
-            response = self.session.get(url, headers=headers)
-            logger.debug(f"[ogc_feature_by_id] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"OGC feature by ID error: {e}")
-            return self._build_error("OGC feature by ID", e)
-
     # ========================================
     # WMS (Web Map Service) APIs
     # ========================================
 
-    def wms_get_request(self, **kwargs) -> Dict[str, Any]:
-        """Processes WMS requests: GetCapabilities, GetMap, GetFeatureInfo. WMS service errors (ServiceExceptionReport) with HTTP 2xx are raised as exceptions and returned as {"error": <xml>}.
+    def wms_request(self, **kwargs) -> Dict[str, Any]:
+        """Processes WMS requests: GetCapabilities, GetMap, GetFeatureInfo via GET; GetMap with custom SLD styling via POST (automatically triggered when SLD_BODY is provided). WMS service errors (ServiceExceptionReport) with HTTP 2xx are raised as exceptions and returned as {"error": <xml>}.
 
         Args:
             **kwargs: Additional keyword arguments passed to the API.
                 REQUEST (str): WMS request type
                 SERVICE (str): Service type
-                VERSION (str): WMS version
-                crs (str): crs
-                srs (str): srs
+                VERSION (str): WMS version ('1.3.0' uses crs; '1.1.1' uses srs)
+                crs (str): Coordinate reference system for WMS 1.3.0 (e.g. 'CRS:84', 'EPSG:4326', 'EPSG:3857')
+                srs (str): Spatial reference system for WMS 1.1.1 (e.g. 'EPSG:4326', 'EPSG:3857')
                 BBOX (str): BBOX
                 width (str): width
                 height (str): height
@@ -353,12 +252,16 @@ Additional capabilities include:
                 Y (str): Y
                 Feature_Count (str): Feature_Count
                 PIXELSEARCHRADIUS (str): PIXELSEARCHRADIUS
-                STYLES (str): STYLES
+                STYLES (str): Comma-separated list of style names, one per requested layer.
                 FORMAT (str): FORMAT
                 TRANSPARENT (str): TRANSPARENT
-                BGCOLOR (str): BGCOLOR
-                RESOLUTION (str): RESOLUTION
-                EXCEPTIONS (str): EXCEPTIONS
+                BGCOLOR (str): Background color for the image in hexadecimal format (e.g. '0xFF0000' for red, '0x0000FF' for blue). Requires TRANSPARENT=FALSE to take effect.
+                RESOLUTION (str): Resolution of the map image. Must be >= 72. Values below 72 cause a server error.
+                EXCEPTIONS (str): Format for reporting exceptions. Supported values: 'XML' (default), 'INIMAGE', 'BLANK'.
+                DPI (str): DPI hint (accepted by server but silently ignored — has no effect on output. From WMS POST documentation examples).
+                MAP_RESOLUTION (str): Map resolution hint (accepted by server but silently ignored — has no effect on output. From WMS POST documentation examples).
+                FORMAT_OPTIONS (str): Additional format options e.g. 'dpi:96' (accepted by server but silently ignored — has no effect on output. From WMS POST documentation examples).
+                SLD_BODY (str): Precisely JSON style definition for customizing layer appearance. When provided, the request is sent as POST with SLD_BODY as URL-encoded form data. Use empty string ('') or omit entirely to use default server styles. NOTE: passing SLD_BODY='{}' (JSON empty object string) causes a server-side InvalidStyleDetails error — always use SLD_BODY='' or omit.
 
         Returns:
             Dict[str, Any]: For GetMap success: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
@@ -367,7 +270,7 @@ Additional capabilities include:
                 On any error (HTTP 4xx/5xx or WMS ServiceException): Dict with key 'error' (str) containing the error detail or ServiceExceptionReport XML.
 
         Example:
-            wms_get_request(REQUEST="GetCapabilities", SERVICE="WMS", VERSION="1.3.0")
+            wms_request(REQUEST="GetCapabilities", SERVICE="WMS", VERSION="1.3.0")
         """
         try:
             url = f"{self.base_url}/v1/spatial/wms"
@@ -379,14 +282,28 @@ Additional capabilities include:
             kwargs_upper = {k.upper(): v for k, v in kwargs.items()}
             params = {name: kwargs_upper[name] for name in _wms_canonical if name in kwargs_upper}
             request_type = params.get("REQUEST", "").upper()
-            logger.debug(f"[wms_get_request] GET {url}")
-            logger.debug(f"[wms_get_request] Request params: {params}")
-            response = self.session.get(url, params=params, headers={"Accept": "*/*"})
+
+            # Route: SLD_BODY present → POST, otherwise → GET
+            sld_body = kwargs_upper.get("SLD_BODY")
+            if sld_body is not None:
+                form_data = {"SLD_BODY": sld_body}
+                headers = dict(self.session.headers)
+                headers.pop("Content-Type", None)
+                headers["Accept"] = "image/png"
+                headers["Content-Type"] = "application/x-www-form-urlencoded"
+                logger.debug(f"[wms_request] POST {url}")
+                logger.debug(f"[wms_request] Request params: {params}")
+                response = self.session.post(url, params=params, data=form_data, headers=headers)
+            else:
+                logger.debug(f"[wms_request] GET {url}")
+                logger.debug(f"[wms_request] Request params: {params}")
+                response = self.session.get(url, params=params, headers={"Accept": "*/*"})
+
             content_type = response.headers.get("Content-Type", "")
             if "image" in content_type:
-                logger.debug(f"[wms_get_request] Raw response: binary {len(response.content)} bytes, {content_type}")
+                logger.debug(f"[wms_request] Raw response: binary {len(response.content)} bytes, {content_type}")
             else:
-                logger.debug(f"[wms_get_request] Raw response: {response.text}")
+                logger.debug(f"[wms_request] Raw response: {response.text}")
             response.raise_for_status()
             if "image" not in content_type and "<ServiceException" in response.text:
                 raise ValueError(response.text)
@@ -402,87 +319,15 @@ Additional capabilities include:
                 return {"xml": response.text, "content_type": content_type}
             return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
-            logger.error(f"WMS get request error: {e}")
-            return self._build_error("WMS get request", e)
-
-    def wms_post_get_map(self, **kwargs) -> Dict[str, Any]:
-        """Processes WMS GetMap requests using a POST method. Accepts SLD_BODY as a form parameter (URL-encoded JSON). WMS service errors (ServiceExceptionReport) with HTTP 2xx are raised as exceptions and returned as {"error": <xml>}.
-
-        Args:
-            **kwargs: Additional keyword arguments passed to the API.
-                REQUEST (str): WMS request type
-                SERVICE (str): Service type
-                VERSION (str): WMS version ('1.3.0' uses crs; '1.1.1' uses srs)
-                crs (str): Coordinate reference system for WMS 1.3.0 (e.g. 'CRS:84', 'EPSG:4326', 'EPSG:3857')
-                srs (str): Spatial reference system for WMS 1.1.1 (e.g. 'EPSG:4326', 'EPSG:3857')
-                BBOX (str): BBOX
-                width (str): width
-                height (str): height
-                layers (str): layers
-                STYLES (str): Comma-separated list of style names, one per requested layer. MUST always be supplied. Omitting STYLES entirely causes a server-side StyleNotDefined error.
-                FORMAT (str): FORMAT
-                TRANSPARENT (str): TRANSPARENT
-                DPI (str): DPI hint (accepted by server but silently ignored — has no effect on output).
-                MAP_RESOLUTION (str): Map resolution hint (accepted by server but silently ignored — has no effect on output).
-                FORMAT_OPTIONS (str): Additional format options e.g. 'dpi:96' (accepted by server but silently ignored — has no effect on output).
-                SLD_BODY (str): URL-encoded JSON style definition. Use empty string ('') or omit entirely to use default server styles. NOTE: passing SLD_BODY='{}' (JSON empty object string) causes a server-side InvalidStyleDetails error — always use SLD_BODY='' or omit.
-
-        Returns:
-            Dict[str, Any]: On success: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
-                On any error (HTTP 4xx/5xx or WMS ServiceException): Dict with key 'error' (str) containing the error detail or ServiceExceptionReport XML.
-
-        Example:
-            wms_post_get_map(
-                REQUEST="GetMap",
-                SERVICE="WMS",
-                VERSION="1.3.0",
-                crs="CRS:84",
-                BBOX="-122.712622,38.035008,-122.692382,38.045271",
-                width="640",
-                height="480",
-                layers="wildfire_risk",
-                FORMAT="image/png",
-                STYLES=""
-            )
-        """
-        try:
-            url = f"{self.base_url}/v1/spatial/wms"
-            # Normalize parameter names to uppercase (WMS spec: parameter names are case-insensitive)
-            _wms_post_canonical = ["REQUEST", "SERVICE", "VERSION", "CRS", "SRS", "BBOX", "WIDTH", "HEIGHT",
-                                   "LAYERS", "STYLES", "FORMAT", "TRANSPARENT"]
-            kwargs_upper = {k.upper(): v for k, v in kwargs.items()}
-            params = {name: kwargs_upper[name] for name in _wms_post_canonical if name in kwargs_upper}
-            form_data = {}
-            if "SLD_BODY" in kwargs_upper:
-                form_data["SLD_BODY"] = kwargs_upper["SLD_BODY"]
-            headers = dict(self.session.headers)
-            headers.pop("Content-Type", None)
-            headers["Accept"] = "image/png"
-            headers["Content-Type"] = "application/x-www-form-urlencoded"
-            logger.debug(f"[wms_post_get_map] POST {url}")
-            logger.debug(f"[wms_post_get_map] Request params: {params}")
-            response = self.session.post(url, params=params, data=form_data, headers=headers)
-            content_type = response.headers.get("Content-Type", "")
-            if "image" in content_type:
-                logger.debug(f"[wms_post_get_map] Raw response: binary {len(response.content)} bytes, {content_type}")
-            else:
-                logger.debug(f"[wms_post_get_map] Raw response: {response.text}")
-            response.raise_for_status()
-            if "image" not in content_type and "<ServiceException" in response.text:
-                raise ValueError(response.text)
-            if "image" in content_type:
-                return {"image_base64": base64.b64encode(response.content).decode(), "content_type": content_type, "size_bytes": len(response.content)}
-            return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
-        except Exception as e:
-            logger.error(f"WMS POST GetMap error: {e}")
-            return self._build_error("WMS POST GetMap", e)
+            logger.error(f"WMS request error: {e}")
+            return self._build_error("WMS request", e)
 
     # ========================================
     # WMTS (Web Map Tile Service) APIs
     # ========================================
 
     def wmts_request(self, **kwargs) -> Dict[str, Any]:
-        """Use the appropriate parameters based on the request type.
+        """Use the appropriate parameters based on the request type. For GetTile, optionally set profile='simple' to use the RESTful simple profile endpoint (no Style or TileMatrixSet needed) instead of the default KVP endpoint.
 
         Args:
             **kwargs: Additional keyword arguments passed to the API.
@@ -490,12 +335,13 @@ Additional capabilities include:
                 Request (str): Defines the request type. Available values : GetCapabilities, GetTile
                 Version (str): WMTS version.
                 Layer (str): Available layer name via Data or Repository (required for `GetTile`).
-                Style (str): Comma-separated list of one rendering style per requested layer(required for `GetTile`).
-                TileMatrixSet (str): Tile matrix set to generate tiles for(required for `GetTile`).
+                Style (str): Rendering style for layer (required for `GetTile` without profile).
+                TileMatrixSet (str): Tile matrix set to generate tiles for (required for `GetTile` without profile).
                 TileMatrix (str): An integer value which will be number of levels or zoom level(required for `GetTile`).
                 TileRow (int): An integer value that specifies the row number of the tile you want (required for `GetTile`).
                 TileCol (int): An integer value that specifies the column number of the tile you want (required for `GetTile`).
                 Format (str): The format in which the map image is to be returned(required for `GetTile`).
+                profile (str): RESTful tile profile. Use 'simple' for the simple profile endpoint (fewer required params). Omit or leave None for the default KVP endpoint.
 
         Returns:
             Dict[str, Any]: For GetTile: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
@@ -505,11 +351,39 @@ Additional capabilities include:
             wmts_request(Service="WMTS", Request="GetCapabilities")
         """
         try:
+            kwargs_upper = {k.upper(): v for k, v in kwargs.items()}
+            request_type = kwargs_upper.get("REQUEST", "").upper()
+            profile = kwargs_upper.get("PROFILE")
+
+            # Simple profile: RESTful URL, no Style/TileMatrixSet needed
+            if request_type == "GETTILE" and profile and profile.lower() == "simple":
+                version = kwargs_upper.get("VERSION", "1.0.0")
+                layer = kwargs_upper.get("LAYER", "")
+                tile_matrix = kwargs_upper.get("TILEMATRIX", "")
+                tile_col = kwargs_upper.get("TILECOL", "")
+                tile_row = kwargs_upper.get("TILEROW", "")
+                fmt = kwargs_upper.get("FORMAT", "png")
+                # Strip leading "image/" if present (e.g. "image/png" -> "png")
+                if "/" in str(fmt):
+                    fmt = str(fmt).split("/")[-1]
+                url = f"{self.base_url}/v1/spatial/wmts/{version}/simpleProfileTile/tiles/{layer}/{tile_matrix}/{tile_col}/{tile_row}.{fmt}"
+                logger.debug(f"[wmts_request] (simple profile) GET {url}")
+                response = self.session.get(url)
+                content_type = response.headers.get("Content-Type", "")
+                if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
+                    logger.debug(f"[wmts_request] Raw response: binary {len(response.content)} bytes, {content_type}")
+                else:
+                    logger.debug(f"[wmts_request] Raw response: {response.text}")
+                response.raise_for_status()
+                if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
+                    return {"image_base64": base64.b64encode(response.content).decode(), "content_type": content_type, "size_bytes": len(response.content)}
+                return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
+
+            # Default: KVP endpoint
             url = f"{self.base_url}/v1/spatial/wmts"
             # Normalize WMTS KVP parameter names (case-insensitive per WMTS spec)
             _wmts_canonical = ["SERVICE", "REQUEST", "VERSION", "LAYER", "STYLE",
                                "TILEMATRIXSET", "TILEMATRIX", "TILEROW", "TILECOL", "FORMAT"]
-            kwargs_upper = {k.upper(): v for k, v in kwargs.items()}
             params = {name: kwargs_upper[name] for name in _wmts_canonical if name in kwargs_upper}
             logger.debug(f"[wmts_request] GET {url}")
             logger.debug(f"[wmts_request] Request params: {params}")
@@ -522,98 +396,9 @@ Additional capabilities include:
             response.raise_for_status()
             if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
                 return {"image_base64": base64.b64encode(response.content).decode(), "content_type": content_type, "size_bytes": len(response.content)}
-            if "xml" in content_type.lower() or params.get("REQUEST", "").upper() == "GETCAPABILITIES":
+            if "xml" in content_type.lower() or request_type == "GETCAPABILITIES":
                 return {"xml": response.text, "content_type": content_type or "application/xml"}
             return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
         except Exception as e:
             logger.error(f"WMTS request error: {e}")
             return self._build_error("WMTS request", e)
-
-    def wmts_get_standard_tile(self, Version: str, Layer: str, Style: str, TileMatrixSet: str, TileMatrix: str, TileCol: int, TileRow: int, Format: str, **kwargs) -> Dict[str, Any]:
-        """Returns a map tile based on the RESTful encoding for the WMTS service.
-
-
-        Args:
-            Version (str): WMTS version (default is `1.0.0`).
-            Layer (str): Available layer name via Data or Repository.
-            Style (str): Comma-separated list of one rendering style per requested layer.
-            TileMatrixSet (str): Tile matrix set to generate tiles for.
-            TileMatrix (str): Level of detail (zoom level).
-            TileCol (int): An integer value that specifies the column number of the tile you want.
-            TileRow (int): An integer value that specifies the row number of the tile you want.
-            Format (str): Image format extension.
-            **kwargs: Additional keyword arguments passed to the API.
-
-        Returns:
-            Dict[str, Any]: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
-
-        Example:
-            wmts_get_standard_tile(
-                Version="1.0.0",
-                Layer="parcels",
-                Style="default",
-                TileMatrixSet="WorldWebMercatorQuad_0_to_19",
-                TileMatrix="17",
-                TileCol=31118,
-                TileRow=50069,
-                Format="png"
-            )
-        """
-        try:
-            url = f"{self.base_url}/v1/spatial/wmts/{Version}/default/tiles/{Layer}/{Style}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}"
-            logger.debug(f"[wmts_get_standard_tile] GET {url}")
-            response = self.session.get(url)
-            content_type = response.headers.get("Content-Type", "")
-            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
-                logger.debug(f"[wmts_get_standard_tile] Raw response: binary {len(response.content)} bytes, {content_type}")
-            else:
-                logger.debug(f"[wmts_get_standard_tile] Raw response: {response.text}")
-            response.raise_for_status()
-            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
-                return {"image_base64": base64.b64encode(response.content).decode(), "content_type": content_type, "size_bytes": len(response.content)}
-            return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
-        except Exception as e:
-            logger.error(f"WMTS get standard tile error: {e}")
-            return self._build_error("WMTS get standard tile", e)
-
-    def wmts_get_simple_tile(self, Version: str, Layer: str, TileMatrix: str, TileCol: int, TileRow: int, Format: str, **kwargs) -> Dict[str, Any]:
-        """Returns a map tile based on the RESTful encoding for the WMTS service.
-
-        Args:
-            Version (str): WMTS version (default is `1.0.0`).
-            Layer (str): Available layer name via Data or Repository.
-            TileMatrix (str): Level of detail (zoom level).
-            TileCol (int): An integer value that specifies the column number of the tile you want.
-            TileRow (int): An integer value that specifies the row number of the tile you want.
-            Format (str): Image format extension.
-            **kwargs: Additional keyword arguments passed to the API.
-
-        Returns:
-            Dict[str, Any]: Dict with keys 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
-
-        Example:
-            wmts_get_simple_tile(
-                Version="1.0.0",
-                Layer="parcels",
-                TileMatrix="17",
-                TileCol=31118,
-                TileRow=50069,
-                Format="png"
-            )
-        """
-        try:
-            url = f"{self.base_url}/v1/spatial/wmts/{Version}/simpleProfileTile/tiles/{Layer}/{TileMatrix}/{TileCol}/{TileRow}.{Format}"
-            logger.debug(f"[wmts_get_simple_tile] GET {url}")
-            response = self.session.get(url)
-            content_type = response.headers.get("Content-Type", "")
-            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
-                logger.debug(f"[wmts_get_simple_tile] Raw response: binary {len(response.content)} bytes, {content_type}")
-            else:
-                logger.debug(f"[wmts_get_simple_tile] Raw response: {response.text}")
-            response.raise_for_status()
-            if "image/" in content_type.lower() or "application/vnd.mapbox-vector-tile" in content_type.lower():
-                return {"image_base64": base64.b64encode(response.content).decode(), "content_type": content_type, "size_bytes": len(response.content)}
-            return {"error": f"Unexpected response, content_type: {content_type} Check logs in DEBUG mode for more details"}
-        except Exception as e:
-            logger.error(f"WMTS get simple tile error: {e}")
-            return self._build_error("WMTS get simple tile", e)

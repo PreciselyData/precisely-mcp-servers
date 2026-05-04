@@ -1,41 +1,9 @@
 """
 Tax & Emergency Tools Module
-Contains 9 tools for tax jurisdiction lookups and PSAP (911) services
+Contains 5 tools for tax jurisdiction lookups and emergency (911/PSAP) services
 """
 from mcp.types import Tool
 from mcp_servers.tools.base_tool import handle_tool_call  # noqa: F401
-
-_PSAP_ADDRESS_SCHEMA = {
-    "type": "object",
-    "description": "Structured US address for PSAP lookup.",
-    "properties": {
-        "addressLines": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "Street address lines (e.g., ['860 White Plains Road']).",
-            "minItems": 1
-        },
-        "city": {"type": "string", "description": "City name (e.g., 'Trumbull')."},
-        "admin1": {"type": "string", "description": "State abbreviation (e.g., 'CT')."},
-        "postalCode": {"type": "string", "description": "ZIP code (e.g., '06611')."},
-    }
-}
-
-_PSAP_LOCATION_SCHEMA = {
-    "type": "object",
-    "description": "Geographic coordinates for PSAP lookup.",
-    "properties": {
-        "coordinates": {
-            "type": "array",
-            "items": {"type": "number"},
-            "description": "Coordinates as [longitude, latitude] (e.g., [-71.0589, 42.3601]). WGS 84 datum/EPSG:4326 coordinate system.",
-            "minItems": 2,
-            "maxItems": 2
-        }
-    },
-    "required": ["coordinates"]
-}
-
 
 def get_tools() -> list[Tool]:
     """Returns list of tax and emergency tool definitions"""
@@ -43,21 +11,18 @@ def get_tools() -> list[Tool]:
         # Tax jurisdiction tool (1 consolidated tool replacing lookup_by_address/addresses/location/locations)
         Tool(
             name="lookup_tax_jurisdiction",
-            description=(
-                "Look up US tax jurisdictions (state, county, and other codes) "
-                "for one or more addresses or geographic coordinates in a single call.\n\n"
-                "Supports four usage patterns through one consistent interface:\n"
-                "  - Single address:    input_type='address', records=[{addressLines: ['123 Main St, Boston, MA']}]\n"
-                "  - Multiple addresses: input_type='address', records=[{...}, {...}]\n"
-                "  - Single coordinate: input_type='location', records=[{longitude: -71.0589, latitude: 42.3601}]\n"
-                "  - Multiple coordinates: input_type='location', records=[{...}, {...}]\n\n"
-                "Batch and single records use the same tool — pass 1 item for single lookup, N items for batch.\n"
-                "Only works for locations within the United States.\n\n"
-                "Output: For a single record, returns one tax jurisdiction object. "
-                "For multiple records, returns an array of tax jurisdiction objects, one per input record. "
-                "Each object contains tax type codes and full names "
-                "(state, county, etc.)."
-            ),
+            description="""Look up US tax jurisdictions (state, county, and other codes) for one or more addresses or geographic coordinates in a single call.
+
+Supports four usage patterns through one consistent interface:
+  - Single address:    input_type='address', records=[{addressLines: ['123 Main St, Boston, MA']}]
+  - Multiple addresses: input_type='address', records=[{...}, {...}]
+  - Single coordinate: input_type='location', records=[{longitude: -71.0589, latitude: 42.3601}]
+  - Multiple coordinates: input_type='location', records=[{...}, {...}]
+
+Batch and single records use the same tool — pass 1 item for single lookup, N items for batch.
+Only works for locations within the United States.
+
+Output: For a single record, returns one tax jurisdiction object. For multiple records, returns an array of tax jurisdiction objects, one per input record. Each object contains tax type codes and full names (state, county, etc.).""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -124,110 +89,91 @@ def get_tools() -> list[Tool]:
                 "required": ["input_type", "records"]
             }
         ),
-        # PSAP/Emergency services tools (5 tools)
+        # Emergency services (1 consolidated tool replacing psap_address/psap_location/psap_ahj_address/psap_ahj_location/psap_ahj_fccid)
         Tool(
-            name="psap_address",
-            description=(
-                "Retrieve the PSAP (Public Safety Answering Point / 911 dispatch center) responsible for a given US address. "
-                "Returns the PSAP name, phone number, fccId, and other information. "
-                "Use this tool when you need to identify the correct 911 call center for a street address. "
-                "Do NOT use if you also need AHJ (Authority Having Jurisdiction) data — use psap_ahj_address instead. "
-                "Do NOT use if you have coordinates rather than an address — use psap_location instead. "
-                "Only works for addresses within the United States.\n\n"
-                "Output: Object with PSAP information."
-            ),
+            name="find_emergency_services",
+            description="""Find the PSAP (Public Safety Answering Point / 911 dispatch center) and optionally the AHJ (Authority Having Jurisdiction) for a US location.
+
+Provide exactly one of:
+  - address: a structured US street address
+  - location: geographic coordinates [longitude, latitude]
+  - fcc_id: an FCC-assigned PSAP identifier (from a prior call)
+
+Set include_ahj=false to retrieve only PSAP data (lighter response). Default is true (returns both PSAP and AHJ). FCC ID lookups always include AHJ regardless of the flag.
+
+Only works for locations within the United States.
+
+Output: Object with PSAP name, phone, fccId, and (when AHJ is included) an array of AHJ records with agency name, type, phone, and other details.
+
+Example — by address (PSAP only):
+  address={"addressLines": ["860 White Plains Road"], "city": "Trumbull", "admin1": "CT", "postalCode": "06611"}, include_ahj=false
+
+Example — by address (PSAP + AHJ):
+  address={"addressLines": ["860 White Plains Road"], "city": "Trumbull", "admin1": "CT", "postalCode": "06611"}
+
+Example — by coordinates (PSAP only):
+  location={"coordinates": [-71.0589, 42.3601]}, include_ahj=false
+
+Example — by coordinates (PSAP + AHJ):
+  location={"coordinates": [-71.0589, 42.3601]}
+
+Example — by FCC ID:
+  fcc_id="1404"
+""",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "address": _PSAP_ADDRESS_SCHEMA
-                },
-                "required": ["address"]
-            }
-        ),
-        Tool(
-            name="psap_location",
-            description=(
-                "Retrieve the PSAP (Public Safety Answering Point / 911 dispatch center) responsible for a given geographic coordinate. "
-                "Returns the PSAP name, phone number, fccId, and other information. "
-                "Use this tool when you have a coordinate pair (longitude, latitude) and need to identify the 911 center. "
-                "Do NOT use if you also need AHJ (Authority Having Jurisdiction) data — use psap_ahj_location instead. "
-                "Do NOT use if you have a street address rather than coordinates — use psap_address instead. "
-                "Only works for coordinates within the United States.\n\n"
-                "Output: Object with PSAP information."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "location": _PSAP_LOCATION_SCHEMA
-                },
-                "required": ["location"]
-            }
-        ),
-        Tool(
-            name="psap_ahj_address",
-            description=(
-                "Retrieve combined PSAP (Public Safety Answering Point / 911 dispatch center) and "
-                "AHJ (Authority Having Jurisdiction) data for a given US address in a single call. "
-                "PSAP identifies the emergency dispatch center; AHJ identifies the regulatory and code authority for the location. "
-                "Use this tool when you need both PSAP and AHJ information for an address. "
-                "Do NOT use if you only need PSAP data — use psap_address instead (lighter response). "
-                "Do NOT use if you have coordinates rather than an address — use psap_ahj_location instead. "
-                "Do NOT use if lookup is by FCC ID — use psap_ahj_fccid instead. "
-                "Only works for addresses within the United States.\n\n"
-                "Output: Object with PSAP name, phone, fccId, AHJ names "
-                "and other details."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "address": _PSAP_ADDRESS_SCHEMA
-                },
-                "required": ["address"]
-            }
-        ),
-        Tool(
-            name="psap_ahj_location",
-            description=(
-                "Retrieve combined PSAP (Public Safety Answering Point / 911 dispatch center) and "
-                "AHJ (Authority Having Jurisdiction) data for a given geographic coordinate in a single call. "
-                "Use this tool when you have a coordinate pair (longitude, latitude) and need both PSAP and AHJ information. "
-                "Do NOT use if you only need PSAP data — use psap_location instead (lighter response). "
-                "Do NOT use if you have a street address rather than coordinates — use psap_ahj_address instead. "
-                "Do NOT use if lookup is by FCC ID — use psap_ahj_fccid instead. "
-                "Only works for coordinates within the United States.\n\n"
-                "Output: Object with PSAP name, phone, fccId, AHJ names "
-                "and other details."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "location": _PSAP_LOCATION_SCHEMA
-                },
-                "required": ["location"]
-            }
-        ),
-        Tool(
-            name="psap_ahj_fccid",
-            description=(
-                "Retrieve PSAP (Public Safety Answering Point / 911 dispatch center) and "
-                "AHJ (Authority Having Jurisdiction) details for a PSAP identified by its FCC (Federal Communications Commission) ID. "
-                "Use this tool only when you already have a specific FCC PSAP ID and need its full record. "
-                "Do NOT use if you are starting from an address — use psap_ahj_address instead. "
-                "Do NOT use if you are starting from coordinates — use psap_ahj_location instead. "
-                "FCC IDs are obtained from prior psap_address, psap_location, or related calls. "
-                "Only works for US PSAP entities.\n\n"
-                "Output: Object with PSAP name, phone, fccID, AHJ names and other details for the specified FCC ID."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
+                    "address": {
+                        "type": "object",
+                        "description": "Structured US address for PSAP lookup.",
+                        "properties": {
+                            "addressLines": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Street address lines (e.g., ['860 White Plains Road']).",
+                                "minItems": 1
+                            },
+                            "city": {"type": "string", "description": "City name (e.g., 'Trumbull')."},
+                            "admin1": {"type": "string", "description": "State abbreviation (e.g., 'CT')."},
+                            "postalCode": {"type": "string", "description": "ZIP code (e.g., '06611')."},
+                        }
+                    },
+                    "location": {
+                        "type": "object",
+                        "description": "Geographic coordinates for PSAP lookup.",
+                        "properties": {
+                            "coordinates": {
+                                "type": "array",
+                                "items": {"type": "number"},
+                                "description": "Coordinates as [longitude, latitude] (e.g., [-71.0589, 42.3601]). WGS 84 datum/EPSG:4326 coordinate system.",
+                                "minItems": 2,
+                                "maxItems": 2
+                            }
+                        },
+                        "required": ["coordinates"]
+                    },
                     "fcc_id": {
                         "type": "string",
-                        "description": "The FCC-assigned PSAP identifier (e.g., '1404'). "
-                                       "Obtain this value from a prior psap_address or psap_location call."
+                        "description": (
+                            "The FCC-assigned PSAP identifier (e.g., '1404'). "
+                            "Obtain this value from a prior find_emergency_services call."
+                        )
+                    },
+                    "include_ahj": {
+                        "type": "boolean",
+                        "default": True,
+                        "description": (
+                            "When true (default), returns both PSAP and AHJ data. "
+                            "When false, returns only PSAP data (lighter response). "
+                            "Ignored when fcc_id is provided (FCC ID lookup always includes AHJ)."
+                        )
                     }
                 },
-                "required": ["fcc_id"]
+                "oneOf": [
+                    {"required": ["address"]},
+                    {"required": ["location"]},
+                    {"required": ["fcc_id"]}
+                ]
             }
         ),
     ]
