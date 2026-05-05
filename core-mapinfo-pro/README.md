@@ -1,6 +1,6 @@
 # MapInfo Pro MCP Server
 
-> 📦 **Download:** Install via the [MapInfo Pro Marketplace](https://marketplace.mapinfo.com/) or from the GitHub release: [mapinfo-pro-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/mapinfo-pro-mcp-beta.v1.0)
+> 📦 **Download:** Install via the [MapInfo Pro Marketplace](https://mapinfomarketplace.precisely.com/) or directly from inside MapInfo Pro v23 or later via the MapInfo Marketplace Button on the Home tab.
 
 An in-process MCP server embedded in the **MapInfo-AI add-in for MapInfo Pro**. Once the add-in is loaded, it starts a local HTTP/SSE endpoint that MCP clients (Claude Desktop, GitHub Copilot, etc.) connect to — no separate process to manage.
 
