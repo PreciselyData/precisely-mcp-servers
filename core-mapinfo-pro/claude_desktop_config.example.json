@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "mapinfo-pro": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://localhost:3100/sse"
+      ]
+    }
+  }
+}
