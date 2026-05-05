@@ -19,7 +19,7 @@ def get_tools() -> list[Tool]:
 Use this to discover what spatial functions (e.g., s_contains, s_within, s_intersects) can be used
 in filter expressions for ogc_collection_items queries.
 
-Returns: List of spatial functions with their names, argument types, and return types.
+Output: List of spatial functions with their names, argument types, and return types.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/functions""",
         inputSchema={
@@ -35,7 +35,7 @@ Use this tool when you need to discover available datasets (collectionIds) befor
 ogc_collection, ogc_collection_schema, ogc_collection_queryables, or ogc_collection_items.
 Do NOT use this to fetch actual features — use ogc_collection_items once you have the collectionId.
 
-Returns: List of feature collection metadata objects with id, title, description, item type, and navigation links.
+Output: List of feature collection metadata objects with id, title, description, item type, and navigation links.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections""",
         inputSchema={
@@ -52,7 +52,7 @@ Use ogc_collections first if you do not yet know the collectionId.
 Do NOT use this to fetch actual features — use ogc_collection_items instead.
 Do NOT use this for column/field schema — use ogc_collection_schema or ogc_collection_queryables instead.
 
-Returns: Collection metadata object with id, title, description, and navigation links.
+Output: Collection metadata object with id, title, description, and navigation links.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings""",
         inputSchema={
@@ -71,7 +71,7 @@ Call ogc_collections first if you do not yet know the collectionId.
 Do NOT use this for filtering — for filterable/queryable fields only, use ogc_collection_queryables instead
 (ogc_collection_queryables is a subset of ogc_collection_schema focused on fields usable in CQL filter expressions).
 
-Returns: JSON schema with all field names, data types (string, integer, double, etc.), and descriptions.
+Output: JSON schema with all field names, data types (string, integer, double, etc.), and descriptions.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/schema""",
         inputSchema={
@@ -91,7 +91,7 @@ Use this tool before constructing filter queries for ogc_collection_items to ver
 Call ogc_collections first if you do not yet know the collectionId.
 Do NOT use this if you need all fields including non-queryable ones — use ogc_collection_schema instead.
 
-Returns: List of queryable property definitions with field name, data type/format, and description.
+Output: List of queryable property definitions with field name, data type/format, and description.
 
 Example Request: https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/queryables""",
         inputSchema={
@@ -115,7 +115,7 @@ When no featureId is provided, additional capabilities include:
   - **Bounding Box (bbox):** Retrieve features within a rectangular spatial extent (`minX, minY, maxX, maxY`).
   - **Spatial Filters:** Support for `contains`, `intersects`, and `within` (OGC Filter Encoding).
 
-Returns: GeoJSON FeatureCollection with features matching the query, and pagination links.
+Output: GeoJSON FeatureCollection with features matching the query, and pagination links.
 
 Example 1 Request (Items without additional parameters): https://api.cloud.precisely.com/v1/ogcapi/enrich/collections/properties/buildings/items
 
@@ -156,19 +156,19 @@ Example 9 Request (Single feature by ID): https://api.cloud.precisely.com/v1/ogc
 
 When the STYLES parameter is left empty, the styling defined in SLD_BODY (if provided) is applied. If the STYLES parameter specifies a server-side style, the SLD_BODY is ignored, even if it is included in the request.
 
-Returns: For GetMap success: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int). For GetCapabilities success: Dict with 'xml' (str), 'content_type' (str). For GetFeatureInfo success: JSON dict. On any error (auth, invalid params, or WMS ServiceException): Dict with 'error' (str) containing the error or ServiceExceptionReport XML.
+Output: For GetMap success: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int). For GetCapabilities success: Dict with 'xml' (str), 'content_type' (str). For GetFeatureInfo success: JSON dict. On any error (auth, invalid params, or WMS ServiceException): Dict with 'error' (str) containing the error or ServiceExceptionReport XML.
 
 Example 1 GetCapabilities Request:
 https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetCapabilities
 
 Example 2 GetMap Request (WMS version 1.1.1, SRS parameter for EPSG:4326, Axis order lon-lat for BBOX):
-https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetMap&SRS=EPSG:4326&BBOX=-125,24,-66,50&WIDTH=400&HEIGHT=300&Layers=census_state&STYLES=census_state&FORMAT=image/png
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetMap&SRS=EPSG:4326&BBOX=-125,24,-66,50&WIDTH=400&HEIGHT=300&Layers=flood_risk&STYLES=flood_risk&FORMAT=image/png
 
 Example 3 GetMap Request (WMS version 1.3.0, CRS parameter for CRS:84, Axis order lon-lat for BBOX):
-https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=CRS:84&BBOX=-125,24,-66,50&WIDTH=400&HEIGHT=300&Layers=census_state&STYLES=census_state&FORMAT=image/png
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=CRS:84&BBOX=-125,24,-66,50&WIDTH=400&HEIGHT=300&Layers=flood_risk&STYLES=flood_risk&FORMAT=image/png
 
 Example 4 GetMap Request (WMS version 1.3.0, CRS parameter for EPSG:4326, Axis order lat-lon for BBOX):
-https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=EPSG:4326&BBOX=24,-125,50,-66&WIDTH=400&HEIGHT=300&Layers=census_state&STYLES=census_state&FORMAT=image/png
+https://api.cloud.precisely.com/v1/Spatial/WMS?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&CRS=EPSG:4326&BBOX=24,-125,50,-66&WIDTH=400&HEIGHT=300&Layers=flood_risk&STYLES=flood_risk&FORMAT=image/png
 
 Example 5 GetFeatureInfo Request:
 https://api.cloud.precisely.com/v1/spatial/wms?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetFeatureInfo&CRS=EPSG:4326&BBOX=29.19367847889249035,-98.56156199862394374,29.35037762857998089,-98.33146912069426548&WIDTH=400&HEIGHT=300&LAYERS=wildfire_risk&INFO_FORMAT=application/json&QUERY_LAYERS=wildfire_risk&I=1&J=1&PIXELSEARCHRADIUS=10
@@ -226,7 +226,7 @@ BODY: SLD_BODY={"styleDetails": [{"layer": {"name": "address_fabric","type": "Na
         name="wmts_request",
         description="""Handles WMTS operations via the KVP (Key-Value Pair) query parameter interface. Use Request=GetCapabilities to retrieve all available layers, their styles, tile matrix sets, and supported formats. Use Request=GetTile to retrieve a map tile image by specifying Layer, Style, TileMatrixSet, TileMatrix, TileRow, TileCol, and Format. For GetTile, optionally set profile='simple' to use the RESTful simple profile endpoint (no Style or TileMatrixSet needed). Use get_spatial_products tool to discover recommended zoom levels, and data vintage, layer extents, and other metadata.
 
-Returns: For GetCapabilities: Dict with 'xml' (str) containing the capabilities XML document and 'content_type' (str). For GetTile: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
+Output: For GetCapabilities: Dict with 'xml' (str) containing the capabilities XML document and 'content_type' (str). For GetTile: Dict with 'image_base64' (str), 'content_type' (str), 'size_bytes' (int).
 
 Example 1 GetCapabilities Request:
 https://api.cloud.precisely.com/v1/spatial/wmts?SERVICE=WMTS&REQUEST=GetCapabilities&ACCEPTVERSIONS={version}
