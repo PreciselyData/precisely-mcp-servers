@@ -8,7 +8,7 @@ This document covers two ways to connect to the DIS MCP server remotely using th
 The **DIS MCP API Gateway URL**:
 
 ```
-https://dis-developer.api.cloud.precisely.com/dis-mcp/mcp
+https://api.cloud.precisely.com/dis-mcp/mcp
 ```
 
 ---
@@ -22,7 +22,7 @@ https://dis-developer.api.cloud.precisely.com/dis-mcp/mcp
 5. The `api_key:api_secret` pair is encoded as a Base64 string and used in an `Authorization` header:
 
    ```
-   Apikey OWMxZGFmODA4ZTI1ZDQ5ZjpCdDAyZ2NpQjNYTjlac3U3eEZNVGJHU3NZZE5OQnBrZA==
+   Apikey base64(api_key:api_secret)
    ```
 
 6. Save the `Apikey` value — you will use it to connect to the DIS MCP server.
@@ -40,9 +40,9 @@ Once you have an `Apikey`, edit your `mcp.json` file and add the following entry
   "servers": {
     "dis-mcp": {
       "type": "http",
-      "url": "https://dis-developer.api.cloud.precisely.com/dis-mcp/mcp",
+      "url": "https://api.cloud.precisely.com/dis-mcp/mcp",
       "headers": {
-        "Authorization": "Apikey OWMxZGFmODA4ZTI1ZDQ5ZjpCdDAyZ2NpQjNYTjlac3U3eEZNVGJHU3NZZE5OQnBrZA=="
+        "Authorization": "Apikey base64(api_key:api_secret)"
       }
     }
   }
@@ -98,7 +98,7 @@ Provide the following details in the wizard:
 |---|---|
 | **Server name** | `Precisely DIS MCP` |
 | **Description** | `Precisely DIS MCP server — search, describe, and execute data intelligence actions` |
-| **Server URL** | `https://dis-developer.api.cloud.precisely.com/dis-mcp/mcp` |
+| **Server URL** | `https://api.cloud.precisely.com/dis-mcp/mcp` |
 
 **Authentication** — select **API Key**:
 
@@ -114,7 +114,7 @@ After the MCP tool is created, you must explicitly connect it before the agent c
 1. On the **Add Tools** page, **Connection** shows **Not connected**
 2. Click the dropdown menu next to it and select **Create new connection**
 3. When prompted, enter your Apikey value created above:
-   - **Value**: `Apikey OWMxZGFmODA4ZTI1ZDQ5ZjpCdDAyZ2NpQjNYTjlac3U3eEZNVGJHU3NZZE5OQnBrZA==`
+   - **Value**: `Apikey base64(api_key:api_secret)`
 4. Click **Create**
 5. **Connection** should now show the created connection
 
