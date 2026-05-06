@@ -1,5 +1,5 @@
 """
-Output schemas for all 68 MCP tools.
+Output schemas for all 51 MCP tools.
 Each schema describes the JSON structure returned by the tool on success.
 Used as `outputSchema` on Tool definitions per MCP spec 2025-11-25.
 """
@@ -43,8 +43,8 @@ GEOCODE_RESPONSE = {
     "required": ["responses"]
 }
 
-# autocomplete, autocomplete_postal_city
-AUTOCOMPLETE_RESPONSE = {
+# autocomplete_address (consolidated: street, postal/city, and express modes)
+AUTOCOMPLETE_ADDRESS_RESPONSE = {
     "type": "object",
     "properties": {
         "response": {
@@ -60,34 +60,6 @@ AUTOCOMPLETE_RESPONSE = {
                             "prediction": {"type": "string", "description": "Full predicted address string."},
                             "address": {"type": "object", "description": "Parsed address components."},
                             "addressLines": {"type": "array", "items": {"type": "string"}, "description": "Formatted address lines."},
-                            "location": {"type": "object", "description": "Geographic coordinates."}
-                        }
-                    }
-                }
-            },
-            "required": ["status"]
-        }
-    },
-    "required": ["response"]
-}
-
-# autocomplete_v2
-AUTOCOMPLETE_V2_RESPONSE = {
-    "type": "object",
-    "properties": {
-        "response": {
-            "type": "object",
-            "properties": {
-                "status": {"type": "string", "description": "Result status."},
-                "predictions": {
-                    "type": "array",
-                    "description": "List of autocomplete prediction results with explanation.",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "prediction": {"type": "string", "description": "Full predicted address string."},
-                            "address": {"type": "object", "description": "Parsed address components."},
-                            "addressLines": {"type": "array", "items": {"type": "string"}},
                             "location": {"type": "object", "description": "Geographic coordinates."},
                             "explanation": {"type": "object", "description": "Match explanation including source."}
                         }
@@ -119,8 +91,8 @@ LOOKUP_RESPONSE = {
     "required": ["response"]
 }
 
-# parse_address, parse_address_batch
-PARSE_ADDRESS_RESPONSE = {
+# parse_addresses (consolidated: single + batch)
+PARSE_ADDRESSES_RESPONSE = {
     "type": "object",
     "properties": {
         "responses": {
@@ -129,15 +101,20 @@ PARSE_ADDRESS_RESPONSE = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "addressId": {"type": "string"},
+                    "id": {"type": "string", "description": "Client-supplied correlation id (when provided)."},
                     "status": {"type": "string"},
-                    "addressLine1": {"type": "string"},
-                    "addressLine2": {"type": "string"},
-                    "city": {"type": "string"},
-                    "stateProvince": {"type": "string"},
-                    "postalCode": {"type": "string"},
-                    "country": {"type": "string"},
-                    "firmName": {"type": "string"}
+                    "address": {
+                        "type": "object",
+                        "description": "Parsed address components.",
+                        "properties": {
+                            "addressNumber": {"type": "string"},
+                            "street": {"type": "string"},
+                            "admin1": {"type": "string"},
+                            "city": {"type": "string"},
+                            "postalCode": {"type": "string"},
+                            "unit": {"type": "string"}
+                        }
+                    }
                 },
                 "required": ["status"]
             }
@@ -195,35 +172,8 @@ GEO_LOCATE_WIFI_RESPONSE = {
 # Verification (5 tools)
 # ============================================================
 
-# verify_email
-VERIFY_EMAIL_RESPONSE = {
-    "type": "object",
-    "properties": {
-        "response": {
-            "type": "object",
-            "properties": {
-                "status": {"type": "string"},
-                "email": {
-                    "type": "object",
-                    "description": "Email verification result.",
-                    "properties": {
-                        "address": {"type": "string", "description": "The email address verified."},
-                        "result": {"type": "string", "description": "Verification result (e.g., 'valid', 'invalid')."},
-                        "subResult": {"type": "string", "description": "Detailed sub-result (e.g., 'failed_syntax_check')."},
-                        "freeEmail": {"type": "string"},
-                        "mxFound": {"type": "string"},
-                        "processedAt": {"type": "string"}
-                    }
-                }
-            },
-            "required": ["status"]
-        }
-    },
-    "required": ["response"]
-}
-
-# verify_batch_emails
-VERIFY_BATCH_EMAILS_RESPONSE = {
+# verify_emails (consolidated: single + batch)
+VERIFY_EMAILS_RESPONSE = {
     "type": "object",
     "properties": {
         "responses": {
@@ -233,8 +183,19 @@ VERIFY_BATCH_EMAILS_RESPONSE = {
                 "type": "object",
                 "properties": {
                     "status": {"type": "string"},
-                    "id": {"type": "string"},
-                    "email": {"type": "object", "description": "Email verification result."}
+                    "id": {"type": "string", "description": "Client-supplied correlation id (when provided)."},
+                    "email": {
+                        "type": "object",
+                        "description": "Email verification result.",
+                        "properties": {
+                            "address": {"type": "string", "description": "The email address verified."},
+                            "result": {"type": "string", "description": "Verification result (e.g., 'valid', 'invalid')."},
+                            "subResult": {"type": "string", "description": "Detailed sub-result (e.g., 'failed_syntax_check')."},
+                            "freeEmail": {"type": "string"},
+                            "mxFound": {"type": "string"},
+                            "processedAt": {"type": "string"}
+                        }
+                    }
                 },
                 "required": ["status"]
             }
@@ -264,35 +225,8 @@ PARSE_NAME_RESPONSE = {
     "required": ["response"]
 }
 
-# validate_phone
-VALIDATE_PHONE_RESPONSE = {
-    "type": "object",
-    "properties": {
-        "response": {
-            "type": "object",
-            "properties": {
-                "status": {"type": "string"},
-                "phoneNumber": {
-                    "type": "object",
-                    "description": "Phone validation result.",
-                    "properties": {
-                        "formattedPhoneNumber": {"type": "string"},
-                        "validStatus": {"type": "boolean"},
-                        "validationDescription": {"type": "string"},
-                        "numberType": {"type": "string"},
-                        "countryCode": {"type": "string"},
-                        "carrier": {"type": "string"}
-                    }
-                }
-            },
-            "required": ["status"]
-        }
-    },
-    "required": ["response"]
-}
-
-# validate_batch_phones
-VALIDATE_BATCH_PHONES_RESPONSE = {
+# validate_phones (consolidated: single + batch)
+VALIDATE_PHONES_RESPONSE = {
     "type": "object",
     "properties": {
         "responses": {
@@ -302,8 +236,18 @@ VALIDATE_BATCH_PHONES_RESPONSE = {
                 "type": "object",
                 "properties": {
                     "status": {"type": "string"},
-                    "id": {"type": "string"},
-                    "phoneNumber": {"type": "object", "description": "Phone validation result."}
+                    "id": {"type": "string", "description": "Client-supplied correlation id (when provided)."},
+                    "phoneNumber": {
+                        "type": "object",
+                        "description": "Phone validation result.",
+                        "properties": {
+                            "formattedPhoneNumber": {"type": "string"},
+                            "validStatus": {"type": "boolean"},
+                            "country": {"type": "string"},
+                            "phoneType": {"type": "string"},
+                            "carrierName": {"type": "string"}
+                        }
+                    }
                 },
                 "required": ["status"]
             }
@@ -313,7 +257,7 @@ VALIDATE_BATCH_PHONES_RESPONSE = {
 }
 
 # ============================================================
-# Timezone (2 tools)
+# Timezone (1 tool)
 # ============================================================
 
 TIMEZONE_RESPONSE = {
@@ -384,8 +328,8 @@ TAX_JURISDICTION_RESPONSE = {
     }
 }
 
-# psap_address, psap_location
-PSAP_RESPONSE = {
+# find_emergency_services (consolidated PSAP + AHJ)
+EMERGENCY_SERVICES_RESPONSE = {
     "type": "object",
     "properties": {
         "response": {
@@ -401,38 +345,25 @@ PSAP_RESPONSE = {
                         "type": {"type": "string"},
                         "agency": {"type": "string"},
                         "phone": {"type": "string"},
-                        "county": {"type": "string"},
-                        "contactPerson": {"type": "string"},
+                        "county": {"type": "object"},
+                        "contactPerson": {"type": "object"},
                         "siteDetails": {"type": "object"},
                         "mailingAddress": {"type": "object"}
                     }
-                }
-            },
-            "required": ["status"]
-        }
-    },
-    "required": ["response"]
-}
-
-# psap_ahj_address, psap_ahj_location, psap_ahj_fccid
-PSAP_AHJ_RESPONSE = {
-    "type": "object",
-    "properties": {
-        "response": {
-            "type": "object",
-            "properties": {
-                "status": {"type": "string"},
-                "psap": {"type": "object", "description": "PSAP information."},
+                },
                 "ahjs": {
                     "type": "array",
-                    "description": "Authorities Having Jurisdiction associated with this PSAP.",
+                    "description": "Authorities Having Jurisdiction associated with this PSAP. Present when include_ahj is true or fcc_id is used.",
                     "items": {
                         "type": "object",
                         "properties": {
                             "ahjType": {"type": "string"},
                             "ahjId": {"type": "string"},
-                            "name": {"type": "string"},
-                            "fipsCode": {"type": "string"}
+                            "agency": {"type": "string"},
+                            "phone": {"type": "string"},
+                            "fccId": {"type": "string"},
+                            "contactPerson": {"type": "object"},
+                            "mailingAddress": {"type": "object"}
                         }
                     }
                 }
@@ -686,40 +617,8 @@ TABLE_METADATA_RESPONSE = {
 }
 
 # ============================================================
-# OGC Features (10 tools)
+# OGC Features (6 tools)
 # ============================================================
-
-OGC_LANDING_PAGE = {
-    "type": "object",
-    "properties": {
-        "title": {"type": "string"},
-        "description": {"type": "string"},
-        "links": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "href": {"type": "string"},
-                    "rel": {"type": "string"},
-                    "type": {"type": "string"},
-                    "title": {"type": "string"}
-                }
-            }
-        }
-    }
-}
-
-OGC_API_DEFINITION = {
-    "type": "object",
-    "description": "Full OpenAPI 3.0.1 specification.",
-    "properties": {
-        "openapi": {"type": "string"},
-        "info": {"type": "object"},
-        "servers": {"type": "array"},
-        "paths": {"type": "object"},
-        "components": {"type": "object"}
-    }
-}
 
 OGC_FUNCTIONS = {
     "type": "object",
@@ -737,18 +636,6 @@ OGC_FUNCTIONS = {
             }
         }
     }
-}
-
-OGC_CONFORMANCE = {
-    "type": "object",
-    "properties": {
-        "conformsTo": {
-            "type": "array",
-            "description": "List of OGC conformance class URIs.",
-            "items": {"type": "string"}
-        }
-    },
-    "required": ["conformsTo"]
 }
 
 OGC_COLLECTIONS = {
@@ -810,7 +697,7 @@ OGC_COLLECTION_QUERYABLES = {
     }
 }
 
-# ogc_collection_items, ogc_feature_by_id
+# ogc_collection_items
 OGC_FEATURE_COLLECTION = {
     "type": "object",
     "properties": {
@@ -848,8 +735,8 @@ _IMAGE_RESULT = {
     "required": ["image_base64", "content_type", "size_bytes"]
 }
 
-# wms_get_request — multi-response: GetMap→image, GetCapabilities→xml, GetFeatureInfo→json/xml
-WMS_GET_REQUEST = {
+# wms_request — multi-response: GetMap→image, GetCapabilities→xml, GetFeatureInfo→json/xml
+WMS_REQUEST = {
     "type": "object",
     "description": "Response varies by REQUEST type: GetMap returns image, GetCapabilities returns XML, GetFeatureInfo returns JSON or XML.",
     "properties": {
@@ -862,11 +749,8 @@ WMS_GET_REQUEST = {
     }
 }
 
-# wms_post_get_map — always returns image
-WMS_POST_GET_MAP = _IMAGE_RESULT
-
 # ============================================================
-# WMTS (3 tools)
+# WMTS (1 tool)
 # ============================================================
 
 # wmts_request — multi-response: GetTile→image, GetCapabilities→xml
@@ -881,43 +765,30 @@ WMTS_REQUEST = {
     }
 }
 
-# wmts_get_standard_tile, wmts_get_simple_tile — always return image
-WMTS_TILE = _IMAGE_RESULT
-
 
 # ============================================================
-# Tool name → outputSchema mapping (all 68 tools)
+# Tool name → outputSchema mapping (all 51 tools)
 # ============================================================
 TOOL_OUTPUT_SCHEMAS = {
-    # Geocoding & Address (9)
+    # Geocoding & Address (6)
     "geocode": GEOCODE_RESPONSE,
     "reverse_geocode": GEOCODE_RESPONSE,
     "verify_address": GEOCODE_RESPONSE,
-    "autocomplete": AUTOCOMPLETE_RESPONSE,
-    "autocomplete_postal_city": AUTOCOMPLETE_RESPONSE,
-    "autocomplete_v2": AUTOCOMPLETE_V2_RESPONSE,
+    "autocomplete_address": AUTOCOMPLETE_ADDRESS_RESPONSE,
     "lookup": LOOKUP_RESPONSE,
-    "parse_address": PARSE_ADDRESS_RESPONSE,
-    "parse_address_batch": PARSE_ADDRESS_RESPONSE,
+    "parse_addresses": PARSE_ADDRESSES_RESPONSE,
     # Geolocation (2)
     "geo_locate_ip_address": GEO_LOCATE_IP_RESPONSE,
     "geo_locate_wifi_access_point": GEO_LOCATE_WIFI_RESPONSE,
-    # Verification (5)
-    "verify_email": VERIFY_EMAIL_RESPONSE,
-    "verify_batch_emails": VERIFY_BATCH_EMAILS_RESPONSE,
+    # Verification (3)
+    "verify_emails": VERIFY_EMAILS_RESPONSE,
     "parse_name": PARSE_NAME_RESPONSE,
-    "validate_phone": VALIDATE_PHONE_RESPONSE,
-    "validate_batch_phones": VALIDATE_BATCH_PHONES_RESPONSE,
-    # Timezone (2)
-    "timezone_addresses": TIMEZONE_RESPONSE,
-    "timezone_locations": TIMEZONE_RESPONSE,
-    # Tax & Emergency (6)
+    "validate_phones": VALIDATE_PHONES_RESPONSE,
+    # Timezone (1)
+    "get_timezones": TIMEZONE_RESPONSE,
+    # Tax & Emergency (2)
     "lookup_tax_jurisdiction": TAX_JURISDICTION_RESPONSE,
-    "psap_address": PSAP_RESPONSE,
-    "psap_location": PSAP_RESPONSE,
-    "psap_ahj_address": PSAP_AHJ_RESPONSE,
-    "psap_ahj_location": PSAP_AHJ_RESPONSE,
-    "psap_ahj_fccid": PSAP_AHJ_RESPONSE,
+    "find_emergency_services": EMERGENCY_SERVICES_RESPONSE,
     # GraphQL Property & Risk (9)
     "get_property_data": GET_PROPERTY_DATA,
     "get_property_attributes_by_address": GET_PROPERTY_ATTRIBUTES,
@@ -951,22 +822,15 @@ TOOL_OUTPUT_SCHEMAS = {
     "get_spatial_products": SPATIAL_PRODUCTS_RESPONSE,
     "list_spatial_tables": SPATIAL_TABLES_RESPONSE,
     "get_table_metadata": TABLE_METADATA_RESPONSE,
-    # OGC Features (10)
-    "ogc_landing_page": OGC_LANDING_PAGE,
-    "ogc_api_definition": OGC_API_DEFINITION,
+    # OGC Features (6)
     "ogc_functions": OGC_FUNCTIONS,
-    "ogc_conformance": OGC_CONFORMANCE,
     "ogc_collections": OGC_COLLECTIONS,
     "ogc_collection": OGC_COLLECTION,
     "ogc_collection_schema": OGC_COLLECTION_SCHEMA,
     "ogc_collection_queryables": OGC_COLLECTION_QUERYABLES,
     "ogc_collection_items": OGC_FEATURE_COLLECTION,
-    "ogc_feature_by_id": OGC_FEATURE_COLLECTION,
-    # WMS (2)
-    "wms_get_request": WMS_GET_REQUEST,
-    "wms_post_get_map": WMS_POST_GET_MAP,
-    # WMTS (3)
+    # WMS (1)
+    "wms_request": WMS_REQUEST,
+    # WMTS (1)
     "wmts_request": WMTS_REQUEST,
-    "wmts_get_standard_tile": WMTS_TILE,
-    "wmts_get_simple_tile": WMTS_TILE,
 }

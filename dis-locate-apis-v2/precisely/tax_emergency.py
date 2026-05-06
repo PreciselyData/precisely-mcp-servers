@@ -125,104 +125,64 @@ class TaxEmergencyMixin:
             logger.error(f"Tax jurisdiction lookup error: {e}")
             return self._build_error("Tax jurisdiction lookup", e)
 
-    def psap_address(self, address: Dict, **kwargs) -> Dict[str, Any]:
-        """Retrieve PSAP contact details using address input
+    def find_emergency_services(
+        self,
+        address: Dict = None,
+        location: Dict = None,
+        fcc_id: str = None,
+        include_ahj: bool = True,
+        **kwargs,
+    ) -> Dict[str, Any]:
+        """Find the PSAP (911 dispatch center) and optionally the AHJ (Authority Having Jurisdiction)
+        for a US address, coordinate, or FCC ID.
 
-        Required address structure:
-        {
-            "addressLines": ["860 White Plains Road Trumbull CT 06611, USA"],
-            "admin1": "Connecticut",
-            "admin2": "Trumbull",
-            "city": "Trumbull",
-            "postalCode": "06611"
-        }
+        Provide exactly one of address, location, or fcc_id.
+
+        Args:
+            address: Structured US address with addressLines, city, admin1, postalCode.
+            location: Geographic coordinates as {"coordinates": [longitude, latitude]}.
+            fcc_id: FCC-assigned PSAP identifier (e.g., '1404').
+            include_ahj: When True (default), returns both PSAP and AHJ data.
+                When False, returns only PSAP data. Ignored when fcc_id is used
+                (FCC ID lookup always includes AHJ).
         """
+        inputs = sum(x is not None for x in (address, location, fcc_id))
+        if inputs != 1:
+            return {
+                "error": {
+                    "message": (
+                        "Provide exactly one of 'address', 'location', or 'fcc_id'. "
+                        f"Received {inputs} inputs."
+                    ),
+                    "error_type": "ValidationError",
+                }
+            }
+
         try:
-            url = f"{self.base_url}/v1/emergency-info/psap/address"
-            json_data = {"address": address}
-            logger.debug(f"[psap_address] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, json=json_data)
-            logger.debug(f"[psap_address] Raw response: {response.text}")
+            if fcc_id is not None:
+                url = f"{self.base_url}/v1/emergency-info/psap-ahj/fccid"
+                params = {"fccId": fcc_id}
+                logger.debug(f"[find_emergency_services] GET {url}")
+                logger.debug(f"[find_emergency_services] Request params: {params}")
+                response = self.session.get(url, params=params)
+            elif address is not None:
+                segment = "psap-ahj" if include_ahj else "psap"
+                url = f"{self.base_url}/v1/emergency-info/{segment}/address"
+                json_data = {"address": address}
+                logger.debug(f"[find_emergency_services] POST {url}")
+                logger.debug(f"[find_emergency_services] Request payload: {json.dumps(json_data, indent=2)}")
+                response = self.session.post(url, json=json_data)
+            else:  # location
+                segment = "psap-ahj" if include_ahj else "psap"
+                url = f"{self.base_url}/v1/emergency-info/{segment}/location"
+                json_data = {"location": location}
+                logger.debug(f"[find_emergency_services] POST {url}")
+                logger.debug(f"[find_emergency_services] Request payload: {json.dumps(json_data, indent=2)}")
+                response = self.session.post(url, json=json_data)
+
+            logger.debug(f"[find_emergency_services] Raw response: {response.text}")
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"PSAP address error: {e}")
-            return self._build_error("PSAP address", e)
-
-    def psap_location(self, location: Dict, **kwargs) -> Dict[str, Any]:
-        """Retrieve PSAP contact details using location input
-
-        Required location structure:
-        {
-            "coordinates": [-73.22344, 41.23443]  # [longitude, latitude]
-        }
-        """
-        try:
-            url = f"{self.base_url}/v1/emergency-info/psap/location"
-            json_data = {"location": location}
-            logger.debug(f"[psap_location] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, json=json_data)
-            logger.debug(f"[psap_location] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"PSAP location error: {e}")
-            return self._build_error("PSAP location", e)
-
-    def psap_ahj_address(self, address: Dict, **kwargs) -> Dict[str, Any]:
-        """Retrieve PSAP+AHJ contact details using address input
-
-        Required address structure:
-        {
-            "addressLines": ["860 White Plains Road Trumbull CT 06611, USA"],
-            "admin1": "Connecticut",
-            "admin2": "Trumbull",
-            "city": "Trumbull",
-            "postalCode": "06611"
-        }
-        """
-        try:
-            url = f"{self.base_url}/v1/emergency-info/psap-ahj/address"
-            json_data = {"address": address}
-            logger.debug(f"[psap_ahj_address] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, json=json_data)
-            logger.debug(f"[psap_ahj_address] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"PSAP AHJ address error: {e}")
-            return self._build_error("PSAP AHJ address", e)
-
-    def psap_ahj_location(self, location: Dict, **kwargs) -> Dict[str, Any]:
-        """Retrieve PSAP+AHJ contact details using location input
-
-        Required location structure:
-        {
-            "coordinates": [-73.22344, 41.23443]  # [longitude, latitude]
-        }
-        """
-        try:
-            url = f"{self.base_url}/v1/emergency-info/psap-ahj/location"
-            json_data = {"location": location}
-            logger.debug(f"[psap_ahj_location] Request payload: {json.dumps(json_data, indent=2)}")
-            response = self.session.post(url, json=json_data)
-            logger.debug(f"[psap_ahj_location] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"PSAP AHJ location error: {e}")
-            return self._build_error("PSAP AHJ location", e)
-
-    def psap_ahj_fccid(self, fcc_id: str, **kwargs) -> Dict[str, Any]:
-        """Retrieve PSAP+AHJ contact details using FCC ID"""
-        try:
-            url = f"{self.base_url}/v1/emergency-info/psap-ahj/fccid"
-            params = {"fccId": fcc_id}
-            logger.debug(f"[psap_ahj_fccid] Request params: {params}")
-            response = self.session.get(url, params=params)
-            logger.debug(f"[psap_ahj_fccid] Raw response: {response.text}")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"PSAP AHJ FCC ID error: {e}")
-            return self._build_error("PSAP AHJ FCC ID", e)
+            logger.error(f"Emergency services lookup error: {e}")
+            return self._build_error("Emergency services lookup", e)

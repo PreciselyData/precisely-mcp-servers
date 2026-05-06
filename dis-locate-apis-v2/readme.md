@@ -1,6 +1,6 @@
-﻿# Precisely MCP Server
+# Precisely MCP Server
 
-A Model Context Protocol (MCP) server that exposes 68 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
+A Model Context Protocol (MCP) server that exposes 57 Precisely location intelligence APIs to AI assistants like Claude Desktop, VS Code, Cursor, LangChain, LlamaIndex, and custom applications.
 
 ## Features
 
@@ -167,7 +167,7 @@ async def test_http():
         async with ClientSession(read, write) as session:
             await session.initialize()
             
-            # List all 68 tools
+            # List all 51 tools
             tools = await session.list_tools()
             print(f"Available tools: {len(tools.tools)}")
             
@@ -192,7 +192,7 @@ async def test_http():
         async with ClientSession(read, write) as session:
             await session.initialize()
             
-            # List all 68 tools
+            # List all 51 tools
             tools = await session.list_tools()
             print(f"Available tools: {len(tools.tools)}")
             
@@ -223,7 +223,7 @@ async def use_with_langchain():
         }
     })
     
-    # Get all 68 tools as LangChain tools
+    # Get all 51 tools as LangChain tools
     tools = await client.get_tools()
     print(f"LangChain tools: {len(tools)} tools available")
     
@@ -299,13 +299,13 @@ python test_precisely_mcp.py
 Test Architecture:
 
 1. **Layer 1 - API Core**: Validates initialization and core functionality
-2. **Layer 2 - MCP Server**: Verifies all 68 tools are properly defined
+2. **Layer 2 - MCP Server**: Verifies all 51 tools are properly defined
 3. **Layer 3 - Functional**: Tests all 72 test cases with real API calls
 
 Test Features:
 
 - Single unified test file
-- 100% coverage (68/68 tools)
+- 100% coverage (51/51 tools)
 - Comprehensive logging (query, payload, response)
 - Detailed test reports in test_logs/
 - JSON results for CI/CD integration
@@ -323,120 +323,103 @@ Failed:    0
 Pass Rate: 100.0%
 ```
 
-## Available APIs (68 Tools)
+## Available APIs (51 Tools)
 
-### Geocoding & Address (9 tools)
+### Geocoding & Address (6 tools)
 
 1. geocode - Convert address to coordinates
 2. reverse_geocode - Convert coordinates to address
 3. verify_address - Verify and standardize addresses
-4. autocomplete - Address autocomplete suggestions
-5. autocomplete_postal_city - Postal code and city autocomplete
-6. autocomplete_v2 - Express autocomplete (V2)
-7. lookup - Lookup address by PreciselyID
-8. parse_address - Parse single address into components
-9. parse_address_batch - Parse multiple addresses
+4. autocomplete_address - Address, postal code, and city autocomplete (standard or express)
+5. lookup - Lookup address by PreciselyID
+6. parse_addresses - Parse addresses into components (single or batch, max 10)
 
 ### Property Information (7 tools)
 
-10. get_property_data - Detailed property information
-11. get_property_attributes_by_address - Property attributes
-12. get_replacement_cost_by_address - Property replacement cost estimates
-13. get_buildings_by_address - Building information
-14. get_parcels_by_address - Parcel/lot information
-15. get_neighborhoods_by_address - Neighborhood details
-16. get_schools_by_address - Nearby schools information
+7. get_property_data - Detailed property information
+8. get_property_attributes_by_address - Property attributes
+9. get_replacement_cost_by_address - Property replacement cost estimates
+10. get_buildings_by_address - Building information
+11. get_parcels_by_address - Parcel/lot information
+12. get_neighborhoods_by_address - Neighborhood details
+13. get_schools_by_address - Nearby schools information
 
 ### Risk Assessment (6 tools)
 
-17. get_flood_risk_by_address - Flood zone and risk assessment
-18. get_wildfire_risk_by_address - Wildfire risk analysis
-19. get_earth_risk - Earthquake risk assessment
-20. get_coastal_risk - Coastal hazard analysis
-21. get_property_fire_risk - Fire risk assessment
-22. get_historical_weather_risk - Historical weather patterns
+14. get_flood_risk_by_address - Flood zone and risk assessment
+15. get_wildfire_risk_by_address - Wildfire risk analysis
+16. get_earth_risk - Earthquake risk assessment
+17. get_coastal_risk - Coastal hazard analysis
+18. get_property_fire_risk - Fire risk assessment
+19. get_historical_weather_risk - Historical weather patterns
 
 ### Demographics & Safety (4 tools)
 
-23. get_demographics - Population and demographic data
-24. get_crime_index - Crime statistics and safety index
-25. get_psyte_geodemographics_by_address - Lifestyle segmentation
-26. get_ground_view_by_address - Census block-level demographics
+20. get_demographics - Population and demographic data
+21. get_crime_index - Crime statistics and safety index
+22. get_psyte_geodemographics_by_address - Lifestyle segmentation
+23. get_ground_view_by_address - Census block-level demographics
 
-### Tax & Jurisdiction (10 tools)
+### Tax & Jurisdiction (6 tools)
 
-27. lookup_by_address - Tax jurisdiction by address
-28. lookup_by_location - Tax jurisdiction by coordinates
-29. lookup_by_addresses - Batch tax jurisdiction lookup (addresses)
-30. lookup_by_locations - Batch tax jurisdiction lookup (coordinates)
-31. psap_address - Emergency services (911/PSAP) by address
-32. psap_location - Emergency services by coordinates
-33. psap_ahj_fccid - PSAP info by FCC ID
-34. psap_ahj_address - Authority Having Jurisdiction by address
-35. psap_ahj_location - Authority Having Jurisdiction by coordinates
-36. geo_locate_ip_address - Geolocation by IP address
+24. lookup_by_address - Tax jurisdiction by address
+25. lookup_by_location - Tax jurisdiction by coordinates
+26. lookup_by_addresses - Batch tax jurisdiction lookup (addresses)
+27. lookup_by_locations - Batch tax jurisdiction lookup (coordinates)
+28. find_emergency_services - Emergency services (911/PSAP) and Authority Having Jurisdiction lookup by address, coordinates, or FCC ID
+29. geo_locate_ip_address - Geolocation by IP address
 
-### Validation & Verification (3 tools)
+### Validation & Verification (2 tools)
 
-37. verify_email - Email address verification
-38. verify_batch_emails - Batch email verification
-39. parse_name - Name parsing into components
+30. verify_emails - Email address verification (single or batch, max 10)
+31. parse_name - Name parsing into components
 
-### Phone Services (2 tools)
+### Phone Services (1 tool)
 
-40. validate_phone - Phone number validation
-41. validate_batch_phones - Batch phone validation
+32. validate_phones - Phone number validation (single or batch, max 10)
 
 ### Geolocation (1 tool)
 
-42. geo_locate_wifi_access_point - WiFi access point geolocation
+33. geo_locate_wifi_access_point - WiFi access point geolocation
 
-### Timezone (2 tools)
+### Timezone (1 tool)
 
-43. timezone_addresses - Get timezone for addresses
-44. timezone_locations - Get timezone for coordinates
+34. get_timezones - Get timezone for addresses or coordinates
 
 ### GraphQL Advanced Queries (5 tools)
 
-45. get_addresses_detailed - Comprehensive address details via GraphQL
-46. get_parcel_by_owner_detailed - Parcel ownership queries via GraphQL
-47. get_address_family - Related addresses via GraphQL
-48. get_serviceability - Broadband/utility serviceability via GraphQL
-49. get_places_by_address - Places/points of interest by address via GraphQL
+35. get_addresses_detailed - Comprehensive address details via GraphQL
+36. get_parcel_by_owner_detailed - Parcel ownership queries via GraphQL
+37. get_address_family - Related addresses via GraphQL
+38. get_serviceability - Broadband/utility serviceability via GraphQL
+39. get_places_by_address - Places/points of interest by address via GraphQL
 
 ### Spatial Analysis (7 tools)
 
-50. find_nearest_candidates - Find nearest spatial features by distance
-51. search_at_location - Search for features at/near a location
-52. overlap - Identify spatial overlaps between geometries
-53. get_spatial_products - Get available spatial data product metadata
-54. list_spatial_tables - List available spatial tables
-55. get_table_metadata - Get metadata for a specific spatial table
-56. summarize - Aggregate spatial data within a defined area
+40. find_nearest_candidates - Find nearest spatial features by distance
+41. search_at_location - Search for features at/near a location
+42. overlap - Identify spatial overlaps between geometries
+43. get_spatial_products - Get available spatial data product metadata
+44. list_spatial_tables - List available spatial tables
+45. get_table_metadata - Get metadata for a specific spatial table
+46. summarize - Aggregate spatial data within a defined area
 
-### OGC API Features (10 tools)
+### OGC API Features (6 tools)
 
-57. ogc_landing_page - OGC API landing page with links
-58. ogc_api_definition - Complete OpenAPI definition
-59. ogc_functions - Available spatial functions
-60. ogc_conformance - OGC conformance declaration
-61. ogc_collections - List feature collections
-62. ogc_collection - Information about a specific collection
-63. ogc_collection_schema - Schema for a collection
-64. ogc_collection_queryables - Queryable attributes for a collection
-65. ogc_collection_items - Data records from a collection
-66. ogc_feature_by_id - Get a specific feature by ID
+47. ogc_functions - Available spatial functions
+48. ogc_collections - List feature collections
+49. ogc_collection - Information about a specific collection
+50. ogc_collection_schema - Schema for a collection
+51. ogc_collection_queryables - Queryable attributes for a collection
+52. ogc_collection_items - Data records from a collection, or a single feature by ID
 
-### WMS - Web Map Service (2 tools, 3 tests)
+### WMS - Web Map Service (1 tool, 3 tests)
 
-67. wms_get_request - WMS GET handler (GetCapabilities/GetMap/GetFeatureInfo) — tested with both GetCapabilities and GetFeatureInfo (2 tests)
-68. wms_post_get_map - WMS POST GetMap with custom SLD styling
+53. wms_request - WMS handler (GetCapabilities/GetMap/GetFeatureInfo via GET; GetMap with SLD styling via POST) — tested with GetCapabilities, GetFeatureInfo, and POST GetMap (3 tests)
 
-### WMTS - Web Map Tile Service (3 tools)
+### WMTS - Web Map Tile Service (1 tool, 3 tests)
 
-69. wmts_request - WMTS KVP handler (GetCapabilities/GetTile)
-70. wmts_get_standard_tile - WMTS tile via RESTful standard profile
-71. wmts_get_simple_tile - WMTS tile via RESTful simple profile
+54. wmts_request - WMTS handler (GetCapabilities/GetTile KVP/GetTile simple profile)
 
 ## Project Structure
 
@@ -447,7 +430,7 @@ Pass Rate: 100.0%
  .env.template                      # Credential configuration template
  readme.md                          # This file
  mcp_servers/
-    precisely_wrapper_server.py   # MCP server wrapper (1,300+ lines, 68 tools, dual transport)
+    precisely_wrapper_server.py   # MCP server wrapper (1,300+ lines, 51 tools, dual transport)
     setup_claude_desktop.ps1      # Windows setup script (UTF-8 no-BOM)
  logs/                              # Application logs (automatically generated)
  test_logs/                         # Test results and reports (automatically generated)
@@ -471,7 +454,7 @@ Pass Rate: 100.0%
 
 ### Architecture Changes
 
-- 72 API methods, 68 MCP tools, 72 functional test cases
+- 59 API methods, 51 MCP tools, 72 functional test cases
 - File size reductions: precisely_api_core.py 8% smaller
 - Removed redundant files
 
@@ -479,7 +462,7 @@ Pass Rate: 100.0%
 
 - Fixed UTF-8 BOM issue in setup_claude_desktop.ps1
 - Standardized credential naming
-- Updated test suite for 68 tools
+- Updated test suite for 51 tools
 
 ## Configuration
 

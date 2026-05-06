@@ -13,7 +13,7 @@ def get_tools() -> list[Tool]:
         name="find_nearest_candidates",
         description="""Returns nearest locations or points of interest within specified distance from input geometry/address, by default ordered closest first. Input can also be an address, no need to geocode it. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
-Returns: GeoJSON FeatureCollection with features. Includes distance values, recordsMatched, recordsReturned, and metadata.
+Output: GeoJSON FeatureCollection with features. Includes distance values, recordsMatched, recordsReturned, and metadata.
 
 Example 1 Request (Geometry):
 {'tableName': '/risks/wildfire_risk_fire_perimeter', 'attributes': ['incremental_s_no', 'state', 'wr_id'], 'location': {'format': 'wkt', 'value': 'LINESTRING (-122.769499 38.005947, -122.773625 37.999047)'}, 'withinDistance': '10 mi', 'distanceAttributeName': 'dist', 'maxFeatures': '5', 'inputPointAttributeName': 'inputPoint', 'targetPointAttributeName': 'targetPoint', 'bearingAttributeName': 'bearing'}
@@ -51,7 +51,7 @@ Spatial operation semantics — choose carefully based on the query intent:
 - Use 'within' when the query asks for table features that are INSIDE the input geometry. Natural language cues: "within", "inside", "that fall within this area". Example: "find all parcels within this polygon" → parcels are within the polygon → use 'within'.
 - Use 'intersects' when the query asks for table features that INTERSECT, CROSS, TOUCH, OVERLAP or share any portion of the input geometry. Natural language cues: "intersecting", "crossing", "overlapping".
 
-Returns: GeoJSON FeatureCollection with matching features, recordsMatched, recordsReturned, and metadata.
+Output: GeoJSON FeatureCollection with matching features, recordsMatched, recordsReturned, and metadata.
 
 Example 1 Request (Geometry, WITHIN):
 {'spatialOperation': 'WITHIN', 'tableName': '/risks/flood_risk', 'attributes': ['statecode', 'type', 'mapname', 'incremental_s_no'], 'location': {'format': 'wkt', 'value': 'MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211)))'}, 'bufferDistance': '10 mi'}
@@ -86,7 +86,7 @@ Example 3 Request (Address, CONTAINS — find the building enclosing an address)
         name="overlap",
         description="""Returns geometries that represent the overlap of the input geometry/address with the geometries in the target table, along with the percentage and area/length of overlap/intersection. Input can also be an address, no need to geocode it. If input is an address, bufferDistance is required. Use list_spatial_tables tool to find available spatial tables/data, get_table_metadata tool for available columns and their metadata, and get_spatial_products tool to discover recommended summary attributes, label columns, and data vintage, layer extents, and other metadata.
 
-Returns: GeoJSON FeatureCollection with overlapping geometries, intersection area/length, and percentage of overlap with both target and input geometries.
+Output: GeoJSON FeatureCollection with overlapping geometries, intersection area/length, and percentage of overlap with both target and input geometries.
 
 Example 1 Request (Geometry):
 {'tableName': '/risks/historical_weather_hurricanelines_world', 'uom': 'mi', 'attributes': ['stormname', 'windspeed'], 'location': {'format': 'wkt', 'value': 'POLYGON ((-74.286804 40.515887, -74.292297 40.478292, -73.66333 40.560765, -73.737488 40.839788, -74.002533 40.909361, -74.286804 40.515887))'}, 'totalAttributeName': 'tc'}
@@ -118,7 +118,7 @@ Example 2 Request (Address):
         description="""Discovery tool: list all available Enrich Data products with metadata needed to make informed spatial queries.
 Call this before querying spatial data when you need to discover: product family, geography coverage, data vintage, recommended zoom levels, recommended styles, summary attributes, label column names, and layer extents.
 
-Returns: List of product metadata objects with productId, productName, productFamily, vintage, geography, and layers (including layerId, displayName, featureTable, recommendedStyle).
+Output: List of product metadata objects with productId, productName, productFamily, vintage, geography, and layers (including layerId, displayName, featureTable, recommendedStyle).
 
 Use this before: wms_get_request, wms_post_get_map, wmts_request, wmts_get_standard_tile, wmts_get_simple_tile, find_nearest_candidates, search_at_location, overlap, summarize.
 
@@ -135,7 +135,7 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/products""",
 Call this before calling find_nearest_candidates, search_at_location, overlap, summarize, or get_table_metadata when the correct tableName is not yet known.
 Do NOT use this if you already know the tableName — call get_table_metadata directly for column/schema details.
 
-Returns: List of spatial table path strings (e.g., ['/risks/flood_risk', '/properties/buildings', ...]).
+Output: List of spatial table path strings (e.g., ['/risks/flood_risk', '/properties/buildings', ...]).
 
 Example Request: https://api.cloud.precisely.com/v1/spatial/tables""",
         inputSchema={
@@ -150,7 +150,7 @@ Example Request: https://api.cloud.precisely.com/v1/spatial/tables""",
 Call this before calling find_nearest_candidates, search_at_location, overlap, or summarize when you need to know which columns are available in a table.
 Use list_spatial_tables first if the tableName is not yet known.
 
-Returns: Object with table name, columns (name, type, description), spatial bounding box, and approximate row count.
+Output: Object with table name, columns (name, type, description), spatial bounding box, and approximate row count.
 
 Note: The tableName parameter should NOT include a leading slash (e.g., 'properties/buildings', not '/properties/buildings').
 
@@ -171,7 +171,7 @@ IMPORTANT — spatialOperation selection:
 - Use 'intersects' when you want features that TOUCH or OVERLAP the input geometry (partial overlap counts).
 - Use 'within' when you want features that are FULLY CONTAINED INSIDE the input geometry. The user's query keyword 'within' (e.g., "records within 10 miles") means spatialOperation='within'.
 
-Returns: Aggregate statistics for specified columns.
+Output: Aggregate statistics for specified columns.
 
 Example 1 Request (Geometry, Intersects):
 {'spatialOperation': 'INTERSECTS', 'tableName': '/risks/historical_weather_windgrid', 'aggregateColumns': {'w9': ['min', 'max', 'avg', 'sum']}, 'location': {'format': 'wkt', 'value': 'GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))'}, 'proportionalCalculation': true}

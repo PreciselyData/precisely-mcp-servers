@@ -122,17 +122,17 @@ class PreciselyMCPTestSuite:
         methods = [m for m in dir(self.api) if not m.startswith('_') and callable(getattr(self.api, m))]
         logger.info(f"  Found {len(methods)} API methods")
         
-        if len(methods) != 73:
-            logger.warning(f"  [WARN] Expected 73 methods, found {len(methods)}")
+        if len(methods) != 56:
+            logger.warning(f"  [WARN] Expected 56 methods, found {len(methods)}")
         else:
-            logger.info("  [PASS] All 73 API methods present")
+            logger.info("  [PASS] All 56 API methods present")
         
         # Test 3: Quick smoke tests
         logger.info("\n[3/3] Running Quick Smoke Tests...")
         sample_tests = [
             ("geocode", lambda: self.api.geocode(address="1600 Pennsylvania Ave NW, Washington DC", country="USA")),
             ("verify_address", lambda: self.api.verify_address(address="1600 Pennsylvania Ave NW, Washington DC", country="USA")),
-            ("verify_email", lambda: self.api.verify_email(email="test@example.com")),
+            ("verify_emails", lambda: self.api.verify_emails(emails="test@example.com")),
         ]
         
         passed = 0
@@ -179,10 +179,10 @@ class PreciselyMCPTestSuite:
                 logger.error(f"  [FAIL] Duplicate tools found: {set(duplicates)}")
                 return False
             
-            if len(tools) != 68:
-                logger.warning(f"  [WARN] Expected 68 tools, found {len(tools)}")
+            if len(tools) != 51:
+                logger.warning(f"  [WARN] Expected 51 tools, found {len(tools)}")
             else:
-                logger.info("  [PASS] All 68 MCP tools defined")
+                logger.info("  [PASS] All 51 MCP tools defined")
             
         except Exception as e:
             logger.error(f"  [FAIL] Failed to load MCP server: {e}")
@@ -410,24 +410,24 @@ class PreciselyMCPTestSuite:
             ("Parse Name", "parse_name", "Parse the name John Robert Smith into components",
              {"data": {"name": "John Robert Smith"}}),
             
-            ("Validate Phone Number", "validate_phone", "Is 4144654885 a valid phone number in the US?",
-             {"data": {"phoneNumber": "4144654885", "country": "US"}}),
+            ("Validate Single Phone", "validate_phones", "Is 4144654885 a valid phone number in the US?",
+             {"phones": {"phoneNumber": "4144654885", "country": "US"}}),
             
-            ("Validate Batch Phones", "validate_batch_phones", "Validate multiple phone numbers: 3035551234, 7205559999",
-             {"data": {"phoneNumbers": [{"id": "1", "phoneNumber": "3035551234", "country": "US"}, {"id": "2", "phoneNumber": "7205559999", "country": "US"}]}}),
+            ("Validate Batch Phones", "validate_phones", "Validate multiple phone numbers: 3035551234, 7205559999",
+             {"phones": [{"id": "1", "phoneNumber": "3035551234", "country": "US"}, {"id": "2", "phoneNumber": "7205559999", "country": "US"}]}),
             
-            ("Verify Email", "verify_email", "Is john.doe@company.com a valid email?",
-             {"email": "john.doe@company.com"}),
+            ("Verify Single Email", "verify_emails", "Is john.doe@company.com a valid email?",
+             {"emails": "john.doe@company.com"}),
             
-            ("Verify Batch Emails", "verify_batch_emails", "Verify multiple emails: john@company.com, jane@company.com",
+            ("Verify Batch Emails", "verify_emails", "Verify multiple emails: john@company.com, jane@company.com",
              {"emails": [{"id": "1", "email": "john@company.com"}, {"id": "2", "email": "jane@company.com"}]}),
             
             # Timezone
-            ("Timezone by Address", "timezone_addresses", "What is the timezone for 1700 District Ave, Burlington, MA?",
-             {"data": {"addresses": [{"timestamp": 1691138974831, "address": {"id": "1", "addressLines": ["1700 District Ave, Burlington, MA"], "country": "USA"}}]}}),
+            ("Timezone by Address", "get_timezones", "What is the timezone for 1700 District Ave, Burlington, MA?",
+             {"addresses": [{"timestamp": 1691138974831, "address": {"id": "1", "addressLines": ["1700 District Ave, Burlington, MA"], "country": "USA"}}]}),
             
-            ("Timezone by Location", "timezone_locations", "What is the timezone for coordinates -71.0589, 42.3601?",
-             {"data": {"locations": [{"id": "1", "timestamp": 1691138974831, "geometry": {"coordinates": [-71.0589, 42.3601]}}]}}),
+            ("Timezone by Location", "get_timezones", "What is the timezone for coordinates -71.0589, 42.3601?",
+             {"locations": [{"id": "1", "timestamp": 1691138974831, "geometry": {"coordinates": [-71.0589, 42.3601]}}]}),
             
             # Geocoding & Address Services
             ("Geocode Address", "geocode", "What are the coordinates of 42 Valley Of The Sun Dr, Fairplay, CO 80440?",
@@ -439,20 +439,20 @@ class PreciselyMCPTestSuite:
             ("Verify Address", "verify_address", "Is 1600 Pennsylvania Ave, Washington DC a valid address?",
              {"address": "1600 Pennsylvania Ave, Washington DC", "country": "USA"}),
             
-            ("Parse Address", "parse_address", "Parse 1700 District Ave #300, Burlington, MA 01803 into components",
-             {"address": "1700 District Ave #300, Burlington, MA 01803"}),
+            ("Parse Single Address", "parse_addresses", "Parse 1700 District Ave #300, Burlington, MA 01803 into components",
+             {"addresses": "1700 District Ave #300, Burlington, MA 01803"}),
             
-            ("Parse Address Batch", "parse_address_batch", "Parse multiple addresses: 123 Main St Boston MA, 456 Oak Ave Denver CO",
+            ("Parse Address Batch", "parse_addresses", "Parse multiple addresses: 123 Main St Boston MA, 456 Oak Ave Denver CO",
              {"addresses": [{"id": "1", "address": "123 Main St, Boston, MA 02101"}, {"id": "2", "address": "456 Oak Ave, Denver, CO 80203"}]}),
             
-            ("Autocomplete Address", "autocomplete", "Autocomplete address starting with 1700 District",
+            ("Autocomplete Street", "autocomplete_address", "Autocomplete address starting with 1700 District",
              {"address": {"addressLines": ["1700 District"], "country": "USA"}, "preferences": {"maxResults": 5}}),
             
-            ("Autocomplete Postal City", "autocomplete_postal_city", "Autocomplete postal code 12180 in the USA",
+            ("Autocomplete Postal City", "autocomplete_address", "Autocomplete postal code 12180 in the USA",
              {"address": {"type": "POSTAL", "postAddress": "12180", "country": "USA"}, "preferences": {"maxResults": 5}}),
             
-            ("Autocomplete V2", "autocomplete_v2", "Give me express autocomplete suggestions for 350 Jordan Street, USA",
-             {"address": {"addressLines": ["350 Jordan"], "country": "USA"}, "preferences": {"maxResults": 5}}),
+            ("Autocomplete Express", "autocomplete_address", "Give me express autocomplete suggestions for 350 Jordan Street, USA",
+             {"address": {"addressLines": ["350 Jordan"], "country": "USA"}, "express": True, "preferences": {"maxResults": 5}}),
             
             ("Lookup by PreciselyID", "lookup", "Lookup address for PreciselyID P0000GL41OME",
              {"keys": [{"key": "P0000GL41OME", "country": "USA", "type": "PB_KEY"}]}),
@@ -476,21 +476,21 @@ class PreciselyMCPTestSuite:
             ("Geolocate WiFi Access Point", "geo_locate_wifi_access_point", "Geolocate WiFi access point with MAC address 00:22:75:10:d5:91",
              {"wifi_data": {"servingCell": {"mac": "00:22:75:10:d5:91", "rssi": "-90"}}}),
             
-            # Emergency Services (PSAP)
-            ("PSAP by Address", "psap_address", "What is the 911 service for 860 White Plains Road Trumbull CT 06611?",
+            # Emergency Services (consolidated find_emergency_services)
+            ("Emergency Services by Address (PSAP only)", "find_emergency_services", "What is the 911 service for 860 White Plains Road Trumbull CT 06611?",
+             {"address": {"addressLines": ["860 White Plains Road"], "city": "Trumbull", "admin1": "CT", "postalCode": "06611"}, "include_ahj": False}),
+            
+            ("Emergency Services by Location (PSAP only)", "find_emergency_services", "What is the 911 service for coordinates -71.0589, 42.3601?",
+             {"location": {"coordinates": [-71.0589, 42.3601]}, "include_ahj": False}),
+            
+            ("Emergency Services by Address (PSAP + AHJ)", "find_emergency_services", "Get Authority Having Jurisdiction for 860 White Plains Road Trumbull CT 06611",
              {"address": {"addressLines": ["860 White Plains Road"], "city": "Trumbull", "admin1": "CT", "postalCode": "06611"}}),
             
-            ("PSAP by Location", "psap_location", "What is the 911 service for coordinates -71.0589, 42.3601?",
+            ("Emergency Services by Location (PSAP + AHJ)", "find_emergency_services", "Get Authority Having Jurisdiction for coordinates -71.0589, 42.3601",
              {"location": {"coordinates": [-71.0589, 42.3601]}}),
             
-            ("PSAP by FCC ID", "psap_ahj_fccid", "Get PSAP information for FCC ID 1404",
+            ("Emergency Services by FCC ID", "find_emergency_services", "Get PSAP information for FCC ID 1404",
              {"fcc_id": "1404"}),
-            
-            ("PSAP AHJ by Address", "psap_ahj_address", "Get Authority Having Jurisdiction for 860 White Plains Road Trumbull CT 06611",
-             {"address": {"addressLines": ["860 White Plains Road"], "city": "Trumbull", "admin1": "CT", "postalCode": "06611"}}),
-            
-            ("PSAP AHJ by Location", "psap_ahj_location", "Get Authority Having Jurisdiction for coordinates -71.0589, 42.3601",
-             {"location": {"coordinates": [-71.0589, 42.3601]}}),
             
             # Property Information
             ("Get Property Data", "get_property_data", "What are the property details for 42 Valley Of The Sun Dr, Fairplay, CO 80440?",
@@ -586,16 +586,7 @@ class PreciselyMCPTestSuite:
              {"tableName": "/risks/historical_weather_windgrid", "aggregateColumns": {"w11": ["min", "max", "avg", "sum"], "w10": ["min", "max", "sum", "avg", "median"]}, "location": {"format": "WKT", "value": "GEOMETRYCOLLECTION (MULTIPOLYGON (((-122.399306 37.712211, -122.398975 37.712132, -122.399007 37.712049, -122.399338 37.712127, -122.399316 37.712185, -122.399306 37.712211))), LINESTRING (-121.756899 37.653383, -121.158302 37.304645, -121.690998 37.120906))"}, "spatialOperation": "intersects", "attributeFilter": "grid_id > 0", "proportionalCalculation": True, "bufferDistance": "10 mi"}),
             
             # OGC Features APIs
-            ("OGC Landing Page", "ogc_landing_page", "Get OGC API landing page",
-             {}),
-            
-            ("OGC API Definition", "ogc_api_definition", "Get OGC API definition",
-             {}),
-            
             ("OGC Functions", "ogc_functions", "Get OGC spatial functions",
-             {}),
-            
-            ("OGC Conformance", "ogc_conformance", "Get OGC conformance declaration",
              {}),
             
             ("OGC Collections", "ogc_collections", "List OGC feature collections",
@@ -613,31 +604,31 @@ class PreciselyMCPTestSuite:
             ("OGC Collection Items", "ogc_collection_items", "Get items from properties/buildings collection with bbox",
              {"collectionId": "properties/buildings", "limit": "100"}),
             
-            ("OGC Feature by ID", "ogc_feature_by_id", "Get feature 1 from properties/buildings collection",
+            ("OGC Feature by ID", "ogc_collection_items", "Get feature 1 from properties/buildings collection",
              {"collectionId": "properties/buildings", "featureId": "1"}),
             
             # WMS APIs
-            ("WMS GetCapabilities", "wms_get_request", "Get WMS capabilities",
+            ("WMS GetCapabilities", "wms_request", "Get WMS capabilities",
              {"REQUEST": "GetCapabilities", "SERVICE": "WMS", "VERSION": "1.3.0"}),
 
             # GetFeatureInfo with INFO_FORMAT=application/json returns a GeoJSON FeatureCollection dict
             # This is handled by the generic Success path in run_functional_test (no image_base64/error/xml key)
             # EPSG:4326 v1.3.0 BBOX axis order is minLat,minLon,maxLat,maxLon (Y-first per CRS definition)
-            ("WMS GetFeatureInfo JSON", "wms_get_request", "Get feature attributes at a pixel as GeoJSON",
+            ("WMS GetFeatureInfo JSON", "wms_request", "Get feature attributes at a pixel as GeoJSON",
              {"REQUEST": "GetFeatureInfo", "SERVICE": "WMS", "VERSION": "1.3.0", "crs": "EPSG:4326", "BBOX": "29.0,-99.5,30.5,-98.0", "width": "400", "height": "300", "layers": "wildfire_risk", "STYLES": "", "QUERY_LAYERS": "wildfire_risk", "Info_Format": "application/json", "I": "200", "J": "150"}),
 
-            ("WMS POST GetMap", "wms_post_get_map", "Get a styled map image via POST with custom SLD_BODY (brown fill buildings)",
+            ("WMS POST GetMap", "wms_request", "Get a styled map image via POST with custom SLD_BODY (brown fill buildings)",
              {"REQUEST": "GetMap", "SERVICE": "WMS", "VERSION": "1.3.0", "crs": "EPSG:4326", "BBOX": "37.78662956646336823,-122.2745967175037549,37.81410536165775227,-122.2403683391127061", "width": "1062", "height": "853", "layers": "buildings", "STYLES": "", "FORMAT": "image/png", "TRANSPARENT": "TRUE", "SLD_BODY": '{"styleDetails": [{"themeList": {"theme": [{"type": "OverrideTheme","style": {"type": "MapBasicCompositeStyle","AreaStyle": {"type": "MapBasicAreaStyle","MapBasicPen": {"width": 1,"pattern": 2,"color": "#964B00","unit": "PIXEL"},"MapBasicBrush": {"pattern": 2,"foregroundColor": "#E0AB8B","backgroundColor": "#C0C0C0"}}}}]}}]}'  }),
             
             # WMTS APIs
             ("WMTS GetCapabilities", "wmts_request", "Get WMTS capabilities",
              {"Service": "WMTS", "Request": "GetCapabilities"}),
             
-            ("WMTS Get Standard Tile", "wmts_get_standard_tile", "Get a standard map tile",
-             {"Version": "1.0.0", "Layer": "parcels", "Style": "default", "TileMatrixSet": "WorldWebMercatorQuad_0_to_19", "TileMatrix": "17", "TileCol": 31118, "TileRow": 50069, "Format": "png"}),
+            ("WMTS GetTile Standard", "wmts_request", "Get a standard map tile via KVP",
+             {"Service": "WMTS", "Request": "GetTile", "Version": "1.0.0", "Layer": "parcels", "Style": "default", "TileMatrixSet": "WorldWebMercatorQuad_0_to_19", "TileMatrix": "17", "TileRow": 50069, "TileCol": 31118, "Format": "image/png"}),
             
-            ("WMTS Get Simple Tile", "wmts_get_simple_tile", "Get a simple map tile",
-             {"Version": "1.0.0", "Layer": "parcels", "TileMatrix": "17", "TileCol": 31118, "TileRow": 50069, "Format": "png"}),
+            ("WMTS GetTile Simple", "wmts_request", "Get a simple profile map tile",
+             {"Service": "WMTS", "Request": "GetTile", "Version": "1.0.0", "Layer": "parcels", "TileMatrix": "17", "TileCol": 31118, "TileRow": 50069, "Format": "png", "profile": "simple"}),
         ]
     
     # ========================================
