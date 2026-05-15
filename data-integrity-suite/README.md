@@ -4,6 +4,7 @@ This document covers two ways to connect to the DIS MCP server remotely using th
 
 - **[Part 1: VS Code / GitHub Copilot](#part-1-vs-code--github-copilot)** — configure via `mcp.json`
 - **[Part 2: Microsoft Copilot Studio](#part-2-microsoft-copilot-studio)** — create a custom agent
+- **[Part 3: Claude Desktop & Claude.ai](#part-3-claude-desktop--claudeai)** — create a custom connector
 
 The **DIS MCP API Gateway URL**:
 
@@ -146,6 +147,90 @@ appropriate DIS MCP tool based on what you ask.
 3. Configure visibility and submit for approval if required
 
 After publishing, users can chat with the DIS MCP agent in supported channels.
+
+---
+
+## Part 3: Claude Desktop & Claude.ai
+
+[Option 1 (`Custom Connectors`)](#option-1--connect-via-custom-connectors-claude-desktop--claudeai) is the recommended approach and works for both Claude Desktop and Claude.ai. [Option 2 (`mcp-remote`)](#option-2--configure-via-mcp-remote-claude-desktop-only) is Claude Desktop-only and is intended for API key auth or non-default workspace access.
+
+### Option 1 — Connect via `Custom Connectors` (Claude Desktop & Claude.ai)
+
+Custom connectors are configured through your Claude account and shared across all Claude clients. Even though Claude Desktop runs on your computer, the connection to the MCP server is brokered through Anthropic's infrastructure. When adding a custom connector, you go through an OAuth flow to sign in to your Precisely account. Make sure Claude Desktop and Claude.ai are signed in with the same account.
+
+1. Navigate to [Customize > Connectors](https://claude.ai/customize/connectors).
+2. Click **+** then **Add custom connector**.
+3. Enter the name `Precisely DIS MCP` and the Remote MCP server URL:
+   ```
+   https://api.cloud.precisely.com/dis-mcp/mcp
+   ```
+4. Click **Advanced settings** and enter:
+
+   | Field | Value |
+   |-------|-------|
+   | **OAuth Client ID** | `0oawtlk3vhx09KMUJ4x7` |
+   | **OAuth Client Secret** | *(leave blank — public client)* |
+
+5. Click **Add**.
+6. Click **Connect** and complete the Precisely SSO login.
+
+> **Team and Enterprise:** Only an Owner can add a custom connector for the org (steps 1–5 above). Members skip straight to step 6 — navigate to [Customize > Connectors](https://claude.ai/customize/connectors), find **Precisely DIS MCP** (marked **Custom**), and click **Connect**.
+
+> **Note:** This method authenticates via SSO and can only connect to your **default DIS workspace**. If you need to target a specific non-default workspace, use Option 2 with credentials from that workspace instead.
+
+
+### Option 2 — Configure via `mcp-remote` (Claude Desktop only)
+
+Use this approach for service accounts or to connect to a non-default DIS workspace using an API key.
+
+**Prerequisites:** Node.js 18+ with `npx` (bundled with Node.js). `mcp-remote` downloads automatically on first use and is cached for subsequent launches.
+
+**Step 1:** Open the config file for your OS:
+
+| OS | Path |
+|----|------|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+
+**Step 2:** Merge the following into the `mcpServers` object. Replace `Apikey base64(api_key:api_secret)` with your encoded API key from the [Create an API Key](#create-an-api-key) section above.
+
+**Windows:**
+
+```json
+{
+  "mcpServers": {
+    "Precisely DIS MCP": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "mcp-remote",
+        "https://api.cloud.precisely.com/dis-mcp/mcp",
+        "--header", "Authorization: Apikey base64(api_key:api_secret)"]
+    }
+  }
+}
+```
+
+**macOS / Linux:**
+
+```json
+{
+  "mcpServers": {
+    "Precisely DIS MCP": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote",
+        "https://api.cloud.precisely.com/dis-mcp/mcp",
+        "--header", "Authorization: Apikey base64(api_key:api_secret)"]
+    }
+  }
+}
+```
+
+> Header format is strict: `Authorization:Apikey <value>` (no extra space after the colon).
+
+**Step 3:** Quit and relaunch Claude Desktop. **Precisely DIS MCP** will appear in **Customize > Connectors**.
+
+Once connected, enable the connector per conversation via the **+** button → **Connectors** → toggle **Precisely DIS MCP** on.
+
+Follow [Validating Connectivity via Chat](#validating-connectivity-via-chat) below.
 
 ---
 
