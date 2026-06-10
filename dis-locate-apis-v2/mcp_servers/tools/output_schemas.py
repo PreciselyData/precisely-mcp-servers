@@ -503,6 +503,19 @@ GET_PLACES = _graphql_schema("Points of interest near the address.", {
     "places": _DATA_BLOCK
 })
 
+# Datalink GeoX tools (3 tools)
+GET_DATALINK_GEOX_PROPERTY = _graphql_schema("Data Link GeoX Property — building attributes from aerial imagery.", {
+    "datalinkGeoXProperty": _DATA_BLOCK
+})
+
+GET_DATALINK_GEOX_ROOF = _graphql_schema("Data Link GeoX Roof — roof condition and material from aerial imagery.", {
+    "datalinkGeoXRoof": _DATA_BLOCK
+})
+
+GET_DATALINK_GEOX_VEGETATION = _graphql_schema("Data Link GeoX Vegetation — vegetation proximity and coverage from aerial imagery.", {
+    "datalinkGeoXVegetation": _DATA_BLOCK
+})
+
 # ============================================================
 # Spatial Analysis (7 tools)
 # ============================================================
@@ -814,6 +827,10 @@ TOOL_OUTPUT_SCHEMAS = {
     "get_address_family": GET_ADDRESS_FAMILY,
     "get_serviceability": GET_SERVICEABILITY,
     "get_places_by_address": GET_PLACES,
+    # GraphQL Datalink GeoX (3)
+    "get_datalink_geox_property": GET_DATALINK_GEOX_PROPERTY,
+    "get_datalink_geox_roof": GET_DATALINK_GEOX_ROOF,
+    "get_datalink_geox_vegetation": GET_DATALINK_GEOX_VEGETATION,
     # Spatial Analysis (7)
     "find_nearest_candidates": GEOJSON_FEATURE_COLLECTION,
     "search_at_location": GEOJSON_FEATURE_COLLECTION,

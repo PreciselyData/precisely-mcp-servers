@@ -1,6 +1,6 @@
 """
 GraphQL Services Tools Module
-Contains 22 tools for property, demographics, risk, and advanced GraphQL queries
+Contains 25 tools for property, demographics, risk, and advanced GraphQL queries
 """
 from mcp.types import Tool
 from mcp_servers.tools.base_tool import handle_tool_call  # noqa: F401
@@ -35,6 +35,27 @@ _GRAPHQL_DATA_SCHEMA = {
         }
     },
     "required": ["query", "variables"]
+}
+
+# Input schema for curated datalink tools that support lookup by address OR by ID.
+_ADDRESS_OR_ID_INPUT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "address": {
+            "type": "string",
+            "description": "Full street address string for getByAddress mode (e.g., '2755 Milwaukee St, Denver, CO 80238').",
+        },
+        "id": {
+            "type": "string",
+            "description": "Entity identifier for getById mode.",
+        },
+        "queryType": {
+            "type": "string",
+            "description": "ID namespace required when using getById mode.",
+            "enum": ["PRECISELY_ID", "PARCEL_ID", "BUILDING_ID", "PLACE_ID", "DUNS_ID", "GERS_ID"],
+        },
+    },
+    "oneOf": [{"required": ["address"]}, {"required": ["id", "queryType"]}],
 }
 
 
@@ -442,5 +463,93 @@ Example request:
             },
             "required": ["data"]
         }
+    ),
+
+    # Datalink GeoX tools (3 tools) — curated queries, premium credits
+    Tool(
+        name="get_datalink_geox_property",
+        description="""Retrieve Data Link GeoX Property records for a building using aerial/satellite imagery analysis.
+Returns detailed physical building attributes derived from overhead imagery.
+Use this tool when you need building footprint, height, occupancy, pool/trampoline counts,
+or land use derived from imagery rather than assessor records.
+Do NOT use if you need roof condition or vegetation data — use get_datalink_geox_roof or
+get_datalink_geox_vegetation instead.
+
+Two lookup modes — provide exactly one:
+  Mode 1 (by address): provide 'address' only.
+  Mode 2 (by ID):      provide 'id' and 'queryType' only. Do NOT also pass 'address'.
+
+queryType options: PRECISELY_ID, PARCEL_ID, BUILDING_ID, PLACE_ID, DUNS_ID, GERS_ID
+
+Fields returned:
+  buildingID, footprintID, centerLongitude, centerLatitude, coordinateReferenceSystem,
+  footprintAreaSquareFootage, yearBuilt, occupancy, occupancyOfClosestBuildings,
+  landUseDescription, maximumBuildingHeightFeet, minimumGroundHeightFeet,
+  numberOfStories, squareFootage, poolCount, poolEnclosureCount,
+  temporaryPoolCount, trampolineCount, numberOfBuildingsInParcel,
+  imageDate, modelRunDate
+
+Note: Premium dataset — 5+ credits per call. Data access may be blocked depending on credential tier.
+
+Example (by address): {'address': '2755 Milwaukee St, Denver, CO 80238'}
+Example (by ID):      {'id': 'P0000GL41OME', 'queryType': 'PRECISELY_ID'}""",
+        inputSchema=_ADDRESS_OR_ID_INPUT_SCHEMA,
+    ),
+    Tool(
+        name="get_datalink_geox_roof",
+        description="""Retrieve Data Link GeoX Roof records for a building using aerial/satellite imagery analysis.
+Returns detailed roof condition and material attributes derived from overhead imagery.
+Use this tool when you need roof type, material, condition, rust/ponding/discoloration areas,
+solar panel coverage, or air conditioner counts assessed from imagery.
+Do NOT use if you need building footprint or vegetation data — use get_datalink_geox_property or
+get_datalink_geox_vegetation instead.
+
+Two lookup modes — provide exactly one:
+  Mode 1 (by address): provide 'address' only.
+  Mode 2 (by ID):      provide 'id' and 'queryType' only. Do NOT also pass 'address'.
+
+queryType options: PRECISELY_ID, PARCEL_ID, BUILDING_ID, PLACE_ID, DUNS_ID, GERS_ID
+
+Fields returned:
+  buildingID, footprintID, centerLongitude, centerLatitude, coordinateReferenceSystem,
+  roofType, flatAreaSquareFootage, hipAreaSquareFootage,
+  roofMaterial, roofCondition, rustAreaSquareFootage, pondingAreaSquareFootage,
+  tarpEvidence, discolorationAreaSquareFootage, solarPanelAreaSquareFootage,
+  airConditionerCount, imageDate, modelRunDate
+
+Note: Premium dataset — 7+ credits per call. Data access may be blocked depending on credential tier.
+
+Example (by address): {'address': '2755 Milwaukee St, Denver, CO 80238'}
+Example (by ID):      {'id': 'P0000GL41OME', 'queryType': 'PRECISELY_ID'}""",
+        inputSchema=_ADDRESS_OR_ID_INPUT_SCHEMA,
+    ),
+    Tool(
+        name="get_datalink_geox_vegetation",
+        description="""Retrieve Data Link GeoX Vegetation records for a property using aerial/satellite imagery analysis.
+Returns vegetation proximity and zone coverage data derived from overhead imagery.
+Use this tool when you need tree/shrub/vegetation distances, overhang percentages,
+or zone-by-zone coverage breakdowns around a building.
+Do NOT use if you need building structure or roof data — use get_datalink_geox_property or
+get_datalink_geox_roof instead.
+
+Two lookup modes — provide exactly one:
+  Mode 1 (by address): provide 'address' only.
+  Mode 2 (by ID):      provide 'id' and 'queryType' only. Do NOT also pass 'address'.
+
+queryType options: PRECISELY_ID, PARCEL_ID, BUILDING_ID, PLACE_ID, DUNS_ID, GERS_ID
+
+Fields returned:
+  buildingID, footprintID, centerLongitude, centerLatitude, coordinateReferenceSystem,
+  treeOverhangPercent, distanceToTreeFeet, distanceToShrubFeet, distanceToVegetationFeet,
+  treeZone1Percent, treeZone2Percent, treeZone3Percent, treeZone4Percent,
+  shrubZone1Percent, shrubZone2Percent, shrubZone3Percent, shrubZone4Percent,
+  vegetationZone1Percent, vegetationZone2Percent, vegetationZone3Percent, vegetationZone4Percent,
+  imageDate, modelRunDate
+
+Note: Premium dataset — 3+ credits per call. Data access may be blocked depending on credential tier.
+
+Example (by address): {'address': '2755 Milwaukee St, Denver, CO 80238'}
+Example (by ID):      {'id': 'P0000GL41OME', 'queryType': 'PRECISELY_ID'}""",
+        inputSchema=_ADDRESS_OR_ID_INPUT_SCHEMA,
     ),
     ]
