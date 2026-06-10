@@ -503,6 +503,10 @@ GET_PLACES = _graphql_schema("Points of interest near the address.", {
     "places": _DATA_BLOCK
 })
 
+GET_HISTORICAL_SALES = _graphql_schema("Full deed and loan/mortgage transaction history.", {
+    "historicalSales": _DATA_BLOCK
+})
+
 # ============================================================
 # Spatial Analysis (7 tools)
 # ============================================================
@@ -808,12 +812,13 @@ TOOL_OUTPUT_SCHEMAS = {
     "get_schools_by_address": GET_SCHOOLS,
     "get_buildings_by_address": GET_BUILDINGS,
     "get_parcels_by_address": GET_PARCELS,
-    # GraphQL Advanced (5)
+    # GraphQL Advanced (6)
     "get_addresses_detailed": GET_ADDRESSES_DETAILED,
     "get_parcel_by_owner_detailed": GET_PARCEL_BY_OWNER,
     "get_address_family": GET_ADDRESS_FAMILY,
     "get_serviceability": GET_SERVICEABILITY,
     "get_places_by_address": GET_PLACES,
+    "get_historical_sales": GET_HISTORICAL_SALES,
     # Spatial Analysis (7)
     "find_nearest_candidates": GEOJSON_FEATURE_COLLECTION,
     "search_at_location": GEOJSON_FEATURE_COLLECTION,

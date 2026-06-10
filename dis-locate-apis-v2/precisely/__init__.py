@@ -11,7 +11,7 @@ PreciselyAPI is composed from domain-specific mixins, each living in its own mod
     precisely/geolocation.py     — GeolocationMixin (2 methods)
     precisely/property_risk.py   — PropertyRiskMixin (9 methods)
     precisely/demographics.py    — DemographicsMixin (8 methods)
-    precisely/graphql_advanced.py — GraphQLAdvancedMixin (5 methods)
+    precisely/graphql_advanced.py — GraphQLAdvancedMixin (6 methods)
     precisely/spatial.py         — SpatialMixin (7 methods)
     precisely/map_services.py    — MapServicesMixin (15 methods)
 """
@@ -42,7 +42,7 @@ class PreciselyAPI(
     MapServicesMixin,
     BaseClient,
 ):
-    """Precisely API client — all 72 methods across 10 domain modules."""
+    """Precisely API client — all 73 methods across 10 domain modules."""
 
 
 __all__ = ["PreciselyAPI"]

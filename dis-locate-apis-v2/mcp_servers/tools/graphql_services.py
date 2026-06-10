@@ -1,6 +1,6 @@
 """
 GraphQL Services Tools Module
-Contains 22 tools for property, demographics, risk, and advanced GraphQL queries
+Contains 23 tools for property, demographics, risk, and advanced GraphQL queries
 """
 from mcp.types import Tool
 from mcp_servers.tools.base_tool import handle_tool_call  # noqa: F401
@@ -35,6 +35,27 @@ _GRAPHQL_DATA_SCHEMA = {
         }
     },
     "required": ["query", "variables"]
+}
+
+# Input schema for curated datalink tools that support lookup by address OR by ID.
+_ADDRESS_OR_ID_INPUT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "address": {
+            "type": "string",
+            "description": "Full street address string for getByAddress mode (e.g., '2755 Milwaukee St, Denver, CO 80238').",
+        },
+        "id": {
+            "type": "string",
+            "description": "Entity identifier for getById mode.",
+        },
+        "queryType": {
+            "type": "string",
+            "description": "ID namespace required when using getById mode.",
+            "enum": ["PRECISELY_ID", "PARCEL_ID", "BUILDING_ID", "PLACE_ID", "DUNS_ID", "GERS_ID"],
+        },
+    },
+    "oneOf": [{"required": ["address"]}, {"required": ["id", "queryType"]}],
 }
 
 
@@ -442,5 +463,65 @@ Example request:
             },
             "required": ["data"]
         }
+    ),
+
+    # Historical Sales (1 tool) — curated full deed + loan query
+    Tool(
+        name="get_historical_sales",
+        description="""Retrieve the full deed and loan/mortgage transaction history for a property.
+Returns every recorded sale event including buyer/seller identities, legal description,
+deed type, sale price, transfer taxes, and the complete loan/mortgage block for each transaction.
+
+Use this tool when you need:
+- Past ownership chain (who bought/sold and when)
+- Sale prices and transfer tax history
+- Loan/mortgage details for each transaction (lender, amount, type, rate, term)
+- Legal description and recording metadata per transaction
+
+Do NOT use for current property attributes — use get_property_data or get_property_attributes_by_address instead.
+Do NOT use for assessed/replacement value — use get_replacement_cost_by_address instead.
+
+Two lookup modes — provide exactly one:
+  Mode 1 (by address): provide 'address' only.
+  Mode 2 (by ID):      provide 'id' and 'queryType' only. Do NOT also pass 'address'.
+
+queryType options: PRECISELY_ID, PARCEL_ID, BUILDING_ID, PLACE_ID, DUNS_ID, GERS_ID
+
+Fields returned per record:
+  Core IDs:      historicalPropertyAttributeID, propertyAttributeID, preciselyID, parentPreciselyID, plinkID
+  Seller:        sellerFirstName, sellerLastName, sellerIDCode, seller2FirstName, seller2LastName, seller2IDCode,
+                 sellerMailAddress, sellerMailCity, sellerMailState, sellerMailPostalCode
+  Buyer:         buyerFirstName, buyerLastCorporationName, buyerIDCode, buyer2FirstName, buyer2LastCorporationName,
+                 buyer2IDCode, buyerVestCode, buyerMailCareOf, buyerMailAddress, buyerMailCity,
+                 buyerMailState, buyerMailPostalCode
+  Property:      addressLine, city, state, postalCode, postalCodeExtension, propertyAPN, apnSequence,
+                 fips, propertyUseCode
+  Deed/Recording: deedDocumentTypeCode, interFamily, recordingDate, recordersBookNumber,
+                 recordersPageNumber, recordersDocumentNumber, partialInterestTransferred
+  Legal:         legalLotCode, legalLotNumbers, legalBlock, legalSection, legalDistrict, legalLandLot,
+                 legalUnit, legalCityTownshipMunicipality, legalSubdivisionName, legalPhaseNumber,
+                 legalTractNumber, legalShortDescription, legalSectionTownshipRangeMeridian, legalDescriptionCode
+  Transaction:   recordersMapReference, deedTransactionType, recorderDocumentNumber, contractDate,
+                 salesPriceUSD, salesPriceCode, cityTransferTax, stateTransferTax, totalTransferTax
+  Loan:          lenderName, lenderType, loanAmountUSD, loanType, financingType, initialRate, dueDate,
+                 loanAmountSecondUSD, adjustableRateRider, adjustableRateIndex, changeIndex,
+                 rateChangeFrequency, interestRateAdjustableMaximum, interestRateAdjustableMinimum,
+                 interestRateMaximum, interestOnlyPeriod, interestRate, fixedChangeDateYear,
+                 fixedChangeFullDateMonthDay, prepaymentRider, prepaymentTermPenalty, titleCompanyName,
+                 realEstateOwnedFlag, distressedSaleFlag, loanOriginatorOrganizationIDNumber,
+                 loanOrganizationName, mortgageBrokerNMLSID, mortgageBroker, loanOfficerNMLSID,
+                 loanOfficerName, loanTransactionType
+
+Enum fields (each returns { value, description }): sellerIDCode, seller2IDCode, buyerIDCode, buyer2IDCode,
+  buyerVestCode, apnSequence, propertyUseCode, deedDocumentTypeCode, partialInterestTransferred,
+  legalLotCode, legalDescriptionCode, deedTransactionType, salesPriceCode, lenderType, loanType,
+  financingType, adjustableRateRider, adjustableRateIndex, rateChangeFrequency, interestRate,
+  prepaymentRider, realEstateOwnedFlag, loanTransactionType
+
+Note: Large response payload (~2400 chars query). Data access may be limited by credential tier.
+
+Example (by address): {'address': '2755 Milwaukee St, Denver, CO 80238'}
+Example (by ID):      {'id': 'P0000GL41OME', 'queryType': 'PRECISELY_ID'}""",
+        inputSchema=_ADDRESS_OR_ID_INPUT_SCHEMA,
     ),
     ]
