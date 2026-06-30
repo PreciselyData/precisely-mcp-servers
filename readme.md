@@ -17,7 +17,7 @@
 | `precisely-analyze`            | Data360 Analyze             |    6    | stdio | [data360-analyze-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/data360-analyze-mcp-beta.v1.0)       | [README](core-analyze/README.md) | 🔵 Beta |
 | `precisely-ga-sdk`             | Geographic Addressing SDK   |   5    | stdio | [ga-sdk-mcp-server-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/ga-sdk-mcp-server-beta.v1.0) | [README](core-ga-sdk/README.md) | 🔵 Beta |
 | `precisely-geotax-sdk`         | GeoTAX SDK                  |   ~5    | stdio | [geotax-sdk-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/geotax-sdk-mcp.beta.v1.0) | [README](core-geotax-sdk/README.md) | 🔵 Beta |
-| `precisely-matching-sdk`       | Data Quality Matching SDK   |    4    | stdio | [core-data-quality-matching-sdk.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/core-data-quality-matching-sdk.beta.v1.0) | [README](core-data-quality-matching-sdk/README.md) | 🔵 Beta |
+| `precisely-matching-sdk`       | Data Quality Matching SDK   |    4    | stdio | [core-data-quality-matching-sdk.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/core-data-quality-matching-sdk.v1.0) | [README](core-data-quality-matching-sdk/README.md) | ✅ Active |
 | `precisely-dis-mcp`            | Data Integrity Suite (DIS)  |    3    | HTTP  | hosted only                                                                                                                              | [README](data-integrity-suite/README.md) | 🔵 Beta |
 | `precisely-mapinfo-pro`        | MapInfo Pro                 |  ~100   | HTTP/SSE | [mapinfo-pro-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/mapinfo-pro-mcp-beta.v1.0)           | [README](core-mapinfo-pro/README.md) | 🔵 Beta |
 | `precisely-connect-appmod`     | Connect ETL/AppMod          |    1    |   stdio  | [di-appmod-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/di-appmod-mcp.beta.v1.0)             | [README](core-connect-appmod/README.md) | 🔵 Beta |
@@ -68,7 +68,7 @@ precisely-mcp-servers/
 ├── core-analyze/                    ← 🔵 Beta: Precisely Analyze
 ├── core-ga-sdk/                     ← 🔵 Beta: Geographic Addressing SDK
 ├── core-geotax-sdk/                 ← 🔵 Beta: GeoTAX SDK
-├── core-data-quality-matching-sdk/  ← 🔵 Beta: Data Quality Matching SDK
+├── core-data-quality-matching-sdk/  ← ✅ Active: Data Quality Matching SDK
 ├── core-mapinfo-pro/                ← 🔵 Beta: MapInfo Pro (~90 tools, HTTP/SSE)
 ├── data-integrity-suite/            ← 🔵 Beta: Data Integrity Suite (DIS) — hosted MCP
 └── core-connect-appmod/             ← 🔵 Beta: Connect ETL/AppMod
