@@ -1,7 +1,7 @@
 
 # Matching SDK MCP Server
 
-> 📦 **Download:** [core-data-quality-matching-sdk.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/core-data-quality-matching-sdk.v1.3.0)
+> 📦 **Download:** [core-data-quality-matching-sdk.v1.3.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/core-data-quality-matching-sdk.v1.3.0)
 
 ## Summary
 
