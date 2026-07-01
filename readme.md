@@ -6,21 +6,21 @@
 
 ## MCP Server Registry
 
-| Server                         | Product                     |  Tools  | Transport | Server Location                                                                                                                          | Docs | Status |
-|--------------------------------|-----------------------------|:-------:|-------|------------------------------------------------------------------------------------------------------------------------------------------|------|:------:|
-| `precisely-dis-locate`         | DIS / Locate APIs v2        |   68    | stdio, HTTP | [`dis-locate-apis-v2/`](dis-locate-apis-v2/)                                                                                             | [README](dis-locate-apis-v2/readme.md) | ✅ Active |
-| `precisely-spectrum`           | Spectrum Technology Platform |   ~10   | stdio, HTTP | [spectrum-mcp-server-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/spectrum-mcp-server-beta.v1.0) | [README](core-spectrum/README.md) | 🔵 Beta |
-| `precisely-trillium-quality`   | Trillium Quality            |    7    | stdio | [trillium-quality-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/trillium-quality-mcp.beta.v1.0)     | [README](core-trillium-quality/README.md) | 🔵 Beta |
-| `precisely-trillium-discovery` | Trillium Discovery          |   11    | stdio | [trillium-discovery-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/trillium-discovery-mcp.beta.v1.0) | [README](core-trillium-discovery/README.md) | 🔵 Beta |
-| `precisely-dqplus`             | Data360 DQ+                 | Graphql | HTTP | hosted only                                                                                                                              | [README](core-dq-plus/README.md) | 🔵 Beta |
-| `precisely-enterworks`         | Enterworks                  | GraphQL | HTTP | [enterworks-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/enterworks-mcp-beta.v1.0)                 | [README](core-enterworks/README.md) | 🔵 Beta |
-| `precisely-analyze`            | Data360 Analyze             |    6    | stdio | [data360-analyze-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/data360-analyze-mcp-beta.v1.0)       | [README](core-analyze/README.md) | 🔵 Beta |
-| `precisely-ga-sdk`             | Geographic Addressing SDK   |   5    | stdio | [ga-sdk-mcp-server-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/ga-sdk-mcp-server-beta.v1.0) | [README](core-ga-sdk/README.md) | 🔵 Beta |
-| `precisely-geotax-sdk`         | GeoTAX SDK                  |   ~5    | stdio | [geotax-sdk-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/geotax-sdk-mcp.beta.v1.0) | [README](core-geotax-sdk/README.md) | 🔵 Beta |
-| `precisely-matching-sdk`       | Data Quality Matching SDK   |    4    | stdio | [core-data-quality-matching-sdk.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/core-data-quality-matching-sdk.v1.0) | [README](core-data-quality-matching-sdk/README.md) | ✅ Active |
-| `precisely-dis-mcp`            | Data Integrity Suite (DIS)  |    3    | HTTP  | hosted only                                                                                                                              | [README](data-integrity-suite/README.md) | 🔵 Beta |
-| `precisely-mapinfo-pro`        | MapInfo Pro                 |  ~100   | HTTP/SSE | [mapinfo-pro-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/mapinfo-pro-mcp-beta.v1.0)           | [README](core-mapinfo-pro/README.md) | 🔵 Beta |
-| `precisely-connect-appmod`     | Connect ETL/AppMod          |    1    |   stdio  | [di-appmod-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/di-appmod-mcp.beta.v1.0)             | [README](core-connect-appmod/README.md) | 🔵 Beta |
+| Server                         | Product                     |  Tools  | Transport | Server Location                                                                                                                                    | Docs | Status |
+|--------------------------------|-----------------------------|:-------:|-------|----------------------------------------------------------------------------------------------------------------------------------------------------|------|:------:|
+| `precisely-dis-locate`         | DIS / Locate APIs v2        |   68    | stdio, HTTP | [`dis-locate-apis-v2/`](dis-locate-apis-v2/)                                                                                                       | [README](dis-locate-apis-v2/readme.md) | ✅ Active |
+| `precisely-spectrum`           | Spectrum Technology Platform |   ~10   | stdio, HTTP | [spectrum-mcp-server-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/spectrum-mcp-server-beta.v1.0)                 | [README](core-spectrum/README.md) | 🔵 Beta |
+| `precisely-trillium-quality`   | Trillium Quality            |    7    | stdio | [trillium-quality-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/trillium-quality-mcp.beta.v1.0)               | [README](core-trillium-quality/README.md) | 🔵 Beta |
+| `precisely-trillium-discovery` | Trillium Discovery          |   11    | stdio | [trillium-discovery-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/trillium-discovery-mcp.beta.v1.0)           | [README](core-trillium-discovery/README.md) | 🔵 Beta |
+| `precisely-dqplus`             | Data360 DQ+                 | Graphql | HTTP | hosted only                                                                                                                                        | [README](core-dq-plus/README.md) | 🔵 Beta |
+| `precisely-enterworks`         | Enterworks                  | GraphQL | HTTP | [enterworks-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/enterworks-mcp-beta.v1.0)                           | [README](core-enterworks/README.md) | 🔵 Beta |
+| `precisely-analyze`            | Data360 Analyze             |    6    | stdio | [data360-analyze-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/data360-analyze-mcp-beta.v1.0)                 | [README](core-analyze/README.md) | 🔵 Beta |
+| `precisely-ga-sdk`             | Geographic Addressing SDK   |    5    | stdio | [ga-sdk-mcp-server.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/ga-sdk-mcp-server.v1.0)                               | [README](core-ga-sdk/README.md) | ✅ Active |
+| `precisely-geotax-sdk`         | GeoTAX SDK                  |   ~5    | stdio | [geotax-sdk-mcp.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/geotax-sdk-mcp.v1.0)                                     | [README](core-geotax-sdk/README.md) | ✅ Active |
+| `precisely-matching-sdk`       | Data Quality Matching SDK   |    5    | stdio | [core-data-quality-matching-sdk.v1.3.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/core-data-quality-matching-sdk.v1.3.0) | [README](core-data-quality-matching-sdk/README.md) | ✅ Active |
+| `precisely-dis-mcp`            | Data Integrity Suite (DIS)  |    3    | HTTP  | hosted only                                                                                                                                        | [README](data-integrity-suite/README.md) | 🔵 Beta |
+| `precisely-mapinfo-pro`        | MapInfo Pro                 |  ~100   | HTTP/SSE | [mapinfo-pro-mcp-beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/mapinfo-pro-mcp-beta.v1.0)                         | [README](core-mapinfo-pro/README.md) | 🔵 Beta |
+| `precisely-connect-appmod`     | Connect ETL/AppMod          |    1    |   stdio  | [di-appmod-mcp.beta.v1.0](https://github.com/PreciselyData/precisely-mcp-servers/releases/tag/di-appmod-mcp.beta.v1.0)                             | [README](core-connect-appmod/README.md) | 🔵 Beta |
 
 **Status key:**
 - ✅ **Active** — fully implemented, tested, and production-ready in this repo
@@ -66,8 +66,8 @@ precisely-mcp-servers/
 ├── core-dq-plus/                    ← 🔵 Beta: DQ+
 ├── core-enterworks/                 ← 🔵 Beta: Enterworks MDM
 ├── core-analyze/                    ← 🔵 Beta: Precisely Analyze
-├── core-ga-sdk/                     ← 🔵 Beta: Geographic Addressing SDK
-├── core-geotax-sdk/                 ← 🔵 Beta: GeoTAX SDK
+├── core-ga-sdk/                     ← ✅ Active: Geographic Addressing SDK
+├── core-geotax-sdk/                 ← ✅ Active: GeoTAX SDK
 ├── core-data-quality-matching-sdk/  ← ✅ Active: Data Quality Matching SDK
 ├── core-mapinfo-pro/                ← 🔵 Beta: MapInfo Pro (~90 tools, HTTP/SSE)
 ├── data-integrity-suite/            ← 🔵 Beta: Data Integrity Suite (DIS) — hosted MCP
