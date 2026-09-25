@@ -1,11 +1,12 @@
 # How to Access DIS MCP Tools
 
-This document covers two ways to connect to the DIS MCP server remotely using the DIS API Gateway:
+This document covers several ways to connect to the DIS MCP server remotely using the DIS API Gateway:
 
 - **[Part 1: VS Code / GitHub Copilot](#part-1-vs-code--github-copilot)** — configure via `mcp.json`
 - **[Part 2: Microsoft Copilot Studio](#part-2-microsoft-copilot-studio)** — create a custom agent
 - **[Part 3: Claude Desktop & Claude.ai](#part-3-claude-desktop--claudeai)** — create a custom connector
 - **[Part 4: Databricks](#part-4-databricks)** — create a Unity Catalog connection
+- **[Part 5: Snowflake](#part-5-snowflake)** — create a Cortex agent with an external MCP server
 
 The **DIS MCP API Gateway URLs** by region:
 
@@ -16,7 +17,7 @@ The **DIS MCP API Gateway URLs** by region:
 | `eu-west-2` | `https://api.gb1.cloud.precisely.com` |
 | `ap-southeast-2` | `https://api.au1.cloud.precisely.com` |
 
-Throughout this guide, `<MCP_SERVER_HOST>` refers to the Host for your region from the table above. `<MCP_SERVER_URL>` refers to the DIS MCP API Gateway URL: `<MCP_SERVER_HOST>/mcp`.
+Throughout this guide, `<MCP_SERVER_URL>` refers to the DIS MCP API Gateway URL: `<MCP_SERVER_HOST>/mcp`.
 
 ---
 
@@ -166,8 +167,8 @@ Custom connectors are configured through your Claude account and shared across a
 
 1. Navigate to [Customize > Connectors](https://claude.ai/customize/connectors).
 2. Click **+** then **Add custom connector**.
-3. Enter the name `Precisely DIS MCP` and the Remote MCP server URL `<MCP_SERVER_URL>`
-4. Click **Advanced settings** and enter:
+3. Enter the name `Precisely DIS MCP` and the Remote MCP server URL `<MCP_SERVER_URL>` and click Continue
+4. Select **Sign In Now** in Authentication and **Use your own OAuth client** in OAuth Client then enter:
 
    | Field | Value |
    |-------|-------|
@@ -241,50 +242,150 @@ Follow [Validating Connectivity via Chat](#validating-connectivity-via-chat) bel
 
 ## Part 4: Databricks
 
-Databricks supports external MCP servers as Unity Catalog connections. Once registered, the DIS MCP tools appear in AI Playground and can be used directly in AI Agents.
+Databricks can register the Precisely Data Integrity Suite (DIS) external MCP server as a **Unity Catalog MCP Service**. The MCP Service uses a Unity Catalog HTTP connection to communicate with Precisely and can be used in Databricks AI workflows.
+
+### Requirements
+
+| Requirement | Detail |
+| --- | --- |
+| **Unity Catalog** | Enabled on the workspace |
+| **Databricks Runtime** | 15.0 or later |
+| **Region** | Workspace must be in a region where Model Serving is supported |
+| **Permissions** | Permission to create connections and services in the target Unity Catalog schema (`CREATE CONNECTION` and `CREATE SERVICE`) |
+| **Credentials** | Precisely DIS `api_key` and `api_secret` |
+
+> The examples below use `main.default`, but you can use any Unity Catalog catalog and schema where you have the required permissions.
+
+### Step 1: Open the MCP Service page
+
+1. In Databricks, open **Catalog** from the left navigation.
+2. Click **+** in the Catalog pane or **Create** in the upper-right.
+3. Select **Create a service**.
+4. Select **MCP service**.
+
+The **Create MCP Service** page opens.
+
+### Step 2: Configure the MCP Connection
+
+Complete each section of the form as follows.
+
+1. Under **Name**, select the catalog and schema where you want to create the service.
+
+      For example:
+
+      | Field | Value |
+      | --- | --- |
+      | **Catalog** | `main` |
+      | **Schema** | `default` |
+      | **Name** | `precisely_dis_mcp` |
+
+2. Under **Connection**, select **Create new connection**.
+
+3. For **Server URL**, enter the Precisely MCP endpoint for your region. See the regional URL table at the beginning of this document.
+
+      `"<MCP_SERVER_URL>"`
+
+4. Under **Authentication**, select **OAuth M2M**.
+
+      Configure the following fields.
+
+      | Field | Value |
+      | --- | --- |
+      | **Token endpoint** | `https://api.cloud.precisely.com/auth/v2/token` |
+      | **Client ID** | Precisely `api_key` |
+      | **Client secret** | Precisely `api_secret` |
+      | **OAuth scope** | `default` |
+      | **Credential exchange method** | `Header only` |
+
+5. Click **Create & load tools**.
+
+      Databricks connects to the Precisely MCP server and discovers the tools exposed by the server.
+
+6. Select **tools**
+
+      Select the MCP tools `precisely_actions_search`, `precisely_actions_describe`, `precisely_actions_execute`. Then click **Create MCP Service** to finish creating the service.
+      
+After the MCP Service is created, click Try in Playground to test the service. 
+Follow [Validating Connectivity via Chat](#validating-connectivity-via-chat) below.
+
+---
+
+## Part 5: Snowflake
+
+Snowflake supports external MCP servers through **Cortex Agents**. Once you register the DIS MCP server as an `EXTERNAL MCP SERVER`, its tools become available to Cortex Agents and can be invoked directly from Snowflake Intelligence.
 
 ### Requirements
 
 | Requirement | Detail |
 |-------------|--------|
-| **Databricks plan** | Premium or above (Unity Catalog and AI Playground are not available on the Standard plan) |
-| **Unity Catalog** | Enabled on the workspace |
-| **Databricks Runtime** | 15.0 or later (required for HTTP connection type) |
-| **Permission** | `CREATE CONNECTION` privilege on the Unity Catalog metastore, or workspace admin |
+| **Role** | `ACCOUNTADMIN` — required to create the API integration and external MCP server |
+| **Cortex Agents** | Enabled on your account |
+| **Cross-region inference** | Cortex must be allowed to run cross-region (see Prerequisites below) |
 
-### Step 1: Create the Unity Catalog Connection
+### Prerequisites: Enable Cortex Cross-Region Inference
 
-1. Go to **Catalog**, Click **+** then **Create a connection**.
-2. Set **Connection name** to `precisely_dis_mcp`, **Connection type** to `HTTP`, **Auth type** to `OAuth Machine to Machine`. Click **Next**
-3. Fill in and Click **Next**:
+Run as `ACCOUNTADMIN`:
 
-   | Field | Value |
-   |-------|-------|
-   | **Host** | `<MCP_SERVER_HOST>` |
-   | **Port** | Keep defaults  |
-   | **Client ID** | `api_key` created above - see [Create an API Key](#create-an-api-key) |
-   | **Client secret** | `api_secret` created above - see [Create an API Key](#create-an-api-key) |
-   | **Token endpoint** | `https://api.cloud.precisely.com/auth/v2/token` |
-   | **OAuth Scope** | `default` |
+```sql
+-- Enable Cortex cross-region inference
+ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION';
 
-4. Set **Token endpoint** to `https://api.cloud.precisely.com/auth/v2/token`, Check **Is mcp connection**, Set **Base path** to `/mcp`
-5. Click **Create connection**
+-- Verify CORTEX_ENABLED_CROSS_REGION via CLIENT_PARAMS_INFO
+SELECT SYSTEM$BOOTSTRAP_DATA_REQUEST('CLIENT_PARAMS_INFO');
 
-### Step 2: Create a AI Agent
+-- Most reliable way to confirm the parameter
+SHOW PARAMETERS LIKE 'CORTEX%' IN ACCOUNT;
+```
 
-To deploy a persistent agent that uses DIS MCP tools, create a AI Agent backed by the `precisely_dis_mcp` connection.
+### Step 1: Create the API Integration
 
-**Via the Databricks UI:**
+Replace `<OAUTH_CLIENT_SECRET>` with the OAuth client secret Precisely provides for your environment.
 
-1. In the left navigation, go to **ML/AI → Agents**
-2. Click **Create Agent**
-3. Select **Supervisor Agent**
-4. Under **Tools and sub-agents**, click **Add an External MCP** and select **precisely_dis_mcp**
-5. Set **Instructions**, for example:
-   > You help users enrich and validate data using Precisely DIS. Use `precisely_actions_search` to discover relevant actions, `precisely_actions_describe` to understand their inputs, and `precisely_actions_execute` to run them.
-6. Click **Open in Playground**
+```sql
+-- Production (us-east-1)
+CREATE API INTEGRATION precisely_dis_mcp_api_integration
+  API_PROVIDER = external_mcp
+  API_ALLOWED_PREFIXES = ('<MCP_SERVER_URL>')
+  API_USER_AUTHENTICATION = (
+    TYPE = OAUTH2
+    OAUTH_CLIENT_ID = '0oaxc9efzsqT0oQDF4x7'
+    OAUTH_CLIENT_SECRET = '<OAUTH_CLIENT_SECRET>'
+    OAUTH_AUTHORIZATION_ENDPOINT = 'https://sso.precisely.com/oauth2/ausofsdv2wu3Qs1tw4x7/v1/authorize'
+    OAUTH_TOKEN_ENDPOINT = 'https://sso.precisely.com/oauth2/ausofsdv2wu3Qs1tw4x7/v1/token'
+    OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST
+    OAUTH_REFRESH_TOKEN_VALIDITY = 86400  -- 24 hours; minimum 3600
+    OAUTH_ALLOWED_SCOPES = ('openid', 'email', 'offline_access')
+  )
+  ENABLED = TRUE;
+```
 
-### Step 3: Test the Agent in AI Playground
+### Step 2: Create the External MCP Server
+
+```sql
+-- Production (us-east-1)
+CREATE EXTERNAL MCP SERVER precisely_dis_mcp_server
+  WITH DISPLAY_NAME = 'Precisely DIS MCP'
+  URL = '<MCP_SERVER_URL>'
+  API_INTEGRATION = precisely_dis_mcp_api_integration;
+```
+
+### Step 3: Add to a Cortex Agent
+
+1. In the navigation menu, select **AI & ML → Agents**.
+2. Select **Create agent**.
+3. Select **Database and schema**, enter an **Agent object name**, then click **Create agent**.
+4. Select the **Configuration** tab, then click **MCP**.
+5. From the available MCP servers, find **Precisely DIS MCP** and click **Add to agent**.
+6. Click **+ Add to Snowflake CoWork**, then click **Add agent**
+
+### Step 4: Authenticate (per user)
+
+1. In the navigation menu, select **AI & ML → Snowflake CoWork**.
+2. In **Snowflake CoWork**, open the **New chat** panel and click the agent box to the right of **+** and select the agent created in **Step 3**.
+3. Click **+ → Connectors → Connect** next to **PRECISELY_DIS_MCP_SERVER**, the MCP server created in **Step 2**. This redirects to the Precisely SSO login.
+4. After authenticating, the connector shows as connected and the agent can invoke DIS tools automatically.
+
+### Step 5: Test the Agent
 
 Follow
 [Validating Connectivity via Chat](#validating-connectivity-via-chat).
