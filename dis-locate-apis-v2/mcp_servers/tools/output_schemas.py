@@ -503,6 +503,10 @@ GET_PLACES = _graphql_schema("Points of interest near the address.", {
     "places": _DATA_BLOCK
 })
 
+GET_DATALINK_DUN_BRADSTREET = _graphql_schema("Data Link Dun & Bradstreet.", {
+    "datalinkDunAndBradstreet": _DATA_BLOCK
+})
+
 # ============================================================
 # Spatial Analysis (7 tools)
 # ============================================================
@@ -813,6 +817,7 @@ TOOL_OUTPUT_SCHEMAS = {
     "get_address_family": GET_ADDRESS_FAMILY,
     "get_serviceability": GET_SERVICEABILITY,
     "get_places_by_address": GET_PLACES,
+    "get_datalink_dun_bradstreet": GET_DATALINK_DUN_BRADSTREET,
     # Spatial Analysis (7)
     "find_nearest_candidates": GEOJSON_FEATURE_COLLECTION,
     "search_at_location": GEOJSON_FEATURE_COLLECTION,
