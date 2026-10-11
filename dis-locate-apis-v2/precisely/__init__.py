@@ -14,6 +14,7 @@ PreciselyAPI is composed from domain-specific mixins, each living in its own mod
     precisely/graphql_advanced.py — GraphQLAdvancedMixin
     precisely/spatial.py         — SpatialMixin
     precisely/map_services.py    — MapServicesMixin
+    precisely/routing.py         — RoutingMixin
 """
 
 from .client import BaseClient
@@ -27,6 +28,7 @@ from .demographics import DemographicsMixin
 from .graphql_advanced import GraphQLAdvancedMixin
 from .spatial import SpatialMixin
 from .map_services import MapServicesMixin
+from .routing import RoutingMixin
 
 
 class PreciselyAPI(
@@ -40,9 +42,10 @@ class PreciselyAPI(
     GraphQLAdvancedMixin,
     SpatialMixin,
     MapServicesMixin,
+    RoutingMixin,
     BaseClient,
 ):
-    """Precisely API client for 51 tools across 10 domain modules."""
+    """Precisely API client for all MCP tools across domain modules."""
 
 
 __all__ = ["PreciselyAPI"]

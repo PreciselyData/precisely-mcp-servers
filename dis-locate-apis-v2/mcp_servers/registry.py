@@ -8,6 +8,7 @@ from mcp_servers.tools import (
     geolocation,
     graphql_services,
     map_services,
+    routing,
     spatial_analysis,
     tax_emergency,
     timezone,
@@ -26,6 +27,7 @@ _ALL_MODULES = [
     spatial_analysis,
     graphql_services,
     map_services,
+    routing,
 ]
 
 

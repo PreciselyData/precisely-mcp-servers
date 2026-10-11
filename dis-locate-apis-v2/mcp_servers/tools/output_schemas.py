@@ -764,6 +764,86 @@ WMTS_REQUEST = {
     }
 }
 
+# ============================================================
+# Routing (3 tools)
+# ============================================================
+
+ROUTING_MATRIX_RESPONSE = {
+    "type": "object",
+    "properties": {
+        "status": {"type": "string", "description": "Routing API status."},
+        "warning": {
+            "type": "array",
+            "description": "Optional warnings from routing engine.",
+            "items": {"type": "string"}
+        },
+        "rows": {
+            "type": "array",
+            "description": "Matrix rows, each containing destination elements.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elements": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "duration": {"type": "object"},
+                                "distance": {"type": "object"}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+ROUTING_DIRECTIONS_RESPONSE = {
+    "type": "object",
+    "properties": {
+        "status": {"type": "string", "description": "Routing API status."},
+        "msg": {"type": "string", "description": "Optional routing message."},
+        "warning": {
+            "type": "array",
+            "description": "Optional warnings from routing engine.",
+            "items": {"type": "string"}
+        },
+        "routes": {
+            "type": "array",
+            "description": "Computed route alternatives.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "distance": {"type": "number"},
+                    "duration": {"type": "number"},
+                    "geometry": {"type": "string"},
+                    "geojson": {"type": "object"},
+                    "legs": {"type": "array", "items": {"type": "object"}}
+                }
+            }
+        }
+    }
+}
+
+ROUTING_REACHABLE_AREA_RESPONSE = {
+    "type": "object",
+    "properties": {
+        "type": {"type": "string", "description": "GeoJSON object type."},
+        "status": {"type": "string", "description": "Routing API status."},
+        "warning": {
+            "type": "array",
+            "description": "Optional warnings from routing engine.",
+            "items": {"type": "string"}
+        },
+        "features": {
+            "type": "array",
+            "description": "Reachable-area feature results.",
+            "items": {"type": "object"}
+        }
+    }
+}
+
 
 # ============================================================
 # Tool name → outputSchema mapping (all 51 tools)
@@ -832,4 +912,8 @@ TOOL_OUTPUT_SCHEMAS = {
     "wms_request": WMS_REQUEST,
     # WMTS (1)
     "wmts_request": WMTS_REQUEST,
+    # Routing (3)
+    "calculate_travel_time_and_distance": ROUTING_MATRIX_RESPONSE,
+    "calculate_route_directions": ROUTING_DIRECTIONS_RESPONSE,
+    "calculate_reachable_area": ROUTING_REACHABLE_AREA_RESPONSE,
 }
