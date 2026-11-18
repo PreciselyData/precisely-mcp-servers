@@ -77,13 +77,17 @@ def create_http_app(app: Server, precisely_api, tools: list) -> "BearerTokenMidd
         else:
             await session_manager.handle_request(scope, receive, send)
 
+    serving = {"ready": False}
+
     @contextlib.asynccontextmanager
     async def lifespan(starlette_app: "Starlette") -> "AsyncIterator[None]":
         async with session_manager.run():
+            serving["ready"] = True
             logger.info("Streamable HTTP server started")
             try:
                 yield
             finally:
+                serving["ready"] = False
                 logger.info("Streamable HTTP server shutting down")
 
     async def health_check(request) -> "JSONResponse":
@@ -91,21 +95,17 @@ def create_http_app(app: Server, precisely_api, tools: list) -> "BearerTokenMidd
         return JSONResponse({"status": "healthy", "service": "precisely-mcp-server", "transport": "http"})
 
     async def readiness_check(request) -> "JSONResponse":
-        """Readiness probe — returns 200 if credentials and API are reachable."""
-        try:
-            precisely_api.geocode("test", country="USA")
-            return JSONResponse({
-                "status": "ready",
-                "service": "precisely-mcp-server",
-                "api_connectivity": "ok",
-                "tools_count": len(tools),
-            })
-        except Exception as e:
-            logger.error(f"Readiness check failed: {e}")
+        """Readiness probe — in-process state only; upstream outages surface as tool errors."""
+        if not serving["ready"]:
             return JSONResponse(
-                {"status": "not_ready", "service": "precisely-mcp-server", "error": str(e)},
+                {"status": "not_ready", "service": "precisely-mcp-server"},
                 status_code=503,
             )
+        return JSONResponse({
+            "status": "ready",
+            "service": "precisely-mcp-server",
+            "tools_count": len(tools),
+        })
 
     starlette_app = Starlette(
         debug=False,
