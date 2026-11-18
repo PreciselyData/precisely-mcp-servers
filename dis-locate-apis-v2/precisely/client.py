@@ -11,6 +11,15 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+# (connect, read) seconds; read is long because some endpoints (e.g. routing matrices) take ~40s+.
+DEFAULT_TIMEOUT = (10, 120)
+
+
+class _TimeoutSession(requests.Session):
+    def request(self, *args, **kwargs):
+        kwargs.setdefault("timeout", DEFAULT_TIMEOUT)
+        return super().request(*args, **kwargs)
+
 
 class BaseClient:
     """Handles session creation, authentication, and shared GraphQL validation."""
@@ -21,7 +30,7 @@ class BaseClient:
         self.base_url = base_url or os.getenv(
             "PRECISELY_BASE_URL", "https://api.cloud.precisely.com"
         )
-        self.session = requests.Session()
+        self.session = _TimeoutSession()
         credentials = f"{api_key}:{api_secret}"
         encoded = base64.b64encode(credentials.encode()).decode()
         self.session.headers.update(
@@ -38,7 +47,7 @@ class BaseClient:
         instance.api_key = None
         instance.api_secret = None
         instance.base_url = self.base_url
-        instance.session = requests.Session()
+        instance.session = _TimeoutSession()
         instance.session.headers.update(
             {
                 "Authorization": f"Bearer {token}",
