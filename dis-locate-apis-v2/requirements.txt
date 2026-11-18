@@ -1,20 +1,22 @@
 ﻿# Precisely MCP Server - Production Dependencies
 # Minimal dependencies for production MCP server operations
 
+# Upper bounds: image builds install the newest match, and mcp 2.x breaks startup.
+
 # MCP Protocol Support
-mcp>=1.0.0
+mcp>=1.25,<2
 
 # HTTP Client for API Calls
-requests>=2.32.0
+requests>=2.32.0,<3
 
 # Environment Variable Management
-python-dotenv>=1.0.0
+python-dotenv>=1.0.0,<2
 
 # Core Python Dependencies
-typing-extensions>=4.0.0
+typing-extensions>=4.0.0,<5
 
 # HTTP Transport Dependencies (optional - only needed for --transport http)
-starlette>=0.27.0
-uvicorn>=0.23.0
-sse-starlette>=1.6.0
-anyio>=4.0.0
+starlette>=0.27.0,<2
+uvicorn>=0.23.0,<1
+sse-starlette>=1.6.0,<4
+anyio>=4.0.0,<5
