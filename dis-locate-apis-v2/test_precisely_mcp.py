@@ -161,10 +161,11 @@ class PreciselyMCPTestSuite:
         - Load tool definitions from registry
         - Verify 51 tool definitions
         - Cross-reference MCP tools with API methods
+        - Start the HTTP app in-process and check the probe endpoints
         """
         self.log_header("LAYER 2: MCP SERVER TESTING")
         
-        logger.info("\n[1/2] Loading MCP Server Tool Definitions...")
+        logger.info("\n[1/3] Loading MCP Server Tool Definitions...")
         
         try:
             from mcp_servers.registry import build_registry
@@ -189,7 +190,7 @@ class PreciselyMCPTestSuite:
             return False
         
         # Test 2: Cross-reference with API
-        logger.info("\n[2/2] Cross-Referencing MCP Tools with API Methods...")
+        logger.info("\n[2/3] Cross-Referencing MCP Tools with API Methods...")
         
         api_methods = set([m for m in dir(self.api) if not m.startswith('_') and callable(getattr(self.api, m))])
         mcp_tools = set([tool.name for tool in tools])
@@ -210,7 +211,33 @@ class PreciselyMCPTestSuite:
             logger.warning("  [WARN] Alignment issues detected")
             self.layer2_passed = False
         
+        logger.info("\n[3/3] Checking HTTP Probe Endpoints...")
+        if not self.check_http_probes(tools, tool_module_map):
+            self.layer2_passed = False
+        
         return self.layer2_passed
+    
+    def check_http_probes(self, tools, tool_module_map) -> bool:
+        """/health and /ready must answer fast and never depend on the upstream API."""
+        try:
+            from starlette.testclient import TestClient
+            from mcp_servers.server import create_server
+            from mcp_servers.transport.http import create_http_app
+
+            app = create_http_app(create_server(self.api, tools, tool_module_map), self.api, tools)
+            with TestClient(app) as client:
+                for path in ("/health", "/ready"):
+                    start = time.time()
+                    resp = client.get(path)
+                    elapsed = time.time() - start
+                    if resp.status_code != 200 or elapsed > 1:
+                        logger.error(f"  [FAIL] {path}: HTTP {resp.status_code} in {elapsed:.2f}s")
+                        return False
+                    logger.info(f"  [PASS] {path}: HTTP 200 in {elapsed:.3f}s")
+            return True
+        except Exception as e:
+            logger.error(f"  [FAIL] HTTP app failed to start: {e}")
+            return False
     
     # ========================================
     # LAYER 3: Comprehensive Functional Testing
